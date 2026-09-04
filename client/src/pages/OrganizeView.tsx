@@ -324,7 +324,9 @@ export default function OrganizeView() {
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div>
           <div className="eyebrow mb-1.5">Organizer Folder Lokal</div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">Rapihkan File-mu</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+            <span className="text-gradient">Rapihkan File-mu</span>
+          </h1>
           <p className="text-sm text-gray-400 mt-1.5 max-w-xl">
             Pilih folder, tools mengelompokkan file jadi rapi otomatis. Dilengkapi deteksi duplikat, folder kosong, dan laporan file terbesar.
           </p>
@@ -381,7 +383,10 @@ export default function OrganizeView() {
 
             {settingsOpen && (
               <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 mt-5 animate-fade-in">
-                <div className="eyebrow mb-3">Pengaturan Scan</div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="eyebrow">Pengaturan Scan</div>
+                  <span className="chip bg-white/[0.05] text-gray-400 border border-white/10 text-[10px]">tersimpan otomatis</span>
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
                   <div>
                     <label className="text-xs text-gray-400 block mb-1.5">Lewati folder (pisah koma)</label>
@@ -569,9 +574,12 @@ export default function OrganizeView() {
       {/* ============ STEP 4: DONE ============ */}
       {stage === 'done' && applyState && result && (
         <div className="card p-10 animate-slide-up flex flex-col items-center text-center">
-          <div className="w-16 h-16 rounded-2xl bg-emerald-500/12 border border-emerald-500/25 grid place-items-center mb-5 animate-pop">
+          <div className="relative mb-5 animate-pop">
+          <span className="absolute inset-0 rounded-2xl bg-emerald-500/25 blur-xl" />
+          <div className="relative w-16 h-16 rounded-2xl bg-emerald-500/12 border border-emerald-500/30 grid place-items-center">
             <Icon name="check" className="w-9 h-9 text-emerald-300" />
           </div>
+        </div>
           <h2 className="text-2xl font-bold text-white">Berhasil dirapikan! 🎉</h2>
           <p className="text-sm text-gray-400 mt-1.5">
             {applyState.moved} file dipindahkan ke <code className="text-indigo-300/90">{result.organizeFolder}</code>
@@ -652,7 +660,7 @@ function TabBtn({ active, onClick, icon, label, count, sub, tone }: {
     <button
       onClick={onClick}
       className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-        active ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-white hover:bg-white/[0.06]'
+        active ? 'bg-white/[0.12] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]' : 'text-gray-400 hover:text-white hover:bg-white/[0.06]'
       }`}
     >
       <Icon name={icon} className="w-4 h-4" />

@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Icon from './Icon';
 import type { SortRule } from '@shared/types';
 
@@ -8,6 +9,12 @@ const OPERATIONS: Record<SortRule['operation'], string> = {
   ends: 'Akhiri dengan',
   regex: 'Regex',
 };
+
+/** Live validation helper: 'ok' | 'bad' for regex values, null when not needed. */
+function regexStatus(r: SortRule): 'ok' | 'bad' | null {
+  if (r.operation !== 'regex' || !r.value) return null;
+  try { new RegExp(r.value); return 'ok'; } catch { return 'bad'; }
+}
 
 /** Normalize a custom folder name; returns null if unusable. */
 function sanitizeFolder(input: string): string | null {
@@ -47,6 +54,7 @@ export default function RulesPanel({
 }) {
   const [draft, setDraft] = useState<SortRule[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (open) {
@@ -60,9 +68,13 @@ export default function RulesPanel({
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', onKey);
     document.body.style.overflow = 'hidden';
+    const frame = requestAnimationFrame(() => {
+      panelRef.current?.querySelector<HTMLInputElement>('input.font-mono')?.focus();
+    });
     return () => {
       document.removeEventListener('keydown', onKey);
       document.body.style.overflow = '';
+      cancelAnimationFrame(frame);
     };
   }, [open, onClose]);
 
@@ -104,10 +116,10 @@ export default function RulesPanel({
 
   const active = draft.filter(r => r.enabled).length;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 grid place-items-center p-4" role="dialog" aria-modal="true" aria-label="Aturan Sortir Kustom">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative card w-full max-w-2xl max-h-[88vh] flex flex-col border-white/15 animate-scale-in">
+      <div className="relative card w-full max-w-2xl max-h-[88vh] flex flex-col border-white/15 animate-scale-in" ref={panelRef}>
         {/* Header */}
         <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-white/10">
           <div className="flex items-center gap-3">
@@ -154,7 +166,7 @@ export default function RulesPanel({
                   >
                     <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${r.enabled ? 'left-[18px]' : 'left-0.5'}`} />
                   </button>
-                  <span className="text-xs text-gray-500 w-5 tabular-nums shrink-0">{i + 1}</span>
+                  <span className={`w-6 h-6 rounded-full grid place-items-center text-[11px] font-semibold tabular-nums shrink-0 border ${i === draft.length - 1 ? 'bg-indigo-500/15 text-indigo-300 border-indigo-500/25' : 'bg-white/[0.04] text-gray-400 border-white/10'}`}>{i + 1}</span>
                   <input
                     className="input !py-1.5 !px-2.5 text-xs flex-1 min-w-0"
                     placeholder="Nama label (opsional, untuk kejelasan)"
@@ -191,7 +203,15 @@ export default function RulesPanel({
                     </select>
                   </label>
                   <label className="sm:col-span-2">
-                    <span className="text-gray-500 block mb-1">Pola{r.operation === 'regex' ? ' (regex)' : ''}</span>
+                    <span className="text-gray-500 block mb-1">
+                      Pola{r.operation === 'regex' ? ' (regex)' : ''}
+                      {regexStatus(r) === 'ok' && (
+                        <span className="ml-2 text-[10px] font-medium text-emerald-400">✓ valid</span>
+                      )}
+                      {regexStatus(r) === 'bad' && (
+                        <span className="ml-2 text-[10px] font-medium text-rose-400">✗ regex tidak valid</span>
+                      )}
+                    </span>
                     <input
                       className="input !py-1.5 !px-2.5 font-mono"
                       placeholder={r.operation === 'regex' ? 'cth: ^IMG_\\d+' : 'cth: draft'}
@@ -229,7 +249,7 @@ export default function RulesPanel({
             );
           })}
 
-          <button className="btn-secondary w-full !py-2.5 text-sm" onClick={() => setDraft(prev => [...prev, newRule()])}>
+          <button className="btn-secondary w-full !py-2.5 text-sm !border-dashed !bg-transparent hover:!bg-white/[0.04]" onClick={() => setDraft(prev => [...prev, newRule()])}>
             <Icon name="settings" className="w-4 h-4" /> Tambah Aturan
           </button>
         </div>
@@ -246,6 +266,7 @@ export default function RulesPanel({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

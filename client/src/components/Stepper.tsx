@@ -24,9 +24,9 @@ export default function Stepper({ steps, current }: { steps: Step[]; current: nu
                   <div
                     className={`relative w-10 h-10 rounded-full grid place-items-center border transition-all duration-300 ${
                       state === 'done'
-                        ? 'bg-gradient-to-br from-indigo-500 to-fuchsia-500 border-transparent text-white shadow-lg shadow-fuchsia-500/25'
+                        ? 'bg-gradient-to-br from-indigo-500 to-fuchsia-500 border-transparent text-white shadow-lg shadow-fuchsia-500/35 ring-2 ring-white/20 ring-offset-2 ring-offset-transparent'
                         : state === 'active'
-                          ? 'bg-white/[0.08] border-indigo-400/60 text-white ring-4 ring-indigo-500/15'
+                          ? 'bg-white/[0.09] border-indigo-400/70 text-indigo-200 ring-4 ring-indigo-500/20 shadow-[0_0_18px_-4px_rgba(99,102,241,0.6)]'
                           : 'bg-white/[0.03] border-white/10 text-gray-500'
                     }`}
                   >

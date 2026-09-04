@@ -58,7 +58,9 @@ export default function HistoryView() {
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
         <div>
           <div className="eyebrow mb-1.5">Jejak pemindahan</div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">Riwayat Sortir</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+            <span className="text-gradient">Riwayat Sortir</span>
+          </h1>
           <p className="text-sm text-gray-400 mt-1.5">
             Lihat aktivitas pemindahan dan kembalikan (undo) jika diperlukan.
           </p>

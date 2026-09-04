@@ -15,14 +15,16 @@ body {
   font-family: 'Inter', ui-sans-serif, system-ui, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.5;
   background:
-    radial-gradient(1100px 700px at 100% -10%, rgba(99, 102, 241, 0.14), transparent 60%),
-    radial-gradient(900px 620px at -10% 115%, rgba(217, 70, 239, 0.11), transparent 55%),
-    radial-gradient(720px 480px at 50% -5%, rgba(56, 189, 248, 0.05), transparent 60%),
+    radial-gradient(1200px 780px at 88% -12%, rgba(99, 102, 241, 0.16), transparent 62%),
+    radial-gradient(980px 700px at -14% 112%, rgba(217, 70, 239, 0.12), transparent 58%),
+    radial-gradient(760px 500px at 55% -18%, rgba(56, 189, 248, 0.06), transparent 60%),
+    radial-gradient(1500px 1000px at 50% 125%, rgba(12, 12, 24, 0.92), transparent 72%),
     #07070e;
   background-attachment: fixed;
   color: #e7e7ee;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  overscroll-behavior-y: none;
 }
 
 ::selection {
@@ -33,56 +35,95 @@ body {
 @layer components {
   .card {
     @apply relative bg-white/[0.035] border border-white/10 rounded-2xl;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 12px 32px -20px rgba(0, 0, 0, 0.75);
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012) 48%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.07),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.012),
+      0 12px 32px -20px rgba(0, 0, 0, 0.8);
   }
   .card-hover {
-    @apply transition-all duration-200 hover:bg-white/[0.06] hover:border-white/20;
+    @apply transition-all duration-200 hover:bg-white/[0.055] hover:border-white/20;
   }
   .card-hover:hover {
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 16px 40px -20px rgba(0, 0, 0, 0.8);
-    transform: translateY(-1px);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.02),
+      0 18px 44px -22px rgba(0, 0, 0, 0.9),
+      0 0 0 1px rgba(129, 140, 248, 0.08);
+    transform: translateY(-2px);
   }
   .btn {
     @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#07070e] disabled:opacity-45 disabled:cursor-not-allowed disabled:pointer-events-none;
   }
+  .btn:not(:disabled):active { transform: translateY(1px); }
   .btn-primary {
     @apply btn text-white;
     background-image: linear-gradient(135deg, #6366f1, #8b5cf6 55%, #d946ef);
-    box-shadow: 0 10px 26px -12px rgba(139, 92, 246, 0.6);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.28),
+      inset 0 -8px 16px -10px rgba(31, 6, 67, 0.55),
+      0 10px 28px -12px rgba(139, 92, 246, 0.65);
   }
-  .btn-primary:hover { filter: brightness(1.08); }
+  .btn-primary:hover:not(:disabled) {
+    filter: brightness(1.09);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      inset 0 -8px 16px -10px rgba(31, 6, 67, 0.55),
+      0 14px 34px -12px rgba(139, 92, 246, 0.8);
+  }
   .btn-secondary {
     @apply btn bg-white/[0.07] text-gray-200 border border-white/10;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
   }
-  .btn-secondary:hover { @apply bg-white/[0.12] border-white/20 text-white; }
+  .btn-secondary:hover:not(:disabled) { @apply bg-white/[0.11] border-white/20 text-white; }
   .btn-ghost {
     @apply btn text-gray-400;
   }
-  .btn-ghost:hover { @apply bg-white/[0.06] text-white; }
+  .btn-ghost:hover:not(:disabled) { @apply bg-white/[0.06] text-white; }
   .btn-danger {
     @apply btn text-white bg-rose-500/90;
-    box-shadow: 0 10px 26px -12px rgba(244, 63, 94, 0.55);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 10px 26px -12px rgba(244, 63, 94, 0.55);
   }
-  .btn-danger:hover { @apply bg-rose-500; }
+  .btn-danger:hover:not(:disabled) { @apply bg-rose-500; }
   .input-field {
-    @apply w-full bg-white/[0.05] border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-400/50 focus:border-transparent transition;
+    @apply w-full bg-white/[0.055] border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-gray-500 transition focus:outline-none focus:ring-2 focus:ring-indigo-400/50 focus:border-transparent hover:border-white/20;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), inset 0 -1px 0 rgba(0, 0, 0, 0.25);
   }
   .input {
     @apply input-field;
   }
   .chip {
     @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium leading-5 whitespace-nowrap;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
   }
   .eyebrow {
     @apply text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-500;
   }
 }
 
+/* Gradient text helper */
+.text-gradient {
+  background-image: linear-gradient(120deg, #c7d2fe 0%, #a5b4fc 45%, #e879f9 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Native selects: replace the OS arrow with a themed chevron */
+select.input {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23999fb0' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.8rem center;
+  padding-right: 2.4rem;
+}
+
 /* ---------- Scrollbar ---------- */
-*::-webkit-scrollbar { width: 9px; height: 9px; }
+*::-webkit-scrollbar { width: 8px; height: 8px; }
 *::-webkit-scrollbar-track { background: transparent; }
-*::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.13); border-radius: 9999px; border: 2px solid transparent; background-clip: content-box; }
-*::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.24); background-clip: content-box; }
+*::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 9999px; border: 2px solid transparent; background-clip: content-box; }
+*::-webkit-scrollbar-thumb:hover { background: rgba(129, 140, 248, 0.4); background-clip: content-box; }
 
 /* ---------- Loaders ---------- */
 .skeleton {
@@ -108,8 +149,8 @@ body {
 
 /* ---------- Page animations ---------- */
 @keyframes fade-in {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 .animate-fade-in {
   animation: fade-in 0.35s ease-out both;

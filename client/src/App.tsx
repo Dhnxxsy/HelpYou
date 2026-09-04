@@ -31,14 +31,15 @@ function Header({ tab, onTab }: { tab: Tab; onTab: (t: Tab) => void }) {
         {/* Brand */}
         <div className="flex items-center gap-3">
           <div className="relative">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 grid place-items-center text-white shadow-lg shadow-indigo-500/30">
+            <span className="absolute inset-0 rounded-xl bg-gradient-to-br from-indigo-500/60 to-fuchsia-500/60 blur-lg" />
+            <div className="relative w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 grid place-items-center text-white shadow-lg shadow-indigo-500/30">
               <Icon name="sparkle" className="w-5 h-5" />
             </div>
             <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-[#07070e]" title="Berjalan lokal" />
           </div>
           <div className="leading-tight">
             <div className="font-bold text-[15px] tracking-tight text-white">File Organizer</div>
-            <div className="text-[11px] text-gray-500">Organizer File Lokal</div>
+            <div className="text-[11px] text-gray-500">Studio File Lokal</div>
           </div>
         </div>
 
@@ -86,7 +87,7 @@ function Footer() {
           <Icon name="shield" className="w-3.5 h-3.5" />
           File Organizer — berjalan 100% lokal. Data tidak pernah meninggalkan perangkat Anda.
         </span>
-        <span className="hidden sm:block">Versi 1.0.0</span>
+        <span className="hidden sm:block">Versi 1.0.1</span>
       </div>
     </footer>
   );

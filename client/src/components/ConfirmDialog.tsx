@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import Icon, { type IconName } from './Icon';
 
 export default function ConfirmDialog({
@@ -40,7 +41,7 @@ export default function ConfirmDialog({
   const isDanger = tone === 'danger';
   const ackColor = isDanger ? 'bg-rose-500/90 hover:bg-rose-500 text-white' : 'btn-primary';
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 grid place-items-center p-4" role="dialog" aria-modal="true" aria-label={title}>
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
       <div className="relative card p-6 w-full max-w-md border-white/15 animate-scale-in">
@@ -58,6 +59,7 @@ export default function ConfirmDialog({
           <button className={ackColor} onClick={onConfirm}>{confirmLabel}</button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
