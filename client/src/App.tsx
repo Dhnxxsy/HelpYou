@@ -101,7 +101,7 @@ function Footer() {
           <Icon name="shield" className="w-3.5 h-3.5" />
           HelpYou — berjalan 100% lokal. Data tidak pernah meninggalkan perangkat Anda.
         </span>
-        <span className="hidden sm:block">Versi 1.0.11</span>
+        <span className="hidden sm:block">Versi 1.0.12</span>
       </div>
     </footer>
   );
