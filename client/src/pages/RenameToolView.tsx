@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Icon from '../components/Icon';
+import PageHeader from '../components/PageHeader';
 import FolderPicker from '../components/FolderPicker';
 import { api } from '../lib/api';
 import { formatBytes } from '../lib/format';
@@ -128,22 +129,19 @@ export default function RenameToolView({ onBack }: { onBack: () => void }) {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-white flex items-center gap-2.5">
-            <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-fuchsia-500 to-indigo-600 grid place-items-center shadow-lg shadow-fuchsia-500/25">
-              <Icon name="rename" className="w-5 h-5 text-white" />
-            </span>
-            Ganti Nama Massal
-          </h1>
-          <p className="text-sm text-gray-400 mt-1.5 max-w-xl">
-            Rename banyak file sekaligus dengan pola — cari & ganti, awalan/akhiran, atau penomoran. Nama asli tidak ditimpa.
-          </p>
-        </div>
-        <div className="chip bg-fuchsia-500/10 text-fuchsia-300 border-fuchsia-500/20">
-          {changedCount} perubahan tertunda
-        </div>
-      </div>
+      <PageHeader
+        icon="rename"
+        accent="from-fuchsia-500 to-indigo-600"
+        glow="shadow-fuchsia-500/30"
+        title="Ganti Nama Massal"
+        desc="Rename banyak file sekaligus dengan pola — cari & ganti, awalan/akhiran, atau penomoran. Nama asli tidak ditimpa."
+        onBack={onBack}
+        actions={
+          <div className="chip bg-fuchsia-500/10 text-fuchsia-300 border-fuchsia-500/20">
+            {changedCount} perubahan tertunda
+          </div>
+        }
+      />
 
       {error && <p className="text-sm text-rose-400 flex items-center gap-1.5"><Icon name="alert" className="w-4 h-4 shrink-0" />{error}</p>}
 

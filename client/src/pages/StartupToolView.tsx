@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import Icon from '../components/Icon';
+import PageHeader from '../components/PageHeader';
 import ConfirmDialog from '../components/ConfirmDialog';
 import AppIcon from '../components/AppIcon';
 import { api } from '../lib/api';
@@ -140,22 +141,19 @@ export default function StartupToolView({ onBack }: { onBack: () => void }) {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-white flex items-center gap-2.5">
-            <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 grid place-items-center shadow-lg shadow-cyan-500/25">
-              <Icon name="gauge" className="w-5 h-5 text-white" />
-            </span>
-            Pengelola Startup
-          </h1>
-          <p className="text-sm text-gray-400 mt-1.5 max-w-xl">
-            Kelola program yang berjalan otomatis saat Windows menyala. Nonaktifkan atau hapus item yang tidak diperlukan.
-          </p>
-        </div>
-        <button className="btn-ghost !py-2 !px-3 text-xs" onClick={load} disabled={loading}>
-          <Icon name="replay" className="w-4 h-4" /> Muat Ulang
-        </button>
-      </div>
+      <PageHeader
+        icon="gauge"
+        accent="from-cyan-500 to-blue-600"
+        glow="shadow-cyan-500/30"
+        title="Pengelola Startup"
+        desc="Kelola program yang berjalan otomatis saat Windows menyala. Nonaktifkan atau hapus item yang tidak diperlukan."
+        onBack={onBack}
+        actions={
+          <button className="btn-outline !py-2 !px-3 text-xs" onClick={load} disabled={loading}>
+            <Icon name="replay" className="w-4 h-4" /> Muat Ulang
+          </button>
+        }
+      />
 
       <div className="grid sm:grid-cols-3 gap-3">
         <div className="card px-4 py-3">

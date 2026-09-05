@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import Icon from '../components/Icon';
+import PageHeader from '../components/PageHeader';
 import { api } from '../lib/api';
 import { formatBytes } from '../lib/format';
 import type { RecycleItem, RecycleListResult } from '@shared/types';
@@ -57,27 +58,24 @@ export default function RecycleBinView({ onBack }: { onBack: () => void }) {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-white flex items-center gap-2.5">
-            <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 grid place-items-center shadow-lg shadow-emerald-500/25">
-              <Icon name="recycle" className="w-5 h-5 text-white" />
-            </span>
-            Tempat Sampah
-          </h1>
-          <p className="text-sm text-gray-400 mt-1.5 max-w-xl">
-            Pulihkan file/folder yang terhapus, atau kosongkan isi Tempat Sampah semuanya.
-          </p>
-        </div>
-        <div className="flex gap-2">
-<button className="btn-ghost !py-2 !px-3 text-xs" onClick={() => load(false)} disabled={loading || refreshing || !!busy}>
-          <Icon name="replay" className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} /> {refreshing ? 'Menyegarkan…' : 'Muat Ulang'}
-        </button>
-          <button className="btn-danger !py-2 !px-3 text-xs" onClick={empty} disabled={!data?.count || !!busy}>
-            <Icon name="trash" className="w-4 h-4" /> Kosongkan
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        icon="recycle"
+        accent="from-emerald-500 to-teal-600"
+        glow="shadow-emerald-500/30"
+        title="Tempat Sampah"
+        desc="Pulihkan file/folder yang terhapus, atau kosongkan isi Tempat Sampah semuanya."
+        onBack={onBack}
+        actions={
+          <>
+            <button className="btn-ghost !py-2 !px-3 text-xs" onClick={() => load(false)} disabled={loading || refreshing || !!busy}>
+              <Icon name="replay" className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} /> {refreshing ? 'Menyegarkan…' : 'Muat Ulang'}
+            </button>
+            <button className="btn-danger !py-2 !px-3 text-xs" onClick={empty} disabled={!data?.count || !!busy}>
+              <Icon name="trash" className="w-4 h-4" /> Kosongkan
+            </button>
+          </>
+        }
+      />
 
       {error && <p className="text-sm text-rose-400 flex items-center gap-1.5"><Icon name="alert" className="w-4 h-4 shrink-0" />{error}</p>}
 

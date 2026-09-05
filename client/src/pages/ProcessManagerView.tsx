@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Icon from '../components/Icon';
+import PageHeader from '../components/PageHeader';
 import { api } from '../lib/api';
 import { formatBytes } from '../lib/format';
 import type { ProcessInfo } from '@shared/types';
@@ -58,22 +59,19 @@ export default function ProcessManagerView({ onBack }: { onBack: () => void }) {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-white flex items-center gap-2.5">
-            <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 grid place-items-center shadow-lg shadow-cyan-500/25">
-              <Icon name="activity" className="w-5 h-5 text-white" />
-            </span>
-            Pengelola Proses
-          </h1>
-          <p className="text-sm text-gray-400 mt-1.5 max-w-xl">
-            Lihat program yang sedang berjalan dan pemakaian memorinya, lalu hentikan proses yang macet.
-          </p>
-        </div>
-        <button className="btn-ghost !py-2 !px-3 text-xs" onClick={() => load(false)} disabled={loading || refreshing}>
-          <Icon name="replay" className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} /> {refreshing ? 'Menyegarkan…' : 'Muat Ulang'}
-        </button>
-      </div>
+      <PageHeader
+        icon="activity"
+        accent="from-cyan-500 to-blue-600"
+        glow="shadow-cyan-500/30"
+        title="Pengelola Proses"
+        desc="Lihat program yang sedang berjalan dan pemakaian memorinya, lalu hentikan proses yang macet."
+        onBack={onBack}
+        actions={
+          <button className="btn-outline !py-2 !px-3 text-xs" onClick={() => load(false)} disabled={loading || refreshing}>
+            <Icon name="replay" className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} /> {refreshing ? 'Menyegarkan…' : 'Muat Ulang'}
+          </button>
+        }
+      />
 
       {error && <p className="text-sm text-rose-400 flex items-center gap-1.5"><Icon name="alert" className="w-4 h-4 shrink-0" />{error}</p>}
 

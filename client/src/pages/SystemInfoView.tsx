@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import Icon, { type IconName } from '../components/Icon';
+import PageHeader from '../components/PageHeader';
 import { api } from '../lib/api';
 import { formatBytes } from '../lib/format';
 import type { SystemInfoReport } from '@shared/types';
@@ -44,27 +45,24 @@ export default function SystemInfoView({ onBack }: { onBack: () => void }) {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-white flex items-center gap-2.5">
-            <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 grid place-items-center shadow-lg shadow-amber-500/25">
-              <Icon name="cpu" className="w-5 h-5 text-white" />
-            </span>
-            Info & Laporan Sistem
-          </h1>
-          <p className="text-sm text-gray-400 mt-1.5 max-w-xl">
-            Ringkasan perangkat keras, sistem operasi, memori, dan setiap drive — untuk memahami kondisi PC-mu.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <button className="btn-ghost !py-2 !px-3 text-xs" onClick={load} disabled={loading}>
-            <Icon name="replay" className="w-4 h-4" /> Muat Ulang
-          </button>
-          <button className="btn-primary !py-2 !px-3 text-xs" onClick={copySummary} disabled={!report}>
-            <Icon name="duplicate" className="w-4 h-4" /> Salin Ringkasan
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        icon="cpu"
+        accent="from-amber-500 to-orange-600"
+        glow="shadow-amber-500/30"
+        title="Info & Laporan Sistem"
+        desc="Ringkasan perangkat keras, sistem operasi, memori, dan setiap drive — untuk memahami kondisi PC-mu."
+        onBack={onBack}
+        actions={
+          <>
+            <button className="btn-ghost !py-2 !px-3 text-xs" onClick={load} disabled={loading}>
+              <Icon name="replay" className="w-4 h-4" /> Muat Ulang
+            </button>
+            <button className="btn-primary !py-2 !px-3 text-xs" onClick={copySummary} disabled={!report}>
+              <Icon name="duplicate" className="w-4 h-4" /> Salin Ringkasan
+            </button>
+          </>
+        }
+      />
 
       {error && <p className="text-sm text-rose-400 flex items-center gap-1.5"><Icon name="alert" className="w-4 h-4 shrink-0" />{error}</p>}
 

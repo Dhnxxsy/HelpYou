@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import Icon from '../components/Icon';
+import PageHeader from '../components/PageHeader';
 import { api } from '../lib/api';
 import { useDrives } from '../lib/useDrives';
 import { formatBytes } from '../lib/format';
@@ -105,17 +106,14 @@ export default function DiskAnalyzerView({ onBack }: { onBack: () => void }) {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-xl font-bold text-white flex items-center gap-2.5">
-          <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-500 grid place-items-center shadow-lg shadow-violet-500/25">
-            <Icon name="disc" className="w-5 h-5 text-white" />
-          </span>
-          Analisis Ruang Disk
-        </h1>
-        <p className="text-sm text-gray-400 mt-1.5 max-w-xl">
-          Lihat apa yang memakan ruang di drive atau folder. Klik folder terbesar untuk menyusuri lebih dalam.
-        </p>
-      </div>
+      <PageHeader
+        icon="disc"
+        accent="from-violet-500 to-indigo-500"
+        glow="shadow-violet-500/30"
+        title="Analisis Ruang Disk"
+        desc="Lihat apa yang memakan ruang di drive atau folder. Klik folder terbesar untuk menyusuri lebih dalam."
+        onBack={onBack}
+      />
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
         {drives.filter((d) => d.size > 0).map((d) => {

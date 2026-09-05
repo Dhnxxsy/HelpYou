@@ -40,7 +40,8 @@ export type IconName =
   | 'network'
   | 'rename'
   | 'recycle'
-  | 'activity';
+  | 'activity'
+  | 'arrowLeft';
 
 const FILLED: IconName[] = ['trash'];
 
@@ -136,6 +137,7 @@ const P: Record<IconName, ReactNode> = {
     <path d="M21 13v1a4 4 0 0 1-4 4H3" />
   </>,
   activity: <path d="M22 12h-4l-3 9L9 3l-3 9H2" />,
+  arrowLeft: <><path d="M19 12H5" /><path d="M11 18l-6-6 6-6" /></>,
 };
 
 export default function Icon({ name, className = 'w-4 h-4' }: { name: IconName; className?: string }) {

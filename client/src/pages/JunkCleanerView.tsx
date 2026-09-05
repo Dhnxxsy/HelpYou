@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import Icon from '../components/Icon';
+import PageHeader from '../components/PageHeader';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { api } from '../lib/api';
 import { formatBytes } from '../lib/format';
@@ -101,22 +102,19 @@ export default function JunkCleanerView({ onBack }: { onBack: () => void }) {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-white flex items-center gap-2.5">
-            <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 grid place-items-center shadow-lg shadow-emerald-500/25">
-              <Icon name="broom" className="w-5 h-5 text-white" />
-            </span>
-            Pembersih File Sampah
-          </h1>
-          <p className="text-sm text-gray-400 mt-1.5 max-w-xl">
-            Bersihkan temp, cache, dan file sementara dengan aman. File yang sedang dipakai otomatis dilewati.
-          </p>
-        </div>
-        <button className="btn-primary" onClick={runScan} disabled={phase === 'scanning' || cleaning}>
-          <Icon name="replay" className="w-4 h-4" /> {phase === 'scanning' ? 'Memindai…' : 'Pindai Ulang'}
-        </button>
-      </div>
+      <PageHeader
+        icon="broom"
+        accent="from-emerald-500 to-teal-500"
+        glow="shadow-emerald-500/30"
+        title="Pembersih File Sampah"
+        desc="Bersihkan temp, cache, dan file sementara dengan aman. File yang sedang dipakai otomatis dilewati."
+        onBack={onBack}
+        actions={
+          <button className="btn-primary" onClick={runScan} disabled={phase === 'scanning' || cleaning}>
+            <Icon name="replay" className="w-4 h-4" /> {phase === 'scanning' ? 'Memindai…' : 'Pindai Ulang'}
+          </button>
+        }
+      />
 
       {error && (
         <p className="text-sm text-rose-400 flex items-center gap-1.5"><Icon name="alert" className="w-4 h-4 shrink-0" />{error}</p>

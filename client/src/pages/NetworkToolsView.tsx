@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Icon, { type IconName } from '../components/Icon';
+import PageHeader from '../components/PageHeader';
 import { api } from '../lib/api';
 import type { DnsRow, PingRow, PortRow, TraceHop } from '@shared/types';
 
@@ -76,19 +77,14 @@ export default function NetworkToolsView({ onBack }: { onBack: () => void }) {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-white flex items-center gap-2.5">
-            <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 grid place-items-center shadow-lg shadow-sky-500/25">
-              <Icon name="network" className="w-5 h-5 text-white" />
-            </span>
-            Alat Jaringan
-          </h1>
-          <p className="text-sm text-gray-400 mt-1.5 max-w-xl">
-            Ping, traceroute, cek DNS, dan pindai port untuk mendiagnosis koneksi.
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        icon="network"
+        accent="from-sky-500 to-indigo-600"
+        glow="shadow-sky-500/30"
+        title="Alat Jaringan"
+        desc="Ping, traceroute, cek DNS, dan pindai port untuk mendiagnosis koneksi."
+        onBack={onBack}
+      />
 
       {error && <p className="text-sm text-rose-400 flex items-center gap-1.5"><Icon name="alert" className="w-4 h-4 shrink-0" />{error}</p>}
 

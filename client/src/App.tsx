@@ -51,12 +51,16 @@ export default function App() {
 
 function Header({ onTool }: { onTool: (t: Tool) => void }) {
   return (
-    <header className="sticky z-30 border-b border-white/10 bg-[#07070e]/75 backdrop-blur-xl" style={{ top: isDesktop ? 40 : 0 }}>
+    <header
+      className="sticky z-30 border-b border-white/10 bg-[#07070e]/75 backdrop-blur-xl"
+      style={{ top: isDesktop ? 40 : 0 }}
+    >
+      <div className="h-px w-full bg-gradient-to-r from-transparent via-indigo-500/60 to-transparent" aria-hidden="true" />
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center gap-3">
         {/* Brand */}
         <button className="flex items-center gap-3 group" onClick={() => onTool('home')} title="Ke Beranda">
           <div className="relative">
-            <span className="absolute inset-0 rounded-xl bg-gradient-to-br from-indigo-500/60 to-fuchsia-500/60 blur-lg" />
+            <span className="absolute inset-0 rounded-xl bg-gradient-to-br from-indigo-500/60 to-fuchsia-500/60 blur-lg transition-opacity group-hover:opacity-100 opacity-80" />
             <div className="relative w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 grid place-items-center text-white shadow-lg shadow-indigo-500/30 group-hover:scale-105 transition-transform">
               <Icon name="sparkle" className="w-5 h-5" />
             </div>
@@ -69,11 +73,8 @@ function Header({ onTool }: { onTool: (t: Tool) => void }) {
         </button>
 
         <div className="ml-auto flex items-center gap-2 text-xs text-gray-400">
-          <span className="chip bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 hidden sm:inline-flex">
-            <span className="relative flex w-1.5 h-1.5">
-              <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping-slow" />
-              <span className="relative inline-flex rounded-full w-1.5 h-1.5 bg-emerald-400" />
-            </span>
+          <span className="chip bg-emerald-500/10 text-emerald-300 border-emerald-500/20 hidden sm:inline-flex">
+            <Icon name="lock" className="w-3 h-3" />
             100% Lokal
           </span>
         </div>
@@ -95,13 +96,19 @@ function ToolFallback() {
 
 function Footer() {
   return (
-    <footer className="border-t border-white/10 py-5">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-3 text-xs text-gray-600">
+    <footer className="border-t border-white/10 py-6">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-600">
         <span className="flex items-center gap-1.5">
-          <Icon name="shield" className="w-3.5 h-3.5" />
-          HelpYou ??? berjalan 100% lokal. Data tidak pernah meninggalkan perangkat Anda.
+          <Icon name="shield" className="w-3.5 h-3.5 text-indigo-400/70" />
+          HelpYou berjalan 100% lokal. Data tidak pernah meninggalkan perangkat Anda.
         </span>
-        <span className="hidden sm:block">Versi 1.0.17</span>
+        <span className="flex items-center gap-3">
+          <span className="hidden md:inline-flex items-center gap-1.5">
+            <Icon name="sparkle" className="w-3.5 h-3.5 text-fuchsia-400/70" />
+            Tanpa iklan, tanpa telemetri
+          </span>
+          <span className="chip bg-white/[0.04] text-gray-500">Versi 1.0.18</span>
+        </span>
       </div>
     </footer>
   );
