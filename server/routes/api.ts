@@ -406,6 +406,7 @@ api.get('/uninstaller/runs/:id', (req: Request, res: Response) => {
     exitCode: run.exitCode,
     error: run.error || null,
     asAdmin: !!run.asAdmin,
+    verified: typeof run.verified === 'boolean' ? run.verified : undefined,
   });
 });
 

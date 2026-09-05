@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import { parseCommandLine, toUninstallCommand, expandEnv, residueRoots, residueKind, isSelfPath } from '../server/organizer/uninstaller.js';
+import { parseCommandLine, toUninstallCommand, expandEnv, residueRoots, residueKind, isSelfPath, winQuoteArg, isSuccessExitCode } from '../server/organizer/uninstaller.js';
 import type { InstalledApp } from '../shared/types.js';
 
 describe('parseCommandLine', () => {
@@ -65,6 +65,34 @@ describe('toUninstallCommand', () => {
     const out = toUninstallCommand(parsed!, true);
     const qnCount = out.args.filter((a) => a === '/qn').length;
     expect(qnCount).toBe(1);
+  });
+});
+
+describe('winQuoteArg', () => {
+  it('leaves plain args untouched', () => {
+    expect(winQuoteArg('/SILENT')).toBe('/SILENT');
+    expect(winQuoteArg('app.exe')).toBe('app.exe');
+  });
+  it('quotes args containing spaces', () => {
+    expect(winQuoteArg('C:\\Program Files\\App\\a b\\file.exe')).toBe('"C:\\Program Files\\App\\a b\\file.exe"');
+  });
+  it('escapes embedded double quotes', () => {
+    expect(winQuoteArg('a"b')).toBe('"a""b"');
+  });
+});
+
+describe('isSuccessExitCode', () => {
+  it('treats success/reboot/already-gone codes as good', () => {
+    expect(isSuccessExitCode(null)).toBe(true);
+    expect(isSuccessExitCode(0)).toBe(true);
+    expect(isSuccessExitCode(3010)).toBe(true);
+    expect(isSuccessExitCode(1641)).toBe(true);
+    expect(isSuccessExitCode(1605)).toBe(true);
+  });
+  it('flags failure codes', () => {
+    expect(isSuccessExitCode(1602)).toBe(false);
+    expect(isSuccessExitCode(1)).toBe(false);
+    expect(isSuccessExitCode(-1073741510)).toBe(false);
   });
 });
 

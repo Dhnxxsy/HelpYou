@@ -173,6 +173,8 @@ export function createUninstallRun(app: InstalledApp): AppUninstallRun {
     launched: false,
     finished: false,
     exitCode: null,
+    appKey: app.key,
+    appHkcu: !!app.hkcu,
   };
   runs.set(run.id, run);
   return run;
@@ -184,6 +186,84 @@ function finishRun(run: AppUninstallRun, exitCode: number | null, error?: string
   if (error) run.error = error;
 }
 
+/** Quote a single command-line argument for the Windows C runtime. */
+export function winQuoteArg(a: string): string {
+  const s = String(a || '');
+  if (/[\s"]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+  return s;
+}
+
+/** True when an uninstaller exit code means the app was removed (or nothing to remove). */
+export function isSuccessExitCode(code: number | null): boolean {
+  if (code === null) return true;
+  // 0, 3010/1641 = reboot required, 1605 = already uninstalled
+  return [0, 3010, 1641, 1605].includes(code);
+}
+
+/** Launch the uninstaller through Windows Shell (Start-Process → ShellExecute),
+ *  exactly like Control Panel's Apps & Features: UAC auto-elevation for
+ *  machine-wide installers works, and the installer's own UI is shown. */
+function launchViaShell(run: AppUninstallRun, command: string, args: string[], asAdmin: boolean): void {
+  const argLine = args.map(winQuoteArg).join(' ');
+  const verb = asAdmin ? ' -Verb RunAs' : '';
+  const script =
+    `$ErrorActionPreference='Stop'\n` +
+    `$cmd=${psQuote(command)}\n` +
+    `$argLine=${psQuote(argLine)}\n` +
+    `try {\n` +
+    `  $p = Start-Process -FilePath $cmd -ArgumentList $argLine -Wait -PassThru${verb}\n` +
+    `  Write-Output ('EXIT:' + $p.ExitCode)\n` +
+    `} catch {\n` +
+    `  if ($_.Exception.Message -match 'cancel') { Write-Output 'CANCELED' }\n` +
+    `  else { Write-Output ('ERR:' + $_.Exception.Message) }\n` +
+    `}\n`;
+
+  const ps = spawn('powershell.exe', ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-Command', script], {
+    windowsHide: true,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  run.launched = true;
+  run.asAdmin = !!asAdmin;
+  let out = '';
+  let errOut = '';
+  ps.stdout.on('data', (d) => { out += d.toString('utf8'); });
+  ps.stderr.on('data', (d) => { errOut += d.toString('utf8'); });
+
+  const finish = (exitCode: number | null, error?: string) => {
+    if (run.finished) return;
+    finishRun(run, exitCode, error);
+  };
+
+  ps.on('error', (e: any) => {
+    finish(null, e?.message || 'Gagal memulai uninstaller.');
+  });
+  ps.on('close', async () => {
+    const line = (out.trim() || errOut.trim()).split(/\r?\n/).pop()?.trim() || '';
+    if (line.startsWith('CANCELED')) {
+      finish(null, 'Izin administrator (UAC) dibatalkan.');
+    } else if (line.startsWith('ERR:')) {
+      finish(null, line.slice(4));
+    } else if (line.startsWith('EXIT:')) {
+      const exitCode = line.length > 5 ? Number(line.slice(5)) : null;
+      if (exitCode === null || Number.isNaN(exitCode)) finish(null);
+      else finish(exitCode);
+      if (!run.error && isSuccessExitCode(exitCode)) {
+        try {
+          const fresh = await listInstalledApps(true);
+          const still = fresh.some((a) => a.key === run.appKey && a.hkcu === run.appHkcu);
+          run.verified = !still;
+        } catch {
+          run.verified = undefined;
+        }
+      } else {
+        run.verified = false;
+      }
+    } else {
+      finish(ps.exitCode);
+    }
+  });
+}
+
 export function launchUninstall(run: AppUninstallRun, app: InstalledApp, silent: boolean): Promise<void> {
   return new Promise((resolve) => {
     const built = buildUninstallCommand(app, silent);
@@ -191,25 +271,12 @@ export function launchUninstall(run: AppUninstallRun, app: InstalledApp, silent:
       finishRun(run, null, 'Springer uninstall tidak ditemukan untuk aplikasi ini.');
       return resolve();
     }
-    const { command, args } = built;
-    const child = spawn(command, args, {
-      detached: true,
-      stdio: 'ignore',
-      windowsHide: false,
-    });
-    run.launched = true;
-    child.on('error', (e: any) => {
-      finishRun(run, null, e?.code === 'ENOENT' ? 'File uninstaller tidak ditemukan.' : (e?.message || 'Gagal menjalankan uninstaller.'));
-    });
-    child.on('exit', (code) => {
-      finishRun(run, code);
-    });
-    child.unref();
+    launchViaShell(run, built.command, built.args, false);
     resolve();
   });
 }
 
-/** Run the uninstaller elevated via a UAC prompt (shell-backed, waits for exit). */
+/** Run the uninstaller elevated via a UAC prompt (for machine-wide apps). */
 export function launchUninstallAsAdmin(run: AppUninstallRun, app: InstalledApp, silent: boolean): Promise<void> {
   return new Promise((resolve) => {
     const built = buildUninstallCommand(app, silent);
@@ -217,25 +284,7 @@ export function launchUninstallAsAdmin(run: AppUninstallRun, app: InstalledApp, 
       finishRun(run, null, 'Springer uninstall tidak ditemukan untuk aplikasi ini.');
       return resolve();
     }
-    const { command, args } = built;
-    const argList = args.map(psQuote).join(', ');
-    const script =
-      `$ErrorActionPreference='Stop'\n` +
-      `$cmd=${psQuote(command)}\n` +
-      `$args=@(${argList})\n` +
-      `Start-Process -FilePath $cmd -ArgumentList $args -Verb RunAs -Wait\n`;
-    const ps = spawn('powershell.exe', ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-Command', script], {
-      windowsHide: true,
-      stdio: 'ignore',
-    });
-    run.asAdmin = true;
-    run.launched = true;
-    ps.on('error', (e: any) => {
-      finishRun(run, null, e?.message || 'Gagal memulai uninstaller (admin).');
-    });
-    ps.on('exit', (code) => {
-      finishRun(run, code);
-    });
+    launchViaShell(run, built.command, built.args, true);
     resolve();
   });
 }

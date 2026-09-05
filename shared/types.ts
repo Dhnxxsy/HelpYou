@@ -187,6 +187,11 @@ export interface AppUninstallRun {
   exitCode: number | null;
   error?: string;
   asAdmin?: boolean;
+  /** true when the app no longer appears in the registry after the run */
+  verified?: boolean;
+  /** registry key / hkcu of the app being uninstalled (for re-check) */
+  appKey?: string;
+  appHkcu?: boolean;
 }
 
 export interface ResidueEntry {

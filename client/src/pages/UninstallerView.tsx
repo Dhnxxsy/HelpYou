@@ -378,6 +378,7 @@ interface RunInfo {
   exitCode: number | null;
   error: string | null;
   asAdmin: boolean;
+  verified?: boolean;
 }
 
 function RunModal({ app, initialSilent, onClose, onResidue, onChanged }: {
@@ -435,8 +436,8 @@ function RunModal({ app, initialSilent, onClose, onResidue, onChanged }: {
   }, []);
 
   const running = info && !info.finished;
-  const success = info?.finished && (info.exitCode === 0 || info.exitCode === null || info.exitCode === 3010);
-  // 3010 = ERROR_SUCCESS_REBOOT_REQUIRED
+  const success = info?.finished && (info.exitCode === 0 || info.exitCode === null || info.exitCode === 3010 || info.exitCode === 1641 || info.exitCode === 1605);
+  // 0 = ok, 3010/1641 = reboot required, 1605 = already uninstalled
 
   return (
     <ModalShell icon="trash" tone="violet" title={`Uninstall ${app.name}`} onClose={onClose}>
@@ -477,11 +478,13 @@ function RunModal({ app, initialSilent, onClose, onResidue, onChanged }: {
 
       {info?.finished && (
         <div className="space-y-4">
-          <div className={`rounded-xl border p-4 flex items-start gap-3 text-sm ${success ? 'border-emerald-500/25 bg-emerald-500/10 text-emerald-200' : 'border-amber-500/25 bg-amber-500/10 text-amber-200'}`}>
-            <Icon name={success ? 'check' : 'info'} className="w-4 h-4 mt-0.5 shrink-0" />
+          <div className={`rounded-xl border p-4 flex items-start gap-3 text-sm ${success && info.verified !== false ? 'border-emerald-500/25 bg-emerald-500/10 text-emerald-200' : 'border-amber-500/25 bg-amber-500/10 text-amber-200'}`}>
+            <Icon name={success && info.verified !== false ? 'check' : 'info'} className="w-4 h-4 mt-0.5 shrink-0" />
             <div>
-              {success ? (
-                <><b>Uninstall selesai.</b> Klik di bawah untuk memeriksa sisa file dan membersihkannya sampai akar.</>
+              {success && info.verified !== false ? (
+                <><b>Uninstall selesai{info.verified === true ? ' — program sudah tidak terdaftar di sistem' : ''}.</b> Klik di bawah untuk memeriksa sisa file dan membersihkannya sampai akar.</>
+              ) : success && info.verified === false ? (
+                <><b>Uninstaller selesai, tapi program masih terdaftar di sistem.</b> Uninstall mungkin perlu izin administrator, atau masih ada langkah yang harus diselesaikan di wizard-nya. Klik "Coba dengan Administrator" atau uninstall manual via Settings → Apps.</>
               ) : (
                 <><b>Uninstaller selesai dengan kode {info.exitCode}.</b> Program mungkin belum terhapus sepenuhnya — periksa residu untuk memastikan.</>
               )}
