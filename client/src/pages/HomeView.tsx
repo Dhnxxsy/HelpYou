@@ -1,6 +1,6 @@
 import Icon, { type IconName } from '../components/Icon';
 
-export type ToolId = 'organizer' | 'uninstaller' | 'junk' | 'disk' | 'startup' | 'system' | 'rename' | 'recycle' | 'process' | 'network' | 'notepad';
+export type ToolId = 'organizer' | 'uninstaller' | 'junk' | 'disk' | 'startup' | 'system' | 'rename' | 'recycle' | 'notepad' | 'vault';
 
 interface ActiveTool {
   icon: IconName;
@@ -86,30 +86,21 @@ const ACTIVE_TOOLS: ActiveTool[] = [
     chip: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
   },
   {
-    icon: 'activity',
-    title: 'Pengelola Proses',
-    desc: 'Pantau program yang berjalan dan pemakaian memorinya, lalu hentikan proses yang macet atau berat.',
-    tool: 'process',
-    accent: 'from-cyan-500 to-blue-600',
-    glow: 'shadow-cyan-500/20',
-    chip: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
-  },
-  {
-    icon: 'network',
-    title: 'Alat Jaringan',
-    desc: 'Ping, traceroute, cek DNS, dan pindai port untuk mendiagnosis koneksi internetmu dengan cepat.',
-    tool: 'network',
-    accent: 'from-sky-500 to-indigo-600',
-    glow: 'shadow-sky-500/20',
-    chip: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
-  },
-  {
     icon: 'fileText',
     title: 'Notepad',
     desc: 'Catat ide dan catatan penting dengan editor nyaman: auto-save, format teks, cari & ganti, dan ekspor ke file.',
     tool: 'notepad',
     accent: 'from-amber-400 to-orange-600',
     glow: 'shadow-amber-500/20',
+    chip: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
+  },
+  {
+    icon: 'lock',
+    title: 'Brankas Rahasia',
+    desc: 'Sembunyikan file atau folder dengan enkripsi AES-256-GCM berkata sandi. Nama file ikut terenkripsi dan aslinya dihapus aman.',
+    tool: 'vault',
+    accent: 'from-violet-500 to-purple-600',
+    glow: 'shadow-violet-500/20',
     chip: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
   },
 ];

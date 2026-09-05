@@ -3,6 +3,9 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('electron', {
   platform: process.platform,
   pickFolder: () => ipcRenderer.invoke('pickFolder'),
+  vault: {
+    pickFiles: () => ipcRenderer.invoke('vault:pickFiles'),
+  },
   notes: {
     openFile: () => ipcRenderer.invoke('notes:openFile'),
     saveFile: (name, content) => ipcRenderer.invoke('notes:saveFile', name, content),

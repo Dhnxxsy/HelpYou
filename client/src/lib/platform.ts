@@ -44,6 +44,9 @@ export interface NotesSaveResult {
 export interface ElectronAPI {
   platform: string;
   pickFolder: () => Promise<string | null>;
+  vault: {
+    pickFiles: () => Promise<string[] | null>;
+  };
   openExternal: (url: string) => Promise<void>;
   notes: {
     openFile: () => Promise<NotesOpenResult | null>;
@@ -72,6 +75,11 @@ export const isDesktop = typeof window !== 'undefined' && !!window.electron;
 export async function pickFolder(): Promise<string | null> {
   if (!isDesktop || !window.electron) return null;
   return window.electron.pickFolder();
+}
+
+export async function pickVaultFiles(): Promise<string[] | null> {
+  if (!isDesktop || !window.electron) return null;
+  return window.electron.vault.pickFiles();
 }
 
 export async function checkForUpdate(): Promise<UpdateCheckResult | null> {

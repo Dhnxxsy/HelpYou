@@ -194,6 +194,15 @@ function registerIpc() {
     if (res.canceled || res.filePaths.length === 0) return null;
     return res.filePaths[0];
   });
+  ipcMain.handle('vault:pickFiles', async () => {
+    if (!mainWindow) return null;
+    const res = await dialog.showOpenDialog(mainWindow, {
+      title: 'Pilih File untuk Disembunyikan',
+      properties: ['openFile', 'multiSelections', 'showHiddenFiles'],
+    });
+    if (res.canceled || res.filePaths.length === 0) return null;
+    return res.filePaths;
+  });
   ipcMain.handle('shell:openExternal', async (_event, url) => {
     if (typeof url === 'string' && /^https?:\/\//.test(url)) await shell.openExternal(url);
   });

@@ -13,9 +13,8 @@ const StartupToolView = lazy(() => import('./pages/StartupToolView'));
 const SystemInfoView = lazy(() => import('./pages/SystemInfoView'));
 const RenameToolView = lazy(() => import('./pages/RenameToolView'));
 const RecycleBinView = lazy(() => import('./pages/RecycleBinView'));
-const ProcessManagerView = lazy(() => import('./pages/ProcessManagerView'));
-const NetworkToolsView = lazy(() => import('./pages/NetworkToolsView'));
 const NotepadView = lazy(() => import('./pages/NotepadView'));
+const VaultView = lazy(() => import('./pages/VaultView'));
 
 type Tool = 'home' | ToolId;
 
@@ -40,9 +39,8 @@ export default function App() {
             {tool === 'system' && <SystemInfoView onBack={() => setTool('home')} />}
             {tool === 'rename' && <RenameToolView onBack={() => setTool('home')} />}
             {tool === 'recycle' && <RecycleBinView onBack={() => setTool('home')} />}
-            {tool === 'process' && <ProcessManagerView onBack={() => setTool('home')} />}
-            {tool === 'network' && <NetworkToolsView onBack={() => setTool('home')} />}
             {tool === 'notepad' && <NotepadView onBack={() => setTool('home')} />}
+            {tool === 'vault' && <VaultView onBack={() => setTool('home')} />}
           </Suspense>
         )}
       </main>
@@ -102,7 +100,7 @@ function Footer() {
             <Icon name="sparkle" className="w-3.5 h-3.5 text-fuchsia-400/70" />
             Tanpa iklan, tanpa telemetri
           </span>
-          <span className="chip bg-white/[0.04] text-gray-500">Versi 1.0.20</span>
+          <span className="chip bg-white/[0.04] text-gray-500">Versi 1.0.21</span>
         </span>
       </div>
     </footer>

@@ -31,6 +31,7 @@ import { listProcesses, killProcess } from '../organizer/process-manager.js';
 import { pingHost, traceHost, dnsLookup, scanPorts } from '../organizer/network-tools.js';
 import type { DiskScanResult, StartupItem } from '../../shared/types.js';
 import { listNotes, getNote, createNote, updateNote, deleteNote } from '../organizer/notepad.js';
+import { listVaultItems, hideItems, unhideItem, deleteVaultItem } from '../organizer/vault.js';
 
 export const api = Router();
 
@@ -877,6 +878,53 @@ api.delete('/notes/:id', (req: Request, res: Response) => {
   try {
     const ok = deleteNote(req.params.id);
     if (!ok) return res.status(404).json({ error: 'Catatan tidak ditemukan' });
+    res.json({ ok: true });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+/* ---------------- Secret vault (encrypted locker) tool ---------------- */
+
+// GET /api/vault/list
+api.get('/vault/list', (_req: Request, res: Response) => {
+  try {
+    res.json({ items: listVaultItems() });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /api/vault/hide  body: { password, items: string[] }
+api.post('/vault/hide', async (req: Request, res: Response) => {
+  try {
+    const password = String(req.body?.password || '');
+    const items = Array.isArray(req.body?.items) ? req.body.items.map((x: any) => String(x)) : [];
+    const result = await hideItems(password, items);
+    res.json(result);
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+// POST /api/vault/unhide  body: { id, password }
+api.post('/vault/unhide', (req: Request, res: Response) => {
+  try {
+    const id = String(req.body?.id || '');
+    const password = String(req.body?.password || '');
+    if (!id) return res.status(400).json({ error: 'id diperlukan' });
+    const result = unhideItem(id, password);
+    res.json(result);
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+// DELETE /api/vault/items/:id
+api.delete('/vault/items/:id', (req: Request, res: Response) => {
+  try {
+    const ok = deleteVaultItem(req.params.id);
+    if (!ok) return res.status(404).json({ error: 'Item tidak ditemukan' });
     res.json({ ok: true });
   } catch (e: any) {
     res.status(500).json({ error: e.message });

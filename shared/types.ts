@@ -408,3 +408,43 @@ export interface Note {
   createdAt: number;
   updatedAt: number;
 }
+
+/* ------------- Secret vault / encrypted locker tool ------------- */
+
+export interface VaultItemMeta {
+  /** vault id (also the folder name under the vault root) */
+  id: string;
+  type: 'file' | 'folder';
+  createdAt: number;
+  /** number of files inside */
+  count: number;
+  /** total plaintext bytes */
+  totalSize: number;
+}
+
+export interface VaultHideEntry {
+  path: string;
+  ok: boolean;
+  id?: string;
+  error?: string;
+}
+
+export interface VaultHideResult {
+  done: number;
+  failed: number;
+  entries: VaultHideEntry[];
+}
+
+export interface VaultUnhideLog {
+  ok: boolean;
+  from: string;
+  to: string;
+  error?: string;
+}
+
+export interface VaultUnhideResult {
+  ok: boolean;
+  restored: number;
+  failed: number;
+  logs: VaultUnhideLog[];
+}
