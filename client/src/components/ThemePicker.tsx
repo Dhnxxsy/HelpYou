@@ -37,7 +37,7 @@ export default function ThemePicker({ open, onClose }: { open: boolean; onClose:
               <p className="text-xs text-[var(--text-3)]">Pilih suasana HelpYou yang kamu suka.</p>
             </div>
           </div>
-          <button className="tool-btn !h-9 !w-9 rounded-lg" onClick={onClose} title="Tutup" aria-label="Tutup">
+          <button className="tool-btn !h-9 !w-9" onClick={onClose} title="Tutup" aria-label="Tutup">
             <Icon name="x" className="w-4 h-4" />
           </button>
         </div>

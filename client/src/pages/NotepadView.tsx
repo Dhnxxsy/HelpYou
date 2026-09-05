@@ -760,7 +760,7 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
                       {note.title}
                     </span>
                     <button
-                      className="hidden sm:grid w-6 h-6 place-items-center rounded-md text-[var(--text-3)] hover:text-[var(--danger-strong)] hover:bg-[var(--danger-soft)] shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="hidden sm:grid w-6 h-6 place-items-center rounded-xl text-[var(--text-3)] hover:text-[var(--danger-strong)] hover:bg-[var(--danger-soft)] shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
                       title="Hapus catatan"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -830,7 +830,7 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
                   }}
                 />
                 <button
-                  className={`w-9 h-9 grid place-items-center rounded-lg transition-colors ${
+                  className={`w-9 h-9 grid place-items-center rounded-xl transition-colors ${
                     currentNote?.pinned
                       ? 'bg-[var(--warn-soft)] text-[var(--warn-strong)]'
                       : 'text-[var(--text-3)] hover:bg-[var(--overlay)] hover:text-[var(--text)]'
@@ -841,7 +841,7 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
                   <Icon name={currentNote?.pinned ? 'pin' : 'pinOff'} className="w-[18px] h-[18px]" />
                 </button>
                 <button
-                  className={`w-9 h-9 grid place-items-center rounded-lg transition-colors ${
+                  className={`w-9 h-9 grid place-items-center rounded-xl transition-colors ${
                     findOpen ? 'bg-[var(--accent-soft)] text-[var(--accent-strong)]' : 'text-[var(--text-3)] hover:bg-[var(--overlay)] hover:text-[var(--text)]'
                   }`}
                   title="Cari & ganti (Ctrl+F)"

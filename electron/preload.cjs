@@ -25,6 +25,7 @@ contextBridge.exposeInMainWorld('electron', {
   },
   updates: {
     check: () => ipcRenderer.invoke('update:check'),
+    download: () => ipcRenderer.invoke('update:download'),
     install: () => ipcRenderer.invoke('update:install'),
     open: (url) => ipcRenderer.invoke('update:open', url),
     on: (channel, callback) => {
@@ -32,6 +33,7 @@ contextBridge.exposeInMainWorld('electron', {
         available: 'app-update-available',
         downloaded: 'app-update-downloaded',
         progress: 'app-update-progress',
+        error: 'app-update-error',
       };
       const event = map[channel];
       if (!event) return () => {};

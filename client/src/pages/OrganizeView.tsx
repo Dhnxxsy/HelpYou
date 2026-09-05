@@ -659,7 +659,7 @@ function TabBtn({ active, onClick, icon, label, count, sub, tone }: {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+      className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
         active ? 'bg-[var(--overlay-2)] text-[var(--text)] shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]' : 'text-[var(--text-2)] hover:text-[var(--text)] hover:bg-[var(--overlay)]'
       }`}
     >

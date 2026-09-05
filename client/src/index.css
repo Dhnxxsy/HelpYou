@@ -440,9 +440,8 @@ body::after {
   }
 
   /* ---------- Buttons ---------- */
-  .btn {
-    @apply inline-flex items-center justify-center gap-2 h-9 px-4 rounded-[10px] font-medium text-[13px] whitespace-nowrap select-none transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)] disabled:opacity-45 disabled:cursor-not-allowed disabled:pointer-events-none active:translate-y-px;
-    color: var(--text);
+.btn {
+    @apply inline-flex items-center justify-center gap-2 h-9 px-4 rounded-full font-medium text-[13px] whitespace-nowrap select-none transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)] disabled:opacity-45 disabled:cursor-not-allowed disabled:pointer-events-none active:translate-y-px;
   }
   .btn-primary {
     background-image: linear-gradient(135deg, var(--accent-deep), var(--accent-2) 55%, var(--accent-2));
@@ -546,7 +545,7 @@ body::after {
 
   /* Compact square toolbar button (notepad etc.) */
   .tool-btn {
-    @apply inline-flex items-center justify-center gap-1.5 h-8 min-w-8 px-2 rounded-lg text-xs transition-colors select-none disabled:opacity-40 disabled:pointer-events-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] active:translate-y-px;
+    @apply inline-flex items-center justify-center gap-1.5 h-8 min-w-8 px-2 rounded-xl text-xs transition-colors select-none disabled:opacity-40 disabled:pointer-events-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] active:translate-y-px;
     color: var(--text-2);
   }
   .tool-btn:hover:not(:disabled) {

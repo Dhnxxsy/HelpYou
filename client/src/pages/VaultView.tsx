@@ -648,7 +648,7 @@ function PreviewModal({ item, unlocked, password, list, token, busy, error, onPa
                 {list.files.map((f, i) => (
                   <li key={i}>
                     <button
-                      className="w-full flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-left hover:bg-[var(--overlay)] text-xs text-[var(--text)]"
+                      className="w-full flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-left hover:bg-[var(--overlay)] text-xs text-[var(--text)]"
                       onClick={() => onPlay(i)}
                       disabled={busy}
                       title="Pratinjau"

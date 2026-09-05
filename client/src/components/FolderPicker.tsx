@@ -66,7 +66,7 @@ export default function FolderPicker({ value, onChange }: { value: string; onCha
         {isDesktop && (
           <button
             onClick={pickNative}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-[var(--border)] bg-[var(--overlay)] hover:bg-[var(--overlay-2)] text-[var(--text-2)] whitespace-nowrap transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border border-[var(--border)] bg-[var(--overlay)] hover:bg-[var(--overlay-2)] text-[var(--text-2)] whitespace-nowrap transition-colors"
           >
             <Icon name="folderOpen" className="w-3.5 h-3.5 text-[var(--accent-strong)]" />
             Pilih Folder
@@ -136,14 +136,14 @@ export default function FolderPicker({ value, onChange }: { value: string; onCha
         <div>
           <div className="text-[11px] uppercase tracking-wider text-[var(--text-3)] mb-2 font-semibold">Isi Folder</div>
           <div className="card max-h-72 overflow-y-auto p-2">
-            <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[var(--overlay)] text-sm text-[var(--text-2)]" onClick={() => openFolder(parentPath(current))}>
+            <button className="w-full flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-[var(--overlay)] text-sm text-[var(--text-2)]" onClick={() => openFolder(parentPath(current))}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M19 12H5M11 19l-7-7 7-7"/></svg>
               ..
             </button>
             {entries.filter(e => e.isEmpty !== undefined).map(e => (
               <button
                 key={e.path}
-                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-[var(--overlay)] text-sm text-left"
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-[var(--overlay)] text-sm text-left"
                 onClick={() => { onChange(e.path); setManual(e.path); openFolder(e.path); }}
               >
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#818cf8" strokeWidth="2"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>

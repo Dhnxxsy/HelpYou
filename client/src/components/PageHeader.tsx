@@ -23,7 +23,7 @@ export default function PageHeader({ icon, title, desc, onBack, actions }: PageH
                 onClick={onBack}
                 title="Kembali ke Beranda"
                 aria-label="Kembali ke Beranda"
-                className="w-8 h-8 grid place-items-center rounded-lg text-[var(--text-3)] hover:text-[var(--text)] hover:bg-[var(--overlay)] hover:scale-105 transition-all"
+                className="w-8 h-8 grid place-items-center rounded-xl text-[var(--text-3)] hover:text-[var(--text)] hover:bg-[var(--overlay)] hover:scale-105 transition-all"
               >
                 <Icon name="arrowLeft" className="w-4 h-4" />
               </button>

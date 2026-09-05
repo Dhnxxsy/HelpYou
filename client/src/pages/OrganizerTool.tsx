@@ -23,7 +23,7 @@ function SubBtn({ active, onClick, icon, label }: { active: boolean; onClick: ()
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+      className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-sm font-medium transition-all duration-200 ${
         active
           ? 'bg-gradient-to-r from-[var(--accent-deep)] to-[var(--accent-2)] text-white shadow-md shadow-[0_10px_30px_-10px_var(--accent-glow)]'
           : 'text-[var(--text-2)] hover:text-[var(--text)] hover:bg-[var(--overlay)]'

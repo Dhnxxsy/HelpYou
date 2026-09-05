@@ -34,20 +34,26 @@ function iconPath() {
 
 /* -------------------- Auto updater (electron-updater) -------------------- */
 
-autoUpdater.autoDownload = true;
+autoUpdater.autoDownload = false;
 autoUpdater.autoInstallOnAppQuit = true;
 
 let lastProgressAt = 0;
+let awaitingDownload = false;
 
 function sendToWindow(channel, payload) {
   if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send(channel, payload);
+}
+
+function updateSizeBytes(info) {
+  const n = Number(info?.files?.[0]?.size);
+  return Number.isFinite(n) && n > 0 ? n : null;
 }
 
 function initAutoUpdater() {
   autoUpdater.on('checking-for-update', () => logLine('updater checking'));
   autoUpdater.on('update-available', (info) => {
     logLine('updater available', info?.version);
-    sendToWindow('app-update-available', { version: info?.version });
+    sendToWindow('app-update-available', { version: info?.version, size: updateSizeBytes(info) });
   });
   autoUpdater.on('update-not-available', (info) => {
     logLine('updater not-available', info?.version);
@@ -65,9 +71,16 @@ function initAutoUpdater() {
   });
   autoUpdater.on('update-downloaded', (info) => {
     logLine('updater downloaded', info?.version);
+    awaitingDownload = false;
     sendToWindow('app-update-downloaded', { version: info?.version });
   });
-  autoUpdater.on('error', (e) => logLine('updater error', e?.message || e));
+  autoUpdater.on('error', (e) => {
+    logLine('updater error', e?.message || e);
+    if (awaitingDownload) {
+      awaitingDownload = false;
+      sendToWindow('app-update-error', { message: e?.message || 'Gagal mengunduh pembaruan.' });
+    }
+  });
 }
 
 function startUpdateCheck() {
@@ -173,10 +186,22 @@ function registerIpc() {
     try {
       const r = await autoUpdater.checkForUpdates();
       const version = r?.updateInfo?.version;
-      return { status: version ? (version !== app.getVersion() ? 'available' : 'uptodate') : 'uptodate', version };
+      const size = updateSizeBytes(r?.updateInfo);
+      return { status: version ? (version !== app.getVersion() ? 'available' : 'uptodate') : 'uptodate', version, size };
     } catch (e) {
       logLine('update check error', e?.message || e);
       return { status: 'error', message: 'Gagal memeriksa pembaruan.' };
+    }
+  });
+  ipcMain.handle('update:download', async () => {
+    try {
+      awaitingDownload = true;
+      await autoUpdater.downloadUpdate();
+      return { ok: true };
+    } catch (e) {
+      awaitingDownload = false;
+      logLine('update download error', e?.message || e);
+      return { ok: false, message: e?.message || 'Gagal mengunduh pembaruan.' };
     }
   });
   ipcMain.handle('update:install', async () => {

@@ -15,7 +15,13 @@ export interface ElectronWindowControls {
 export interface UpdateCheckResult {
   status: 'available' | 'uptodate' | 'error';
   version?: string;
+  size?: number;
   message?: string;
+}
+
+export interface UpdateAvailableData {
+  version?: string;
+  size?: number;
 }
 
 export interface UpdateProgressData {
@@ -27,6 +33,10 @@ export interface UpdateProgressData {
 
 export interface UpdateReadyData {
   version?: string;
+}
+
+export interface UpdateErrorData {
+  message?: string;
 }
 
 export interface NotesOpenResult {
@@ -55,11 +65,12 @@ export interface ElectronAPI {
   windowControls: ElectronWindowControls;
   updates: {
     check: () => Promise<UpdateCheckResult>;
+    download: () => Promise<{ ok: boolean; message?: string }>;
     install: () => Promise<void>;
     open: (url: string) => Promise<void>;
     on: (
-      channel: 'available' | 'downloaded' | 'progress',
-      cb: (data: UpdateProgressData | UpdateReadyData) => void
+      channel: 'available' | 'downloaded' | 'progress' | 'error',
+      cb: (data: UpdateAvailableData | UpdateProgressData | UpdateReadyData | UpdateErrorData) => void
     ) => () => void;
   };
 }
@@ -85,6 +96,11 @@ export async function pickVaultFiles(): Promise<string[] | null> {
 export async function checkForUpdate(): Promise<UpdateCheckResult | null> {
   if (!isDesktop || !window.electron) return null;
   return window.electron.updates.check();
+}
+
+export async function downloadUpdate(): Promise<{ ok: boolean; message?: string }> {
+  if (!isDesktop || !window.electron) return { ok: false, message: 'Perangkat tidak mendukung.' };
+  return window.electron.updates.download();
 }
 
 export async function installUpdate(): Promise<void> {
