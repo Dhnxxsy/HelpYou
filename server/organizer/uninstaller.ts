@@ -1,9 +1,12 @@
-import { spawn, execFile } from 'child_process';
+import { spawn } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 import { randomUUID } from 'crypto';
 import { homedir } from 'os';
 import type { InstalledApp, AppUninstallRun, ResidueEntry } from '../../shared/types.js';
+import { runPowerShell, psQuote } from '../utils/powershell.js';
+
+export { runPowerShell, psQuote };
 
 /* ------------------------------------------------------------------ */
 /* Installed-app enumeration (Windows registry via PowerShell)          */
@@ -45,39 +48,6 @@ $rows | ConvertTo-Json -Depth 2 -Compress
 const LIST_CACHE_TTL_MS = 30_000;
 
 let listCache: { at: number; apps: InstalledApp[] } | null = null;
-
-function runPowerShell(script: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const child = spawn('powershell.exe', [
-      '-NoProfile',
-      '-NonInteractive',
-      '-ExecutionPolicy',
-      'Bypass',
-      '-Command',
-      script,
-    ], {
-      windowsHide: true,
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
-    let out = '';
-    let errOut = '';
-    const killTimer = setTimeout(() => {
-      try { child.kill(); } catch {}
-      reject(new Error('Timeout membaca daftar aplikasi.'));
-    }, 25_000);
-    child.stdout.on('data', (d) => { out += d.toString('utf8'); });
-    child.stderr.on('data', (d) => { errOut += d.toString('utf8'); });
-    child.on('error', (e) => {
-      clearTimeout(killTimer);
-      reject(e);
-    });
-    child.on('close', (code) => {
-      clearTimeout(killTimer);
-      if (out.trim()) resolve(out.trim());
-      else reject(new Error((errOut && errOut.trim()) ? errOut.trim() : 'PowerShell keluar dengan kode ' + code));
-    });
-  });
-}
 
 export async function listInstalledApps(force = false): Promise<InstalledApp[]> {
   if (!force && listCache && Date.now() - listCache.at < LIST_CACHE_TTL_MS) {
@@ -248,11 +218,10 @@ export function launchUninstallAsAdmin(run: AppUninstallRun, app: InstalledApp, 
       return resolve();
     }
     const { command, args } = built;
-    const esc = (v: string) => "'" + String(v).replace(/'/g, "''") + "'";
-    const argList = args.map(esc).join(', ');
+    const argList = args.map(psQuote).join(', ');
     const script =
       `$ErrorActionPreference='Stop'\n` +
-      `$cmd=${esc(command)}\n` +
+      `$cmd=${psQuote(command)}\n` +
       `$args=@(${argList})\n` +
       `Start-Process -FilePath $cmd -ArgumentList $args -Verb RunAs -Wait\n`;
     const ps = spawn('powershell.exe', ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-Command', script], {
@@ -423,7 +392,7 @@ export async function deleteResidue(app: InstalledApp, paths: string[]): Promise
     return paths.map((p) => ({ path: p, ok: false, error: 'Item bukan residu (sudah dihapus atau tidak dikenali).' }));
   }
 
-  const list = targets.map((p) => "'" + p.replace(/'/g, "''") + "'").join(', ');
+  const list = targets.map(psQuote).join(', ');
   const script =
     `$ErrorActionPreference='Continue'\n` +
     `Add-Type -AssemblyName Microsoft.VisualBasic\n` +

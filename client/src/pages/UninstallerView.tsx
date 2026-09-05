@@ -2,17 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Icon, { type IconName } from '../components/Icon';
 import ConfirmDialog from '../components/ConfirmDialog';
+import AppIcon from '../components/AppIcon';
 import { formatBytes } from '../lib/format';
 import type { InstalledApp, ResidueEntry } from '@shared/types';
-
-const GRADIENTS = [
-  'from-indigo-500 to-fuchsia-500',
-  'from-violet-500 to-rose-500',
-  'from-sky-500 to-indigo-500',
-  'from-emerald-500 to-teal-500',
-  'from-amber-500 to-orange-500',
-  'from-rose-500 to-pink-500',
-];
 
 function kindLabel(kind: ResidueEntry['kind']): string {
   if (kind === 'folder') return 'Folder';
@@ -241,30 +233,6 @@ function StatsPill({ label, value }: { label: string; value: string }) {
   );
 }
 
-function AppIcon({ app, index, iconUrl }: { app: InstalledApp; index: number; iconUrl?: string }) {
-  const [iconFailed, setIconFailed] = useState(false);
-  if (iconUrl && !iconFailed) {
-    return (
-      <div className="w-10 h-10 rounded-xl bg-white/[0.07] border border-white/10 grid place-items-center overflow-hidden shrink-0 select-none">
-        <img
-          src={iconUrl}
-          alt=""
-          className="w-full h-full object-contain"
-          draggable={false}
-          loading="lazy"
-          onError={() => setIconFailed(true)}
-        />
-      </div>
-    );
-  }
-  const letter = (app.name.trim()[0] || '?').toUpperCase();
-  return (
-    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${GRADIENTS[index % GRADIENTS.length]} grid place-items-center text-white font-bold text-sm shadow-lg shrink-0 select-none`}>
-      {letter}
-    </div>
-  );
-}
-
 function AppRow({ app, index, expanded, onToggle, onUninstall, onResidue }: {
   app: InstalledApp;
   index: number;
@@ -277,7 +245,7 @@ function AppRow({ app, index, expanded, onToggle, onUninstall, onResidue }: {
   return (
     <div className="row">
       <div className="flex items-center gap-3 px-4 py-3">
-        <AppIcon app={app} index={index} iconUrl={app.displayIcon ? '/api/uninstaller/icon?path=' + encodeURIComponent(app.displayIcon) : undefined} />
+        <AppIcon name={app.name} index={index} iconUrl={app.displayIcon ? '/api/uninstaller/icon?path=' + encodeURIComponent(app.displayIcon) : undefined} />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 min-w-0">
             <span className="text-sm font-semibold text-white truncate">{app.name}</span>

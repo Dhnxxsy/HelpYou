@@ -21,6 +21,10 @@ import {
 } from '../organizer/uninstaller.js';
 import type { InstalledApp } from '../../shared/types.js';
 import { extractIconRaw, warmIcons } from '../organizer/icons.js';
+import { scanJunk, cleanJunk, cleanJunkElevated } from '../organizer/disk-cleaner.js';
+import { analyzeDirectory } from '../organizer/space-analyzer.js';
+import { listStartupItems, setStartupItemEnabled, deleteStartupItem } from '../organizer/startup-manager.js';
+import type { DiskScanResult, StartupItem } from '../../shared/types.js';
 
 export const api = Router();
 
@@ -451,4 +455,183 @@ api.post('/uninstaller/icons', async (req: Request, res: Response) => {
   const paths = Array.isArray(req.body?.paths) ? req.body.paths.map((p: any) => String(p)) : [];
   const cached = await warmIcons(paths);
   res.json({ paths: paths.length, cached });
+});
+
+/* ---------------- Junk cleaner tool ---------------- */
+
+// GET /api/cleaner/scan  — scan whitelisted junk locations (sizes + counts)
+api.get('/cleaner/scan', async (_req: Request, res: Response) => {
+  try {
+    const result = await scanJunk();
+    res.json({ result });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /api/cleaner/clean  body: { targetIds }  (non-elevated targets)
+api.post('/cleaner/clean', async (req: Request, res: Response) => {
+  try {
+    const targetIds = Array.isArray(req.body?.targetIds) ? req.body.targetIds.map((x: any) => String(x)) : [];
+    if (targetIds.length === 0) return res.status(400).json({ error: 'Pilih lokasi sampah terlebih dahulu.' });
+    const results = await cleanJunk(targetIds);
+    res.json({ results });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /api/cleaner/clean/admin  body: { targetIds }  — elevated cleanup for admin targets
+api.post('/cleaner/clean/admin', async (req: Request, res: Response) => {
+  try {
+    const targetIds = Array.isArray(req.body?.targetIds) ? req.body.targetIds.map((x: any) => String(x)) : [];
+    if (targetIds.length === 0) return res.status(400).json({ error: 'Pilih lokasi sampah terlebih dahulu.' });
+    const results = await cleanJunkElevated(targetIds);
+    res.json({ results });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+/* ---------------- Disk space analyzer tool ---------------- */
+
+interface DiskJob {
+  status: 'running' | 'done' | 'error' | 'cancelled';
+  progress: number;
+  message: string;
+  result?: DiskScanResult;
+  error?: string;
+}
+const diskJobs = new Map<string, DiskJob>();
+
+// POST /api/disk/analyze  body: { path }
+api.post('/disk/analyze', (req: Request, res: Response) => {
+  try {
+    const root = String(req.body?.path || '');
+    if (!root) return res.status(400).json({ error: 'path required' });
+    const jobId = randomUUID();
+    const job: DiskJob = { status: 'running', progress: 0, message: 'Menyiapkan pemindaian…' };
+    diskJobs.set(jobId, job);
+    (async () => {
+      try {
+        const result = await analyzeDirectory(root, {
+          onProgress: (scanned, current) => {
+            const j = diskJobs.get(jobId);
+            if (j && j.status === 'running') {
+              j.progress = scanned;
+              j.message = `Memindai file: ${path.basename(current)}`;
+            }
+          },
+          shouldCancel: () => diskJobs.get(jobId)?.status === 'cancelled',
+        });
+        const j = diskJobs.get(jobId);
+        if (j && j.status === 'cancelled') {
+          diskJobs.delete(jobId);
+          return;
+        }
+        diskJobs.set(jobId, { ...job, status: 'done', progress: 1, message: 'Selesai', result });
+      } catch (e: any) {
+        diskJobs.set(jobId, { status: 'error', progress: 0, message: '', error: e.message });
+      }
+    })();
+    res.json({ jobId });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// GET /api/disk/analyze/:id
+api.get('/disk/analyze/:id', (req: Request, res: Response) => {
+  const job = diskJobs.get(req.params.id);
+  if (!job) return res.status(404).json({ error: 'not found' });
+  if (job.status === 'running') {
+    res.json({ status: 'running', progress: job.progress, message: job.message });
+  } else if (job.status === 'done') {
+    res.json({ status: 'done', result: job.result });
+  } else {
+    res.json({ status: 'error', error: job.error });
+  }
+});
+
+// POST /api/disk/analyze/:id/cancel
+api.post('/disk/analyze/:id/cancel', (req: Request, res: Response) => {
+  const job = diskJobs.get(req.params.id);
+  if (!job) return res.status(404).json({ error: 'not found' });
+  if (job.status === 'running') job.status = 'cancelled';
+  res.json({ ok: true });
+});
+
+/* ---------------- Startup manager tool ---------------- */
+
+const RUN_KEY_PREFIXES = [
+  'HKCU:\\software\\microsoft\\windows\\currentversion\\run',
+  'HKLM:\\software\\microsoft\\windows\\currentversion\\run',
+  'HKLM:\\software\\wow6432node\\microsoft\\windows\\currentversion\\run',
+];
+
+function toStartupItem(body: any): StartupItem | null {
+  if (!body || typeof body !== 'object') return null;
+  const type = String(body.type || '');
+  if (type !== 'registry' && type !== 'file') return null;
+  const name = String(body.name || '');
+  if (!name) return null;
+  if (type === 'registry') {
+    const hive = String(body.hive || '');
+    const registryPath = String(body.registryPath || '');
+    const valueName = String(body.valueName || '');
+    if (!registryPath || !valueName || !hive) return null;
+    const lower = registryPath.toLowerCase();
+    if (!RUN_KEY_PREFIXES.some((p) => lower === p || lower.startsWith(p + '\\'))) return null;
+  }
+  return {
+    id: String(body.id || ''),
+    type,
+    name,
+    command: String(body.command || ''),
+    location: String(body.location || ''),
+    hive: body.hive as StartupItem['hive'],
+    registryPath: body.registryPath ? String(body.registryPath) : undefined,
+    valueName: body.valueName ? String(body.valueName) : undefined,
+    filePath: body.filePath ? String(body.filePath) : undefined,
+    args: body.args ? String(body.args) : undefined,
+    admin: !!body.admin,
+    enabled: !!body.enabled,
+    exePath: body.exePath ? String(body.exePath) : undefined,
+    exists: typeof body.exists === 'boolean' ? body.exists : undefined,
+    folderPath: body.folderPath ? String(body.folderPath) : undefined,
+  };
+}
+
+// GET /api/startup/list
+api.get('/startup/list', async (_req: Request, res: Response) => {
+  try {
+    const items = await listStartupItems();
+    res.json({ items, count: items.length });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /api/startup/toggle  body: { item, enabled }
+api.post('/startup/toggle', async (req: Request, res: Response) => {
+  const item = toStartupItem(req.body?.item);
+  if (!item) return res.status(400).json({ error: 'item tidak valid' });
+  try {
+    const out = await setStartupItemEnabled(item, req.body?.enabled !== false);
+    res.json(out);
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /api/startup/delete  body: { item }
+api.post('/startup/delete', async (req: Request, res: Response) => {
+  const item = toStartupItem(req.body?.item);
+  if (!item) return res.status(400).json({ error: 'item tidak valid' });
+  try {
+    const out = await deleteStartupItem(item);
+    res.json(out);
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
 });

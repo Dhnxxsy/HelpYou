@@ -194,3 +194,99 @@ export interface ResidueEntry {
   kind: 'folder' | 'file' | 'shortcut' | 'executable';
   sizeBytes: number;
 }
+
+/* ------------- Junk cleaner tool ------------- */
+
+export type JunkScope = 'standard' | 'admin';
+
+export interface JunkTarget {
+  /** stable id used by the UI/API */
+  id: string;
+  /** UI label (Indonesian) */
+  label: string;
+  /** absolute path of the folder to clean */
+  path: string;
+  /** hint shown under the label */
+  note: string;
+  /** needs elevation to clean */
+  admin: boolean;
+  /** filled after scan */
+  sizeBytes: number;
+  itemCount: number;
+  exists: boolean;
+}
+
+export interface JunkScanResult {
+  targets: JunkTarget[];
+  totalBytes: number;
+  totalFiles: number;
+}
+
+export interface JunkCleanOutcome {
+  path: string;
+  ok: boolean;
+  removed: number;
+  freed: number;
+  errors: number;
+  error?: string;
+}
+
+/* ------------- Disk space analyzer tool ------------- */
+
+export interface DiskBranch {
+  path: string;
+  name: string;
+  kind: 'dir' | 'file';
+  sizeBytes: number;
+  itemCount: number;
+}
+
+export interface DiskFile {
+  path: string;
+  name: string;
+  sizeBytes: number;
+}
+
+export interface DiskScanResult {
+  root: string;
+  totalBytes: number;
+  totalFiles: number;
+  totalDirs: number;
+  truncated: boolean;
+  /** immediate children of root, big first */
+  branches: DiskBranch[];
+  /** top files by size inside the scanned area */
+  topFiles: DiskFile[];
+}
+
+/* ------------- Startup manager tool ------------- */
+
+export interface StartupItem {
+  /** stable id within a session (registry: '<hive>:<name>', file: 'file:<path>') */
+  id: string;
+  type: 'registry' | 'file';
+  name: string;
+  /** raw command (registry) or absolute file path (file item) */
+  command: string;
+  /** group label for the UI */
+  location: string;
+  /** registry hive (registry items only) */
+  hive?: 'HKCU' | 'HKLM' | 'HKLM32';
+  /** full registry value path, e.g. HKCU:\\Software\\...\\Run */
+  registryPath?: string;
+  /** value name (registry items only) */
+  valueName?: string;
+  /** absolute path of the shortcut/exe file (file items only) */
+  filePath?: string;
+  /** extra args/flags of the command, if any */
+  args?: string;
+  /** HKLM entries need elevation to change */
+  admin: boolean;
+  enabled: boolean;
+  /** resolved executable path (for icons / open-location) */
+  exePath?: string | null;
+  /** true when the exe target still exists on disk */
+  exists?: boolean;
+  /** parent folder to open for the "buka lokasi" action */
+  folderPath?: string;
+}

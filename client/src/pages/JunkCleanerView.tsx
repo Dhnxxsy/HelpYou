@@ -1,0 +1,232 @@
+import { useEffect, useMemo, useState } from 'react';
+import Icon from '../components/Icon';
+import ConfirmDialog from '../components/ConfirmDialog';
+import { api } from '../lib/api';
+import { formatBytes } from '../lib/format';
+import type { JunkTarget, JunkScanResult, JunkCleanOutcome } from '@shared/types';
+
+type Phase = 'idle' | 'scanning' | 'done';
+
+interface CleanSummary {
+  removed: number;
+  freed: number;
+  errors: number;
+  admin: boolean;
+  label: string;
+}
+
+export default function JunkCleanerView({ onBack }: { onBack: () => void }) {
+  const [phase, setPhase] = useState<Phase>('idle');
+  const [scan, setScan] = useState<JunkScanResult | null>(null);
+  const [error, setError] = useState('');
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [cleaning, setCleaning] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [summary, setSummary] = useState<CleanSummary | null>(null);
+
+  const runScan = async () => {
+    setError('');
+    setSummary(null);
+    setPhase('scanning');
+    try {
+      const res = await api<{ result: JunkScanResult }>('/api/cleaner/scan');
+      setScan(res.result);
+      setSelected(new Set(res.result.targets.filter((t) => t.exists && t.sizeBytes > 0).map((t) => t.id)));
+      setPhase('done');
+    } catch (e: any) {
+      setError(e.message || 'Gagal memindai.');
+      setPhase('idle');
+    }
+  };
+
+  useEffect(() => {
+    runScan();
+  }, []);
+
+  const hasAdminSelection = useMemo(
+    () => !!scan && [...selected].some((id) => scan.targets.find((t) => t.id === id)?.admin),
+    [scan, selected]
+  );
+
+  const toggle = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const doClean = async () => {
+    setConfirmOpen(false);
+    if (!scan || selected.size === 0) return;
+    setCleaning(true);
+    setError('');
+    try {
+      const targetMap = new Map(scan.targets.map((t) => [t.id, t]));
+      const standard = [...selected].filter((id) => !targetMap.get(id)?.admin);
+      const admin = [...selected].filter((id) => targetMap.get(id)?.admin);
+
+      const outcomes: JunkCleanOutcome[] = [];
+      if (standard.length > 0) {
+        const res = await api<{ results: JunkCleanOutcome[] }>('/api/cleaner/clean', {
+          method: 'POST',
+          body: JSON.stringify({ targetIds: standard }),
+        });
+        outcomes.push(...res.results);
+      }
+      if (admin.length > 0) {
+        const res = await api<{ results: JunkCleanOutcome[] }>('/api/cleaner/clean/admin', {
+          method: 'POST',
+          body: JSON.stringify({ targetIds: admin }),
+        });
+        outcomes.push(...res.results);
+      }
+
+      const removed = outcomes.reduce((s, r) => s + r.removed, 0);
+      const freed = outcomes.reduce((s, r) => s + r.freed, 0);
+      const errors = outcomes.reduce((s, r) => s + r.errors, 0);
+      const adminLabel = admin.length > 0 ? ' (lewat izin admin)' : '';
+      setSummary({ removed, freed, errors, admin: admin.length > 0, label: adminLabel });
+      await runScan();
+    } catch (e: any) {
+      setError(e.message || 'Gagal membersihkan.');
+    } finally {
+      setCleaning(false);
+    }
+  };
+
+  const totalSize = scan?.totalBytes || 0;
+  const itemCount = scan?.totalFiles || 0;
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-bold text-white flex items-center gap-2.5">
+            <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 grid place-items-center shadow-lg shadow-emerald-500/25">
+              <Icon name="broom" className="w-5 h-5 text-white" />
+            </span>
+            Pembersih File Sampah
+          </h1>
+          <p className="text-sm text-gray-400 mt-1.5 max-w-xl">
+            Bersihkan temp, cache, dan file sementara dengan aman. File yang sedang dipakai otomatis dilewati.
+          </p>
+        </div>
+        <button className="btn-primary" onClick={runScan} disabled={phase === 'scanning' || cleaning}>
+          <Icon name="replay" className="w-4 h-4" /> {phase === 'scanning' ? 'Memindai…' : 'Pindai Ulang'}
+        </button>
+      </div>
+
+      {error && (
+        <p className="text-sm text-rose-400 flex items-center gap-1.5"><Icon name="alert" className="w-4 h-4 shrink-0" />{error}</p>
+      )}
+
+      {phase === 'scanning' && (
+        <div className="card p-8 text-center">
+          <div className="animate-spin h-6 w-6 border-2 border-emerald-400/40 border-t-emerald-400 rounded-full mx-auto" />
+          <p className="text-sm text-gray-400 mt-3">Menganalisis lokasi sampah…</p>
+        </div>
+      )}
+
+      {phase === 'done' && scan && (
+        <>
+          <div className="grid sm:grid-cols-3 gap-3">
+            <div className="card px-4 py-3">
+              <div className="text-[10px] uppercase tracking-wider text-gray-500">Total Sampah</div>
+              <div className="text-lg font-semibold tabular-nums text-white mt-0.5">{formatBytes(totalSize)}</div>
+            </div>
+            <div className="card px-4 py-3">
+              <div className="text-[10px] uppercase tracking-wider text-gray-500">Item</div>
+              <div className="text-lg font-semibold tabular-nums text-white mt-0.5">{itemCount.toLocaleString('id-ID')}</div>
+            </div>
+            <div className="card px-4 py-3">
+              <div className="text-[10px] uppercase tracking-wider text-gray-500">Lokasi Terdeteksi</div>
+              <div className="text-lg font-semibold tabular-nums text-white mt-0.5">{scan.targets.filter((t) => t.exists).length}</div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-white/10 overflow-hidden bg-white/[0.02]">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
+              <span className="text-sm font-semibold text-white flex items-center gap-2">
+                <Icon name="box" className="w-4 h-4 text-emerald-300" /> Lokasi Sampah
+              </span>
+              <span className="text-[11px] text-gray-500">{selected.size} dipilih</span>
+            </div>
+            <div className="divide-y divide-white/5">
+              {scan.targets.map((t) => {
+                const checked = selected.has(t.id);
+                return (
+                  <button
+                    key={t.id}
+                    onClick={() => toggle(t.id)}
+                    disabled={!t.exists}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-white/[0.03] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <span className={`w-5 h-5 rounded-md border grid place-items-center shrink-0 transition-colors ${checked ? 'bg-emerald-500 border-emerald-500' : 'border-white/20'}`}>
+                      {checked && <Icon name="check" className="w-3.5 h-3.5 text-white" />}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="text-sm font-medium text-gray-200 flex items-center gap-2">
+                        {t.label}
+                        {t.admin && (
+                          <span className="chip bg-amber-500/10 text-amber-300 border border-amber-500/20 text-[10px]" title="Butuh izin administrator untuk membersihkan">
+                            <Icon name="lock" className="w-3 h-3" /> Admin
+                          </span>
+                        )}
+                      </span>
+                      <span className="block text-[11px] text-gray-500 truncate" title={t.path}>{t.note}</span>
+                    </span>
+                    <span className="text-right shrink-0">
+                      <span className="block text-sm font-semibold tabular-nums text-white">{formatBytes(t.sizeBytes)}</span>
+                      <span className="block text-[10px] text-gray-500 tabular-nums">{t.itemCount.toLocaleString('id-ID')} item</span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              className={hasAdminSelection ? 'btn-primary' : 'btn-primary'}
+              onClick={() => setConfirmOpen(true)}
+              disabled={cleaning || selected.size === 0}
+            >
+              <Icon name="broom" className="w-4 h-4" />
+              {cleaning ? 'Membersihkan…' : `Bersihkan ${selected.size} Lokasi${hasAdminSelection ? ' (butuh admin)' : ''}`}
+            </button>
+            <p className="text-[11px] text-gray-500">
+              File yang sedang dipakai Windows tidak akan bisa dihapus dan otomatis dilewati. Selalu aman.
+            </p>
+          </div>
+
+          {summary && (
+            <div className="card p-4 flex items-start gap-3 border-emerald-500/20">
+              <span className="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-300 grid place-items-center shrink-0"><Icon name="check" className="w-5 h-5" /></span>
+              <div className="text-sm">
+                <div className="text-white font-medium">Bersih total {formatBytes(summary.freed)} dari {summary.removed.toLocaleString('id-ID')} item{summary.admin ? ' (dengan izin admin)' : ''}.</div>
+                {summary.errors > 0 && <div className="text-gray-400 mt-1 text-xs">{summary.errors.toLocaleString('id-ID')} file masih dipakai/dikunci dan dilewati.</div>}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      <button className="btn-ghost !py-2 !px-3 text-xs" onClick={onBack}>
+        <Icon name="chevronRight" className="w-3.5 h-3.5 rotate-180" /> Kembali ke Beranda
+      </button>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        tone="danger"
+        icon="broom"
+        title="Bersihkan file sampah?"
+        description={`${selected.size} lokasi akan dibersihkan permanen (${formatBytes(totalSize)}). File yang sedang dipakai akan dilewati.${hasAdminSelection ? ' Lokasi admin memerlukan persetujuan UAC.' : ''}`}
+        confirmLabel="Ya, bersihkan"
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={doClean}
+      />
+    </div>
+  );
+}

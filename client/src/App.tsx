@@ -2,6 +2,9 @@ import { useState } from 'react';
 import HomeView, { type ToolId } from './pages/HomeView';
 import OrganizerTool from './pages/OrganizerTool';
 import UninstallerView from './pages/UninstallerView';
+import JunkCleanerView from './pages/JunkCleanerView';
+import DiskAnalyzerView from './pages/DiskAnalyzerView';
+import StartupToolView from './pages/StartupToolView';
 import Icon, { type IconName } from './components/Icon';
 import TitleBar from './components/TitleBar';
 import UpdateNotifier from './components/UpdateNotifier';
@@ -11,8 +14,11 @@ type Tool = 'home' | ToolId;
 
 const TOOLS: { id: Tool; icon: IconName; label: string }[] = [
   { id: 'home', icon: 'home', label: 'Beranda' },
-  { id: 'organizer', icon: 'organize', label: 'File Organizer' },
+  { id: 'organizer', icon: 'organize', label: 'Organizer' },
   { id: 'uninstaller', icon: 'trash', label: 'Uninstaller' },
+  { id: 'junk', icon: 'broom', label: 'Sampah' },
+  { id: 'disk', icon: 'disc', label: 'Ruang Disk' },
+  { id: 'startup', icon: 'gauge', label: 'Startup' },
 ];
 
 export default function App() {
@@ -27,6 +33,9 @@ export default function App() {
         {tool === 'home' && <HomeView onOpen={setTool} />}
         {tool === 'organizer' && <OrganizerTool />}
         {tool === 'uninstaller' && <UninstallerView onBack={() => setTool('home')} />}
+        {tool === 'junk' && <JunkCleanerView onBack={() => setTool('home')} />}
+        {tool === 'disk' && <DiskAnalyzerView onBack={() => setTool('home')} />}
+        {tool === 'startup' && <StartupToolView onBack={() => setTool('home')} />}
       </main>
       <Footer />
     </div>
@@ -92,7 +101,7 @@ function Footer() {
           <Icon name="shield" className="w-3.5 h-3.5" />
           HelpYou — berjalan 100% lokal. Data tidak pernah meninggalkan perangkat Anda.
         </span>
-        <span className="hidden sm:block">Versi 1.0.10</span>
+        <span className="hidden sm:block">Versi 1.0.11</span>
       </div>
     </footer>
   );

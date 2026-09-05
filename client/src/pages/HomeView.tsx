@@ -1,6 +1,6 @@
 import Icon, { type IconName } from '../components/Icon';
 
-export type ToolId = 'organizer' | 'uninstaller';
+export type ToolId = 'organizer' | 'uninstaller' | 'junk' | 'disk' | 'startup';
 
 interface ActiveTool {
   icon: IconName;
@@ -31,12 +31,33 @@ const ACTIVE_TOOLS: ActiveTool[] = [
     glow: 'shadow-violet-500/20',
     chip: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
   },
-];
-
-const UPCOMING_TOOLS: { icon: IconName; title: string; desc: string }[] = [
-  { icon: 'broom', title: 'Pembersih File Sampah', desc: 'Bersihkan cache, temp, dan file sementara dengan aman.' },
-  { icon: 'disc', title: 'Analisis Ruang Disk', desc: 'Petakan penggunaan penyimpanan drive secara visual.' },
-  { icon: 'gauge', title: 'Pengelola Startup', desc: 'Kelola aplikasi yang berjalan saat Windows menyala.' },
+  {
+    icon: 'broom',
+    title: 'Pembersih File Sampah',
+    desc: 'Bersihkan cache, temp, dan file sementara dengan aman. File yang dipakai Windows otomatis dilewati.',
+    tool: 'junk',
+    accent: 'from-emerald-500 to-teal-500',
+    glow: 'shadow-emerald-500/20',
+    chip: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
+  },
+  {
+    icon: 'disc',
+    title: 'Analisis Ruang Disk',
+    desc: 'Petakan pemakaian ruang drive secara visual dan temukan folder & file terbesar yang bisa diringkas.',
+    tool: 'disk',
+    accent: 'from-violet-500 to-indigo-500',
+    glow: 'shadow-violet-500/20',
+    chip: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
+  },
+  {
+    icon: 'gauge',
+    title: 'Pengelola Startup',
+    desc: 'Kelola aplikasi yang berjalan otomatis saat Windows menyala — nonaktifkan atau hapus yang tak dipakai.',
+    tool: 'startup',
+    accent: 'from-cyan-500 to-blue-600',
+    glow: 'shadow-cyan-500/20',
+    chip: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
+  },
 ];
 
 export default function HomeView({ onOpen }: { onOpen: (tool: ToolId) => void }) {
@@ -86,32 +107,6 @@ export default function HomeView({ onOpen }: { onOpen: (tool: ToolId) => void })
                 <p className="text-xs text-gray-400 mt-1.5 leading-relaxed">{t.desc}</p>
               </div>
             </button>
-          ))}
-        </div>
-      </section>
-
-      {/* Upcoming */}
-      <section>
-        <div className="flex items-center gap-2 mb-4">
-          <Icon name="sparkle" className="w-4 h-4 text-fuchsia-400" />
-          <h2 className="text-sm font-semibold text-white">Segera Hadir</h2>
-        </div>
-        <div className="grid sm:grid-cols-3 gap-3">
-          {UPCOMING_TOOLS.map((t) => (
-            <div key={t.title} className="card p-4 opacity-60 select-none">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white/[0.06] border border-white/10 grid place-items-center text-gray-400">
-                  <Icon name={t.icon} className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-gray-300 flex items-center gap-1.5">
-                    {t.title}
-                    <span className="chip bg-white/[0.06] text-gray-500 border border-white/10 text-[10px]">Segera</span>
-                  </div>
-                  <div className="text-[11px] text-gray-500 mt-0.5">{t.desc}</div>
-                </div>
-              </div>
-            </div>
           ))}
         </div>
       </section>

@@ -34,7 +34,8 @@ export type IconName =
   | 'grid'
   | 'chevronRight'
   | 'play'
-  | 'box';
+  | 'box'
+  | 'lock';
 
 const FILLED: IconName[] = ['trash'];
 
@@ -105,6 +106,10 @@ const P: Record<IconName, ReactNode> = {
   box: <>
     <path d="M21 8l-9-5-9 5v8l9 5 9-5V8z" />
     <path d="M3 8l9 5 9-5" />
+  </>,
+  lock: <>
+    <rect x="3" y="11" width="18" height="10" rx="2" />
+    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
   </>,
 };
 
