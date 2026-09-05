@@ -1,9 +1,9 @@
 {
   "name": "file-organizer",
-  "version": "1.0.9",
-  "description": "File Organizer — pengorganisir file lokal dengan pemindahan otomatis, deteksi duplikat, dan aturan sortir kustom.",
+  "version": "1.0.10",
+  "description": "HelpYou — suite tools lokal: pengorganisir file, uninstaller program, dan banyak lagi.",
   "author": {
-    "name": "File Organizer"
+    "name": "HelpYou"
   },
   "private": true,
   "type": "module",
@@ -50,8 +50,8 @@
     "vitest": "^2.1.8"
   },
   "build": {
-    "appId": "com.fileorganizer.app",
-    "productName": "File Organizer",
+    "appId": "com.dhnxxsy.helpyou.app",
+    "productName": "HelpYou",
     "asar": false,
     "files": [
       "dist/**",
@@ -75,8 +75,8 @@
         "runAfterFinish": false,
         "createDesktopShortcut": "always",
         "createStartMenuShortcut": true,
-        "shortcutName": "File Organizer",
-        "artifactName": "File-Organizer-Setup-${version}.${ext}"
+        "shortcutName": "HelpYou",
+        "artifactName": "HelpYou-Setup-${version}.${ext}"
     },
     "publish": [
       {

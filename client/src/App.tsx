@@ -12,7 +12,7 @@ type Tool = 'home' | ToolId;
 const TOOLS: { id: Tool; icon: IconName; label: string }[] = [
   { id: 'home', icon: 'home', label: 'Beranda' },
   { id: 'organizer', icon: 'organize', label: 'File Organizer' },
-  { id: 'uninstaller', icon: 'package', label: 'Uninstaller' },
+  { id: 'uninstaller', icon: 'trash', label: 'Uninstaller' },
 ];
 
 export default function App() {
@@ -47,8 +47,8 @@ function Header({ tool, onTool }: { tool: Tool; onTool: (t: Tool) => void }) {
             <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-[#07070e]" title="Berjalan lokal" />
           </div>
           <div className="leading-tight text-left">
-            <div className="font-bold text-[15px] tracking-tight text-white">File Organizer</div>
-            <div className="text-[11px] text-gray-500">Studio File Lokal</div>
+            <div className="font-bold text-[15px] tracking-tight text-white">HelpYou</div>
+            <div className="text-[11px] text-gray-500">Suite Tools Lokal</div>
           </div>
         </button>
 
@@ -90,9 +90,9 @@ function Footer() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-3 text-xs text-gray-600">
         <span className="flex items-center gap-1.5">
           <Icon name="shield" className="w-3.5 h-3.5" />
-          File Organizer — berjalan 100% lokal. Data tidak pernah meninggalkan perangkat Anda.
+          HelpYou — berjalan 100% lokal. Data tidak pernah meninggalkan perangkat Anda.
         </span>
-        <span className="hidden sm:block">Versi 1.0.9</span>
+        <span className="hidden sm:block">Versi 1.0.10</span>
       </div>
     </footer>
   );

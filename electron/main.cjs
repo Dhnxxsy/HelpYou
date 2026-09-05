@@ -7,7 +7,7 @@ const { autoUpdater } = require('electron-updater');
 let mainWindow = null;
 let server = null;
 
-const appId = 'com.fileorganizer.app';
+const appId = 'com.dhnxxsy.helpyou.app';
 app.setAppUserModelId(appId);
 
 function logLine(...args) {
@@ -224,7 +224,7 @@ if (!gotLock) {
       }
     } catch (err) {
       logLine('startup error', err?.stack || err);
-      dialog.showErrorBox('File Organizer', `Gagal memulai server lokal.\n\n${err?.message || err}`);
+      dialog.showErrorBox('HelpYou', `Gagal memulai server lokal.\n\n${err?.message || err}`);
       app.quit();
     }
   });

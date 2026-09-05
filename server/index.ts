@@ -79,7 +79,7 @@ const isMain =
 
 if (isMain) {
   startServer({}).then(({ url, port }) => {
-    info(`File Organizer server running at ${url}`);
+    info(`HelpYou server running at ${url}`);
     info(`Platform: ${process.platform} | Node: ${process.version}`);
   });
 }

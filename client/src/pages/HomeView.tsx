@@ -23,7 +23,7 @@ const ACTIVE_TOOLS: ActiveTool[] = [
     chip: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
   },
   {
-    icon: 'package',
+    icon: 'trash',
     title: 'Uninstaller',
     desc: 'Hapus pasang program dengan cepat, tenang, dan bersih sampai ke akar — termasuk sisa file & pintasan.',
     tool: 'uninstaller',

@@ -39,7 +39,7 @@ export default function ConfirmDialog({
   if (!open) return null;
 
   const isDanger = tone === 'danger';
-  const ackColor = isDanger ? 'bg-rose-500/90 hover:bg-rose-500 text-white' : 'btn-primary';
+  const ackColor = isDanger ? 'btn-danger' : 'btn-primary';
 
   return createPortal(
     <div className="fixed inset-0 z-50 grid place-items-center p-4" role="dialog" aria-modal="true" aria-label={title}>

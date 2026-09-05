@@ -1,4 +1,4 @@
-# 📁 File Organizer
+# ✨ HelpYou
 
 Tools lokal (web) untuk merapikan folder & file di PC menjadi struktur yang rapi dan terstruktur. Bekerja **100% offline / local** — tidak ada file yang dikirim ke internet.
 

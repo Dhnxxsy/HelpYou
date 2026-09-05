@@ -111,7 +111,7 @@ describe('residueKind', () => {
   });
 
   it('classifies shortcuts, folders and plain files', () => {
-    expect(residueKind('C:\\X\\Start File Organizer.lnk', false)).toBe('shortcut');
+    expect(residueKind('C:\\X\\Start HelpYou.lnk', false)).toBe('shortcut');
     expect(residueKind('C:\\X\\data.url', false)).toBe('shortcut');
     expect(residueKind('C:\\X', true)).toBe('folder');
     expect(residueKind('C:\\X\\notes.txt', false)).toBe('file');
