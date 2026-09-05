@@ -43,7 +43,7 @@ export default function UpdateNotifier() {
 
   if (mode === 'error') {
     return (
-      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 mt-3 animate-fade-in">
+      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 animate-fade-in">
         <div className="flex items-center gap-3 rounded-2xl border border-amber-400/40 bg-amber-500/10 px-4 py-3">
           <div className="w-8 h-8 rounded-xl bg-amber-500/20 grid place-items-center text-amber-300 shrink-0">
             <Icon name="alert" className="w-4 h-4" />
@@ -59,7 +59,7 @@ export default function UpdateNotifier() {
 
   if (mode === 'downloading') {
     return (
-      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 mt-3 animate-fade-in">
+      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 animate-fade-in">
         <div className="rounded-2xl border border-indigo-400/40 bg-indigo-500/10 px-4 py-3">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 grid place-items-center text-white shrink-0">
@@ -82,7 +82,7 @@ export default function UpdateNotifier() {
 
   // mode === 'ready'
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 mt-3 animate-fade-in">
+    <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 animate-fade-in">
       <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-emerald-400/40 bg-emerald-500/10 px-4 py-3">
         <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/30 grid place-items-center text-emerald-300 shrink-0">
           <Icon name="check" className="w-4 h-4" />

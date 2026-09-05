@@ -50,8 +50,8 @@ export default function ConfirmDialog({
             <Icon name={icon} className="w-5 h-5" />
           </div>
           <div className="min-w-0">
-            <h3 className="text-base font-semibold text-white">{title}</h3>
-            {description && <p className="text-sm text-gray-400 mt-1.5">{description}</p>}
+            <h3 className="text-[15px] font-semibold text-white">{title}</h3>
+            {description && <p className="text-sm text-gray-400 mt-1.5 leading-relaxed">{description}</p>}
           </div>
         </div>
         <div className="flex justify-end gap-2.5 mt-6">
