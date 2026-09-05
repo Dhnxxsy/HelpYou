@@ -20,6 +20,7 @@ import {
   deleteResidue,
 } from '../organizer/uninstaller.js';
 import type { InstalledApp } from '../../shared/types.js';
+import { extractIconRaw, warmIcons } from '../organizer/icons.js';
 
 export const api = Router();
 
@@ -428,4 +429,26 @@ api.post('/uninstaller/residue/delete', async (req: Request, res: Response) => {
   } catch (e: any) {
     res.status(500).json({ error: e.message });
   }
+});
+
+// GET /api/uninstaller/icon?path=<DisplayIcon>  — app icon as an image
+api.get('/uninstaller/icon', async (req: Request, res: Response) => {
+  const raw = String(req.query.path || '');
+  if (!raw) return res.status(400).json({ error: 'path required' });
+  try {
+    const icon = await extractIconRaw(raw);
+    if (!icon) return res.status(404).json({ error: 'icon tidak tersedia' });
+    res.set('Content-Type', icon.mime);
+    res.set('Cache-Control', 'public, max-age=86400');
+    res.send(icon.buf);
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /api/uninstaller/icons  body: { paths: string[] }  — warm the icon cache
+api.post('/uninstaller/icons', async (req: Request, res: Response) => {
+  const paths = Array.isArray(req.body?.paths) ? req.body.paths.map((p: any) => String(p)) : [];
+  const cached = await warmIcons(paths);
+  res.json({ paths: paths.length, cached });
 });

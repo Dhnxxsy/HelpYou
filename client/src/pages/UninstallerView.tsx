@@ -53,12 +53,24 @@ export default function UninstallerView({ onBack }: { onBack: () => void }) {
     setError(null);
     try {
       const data = await api<{ apps: InstalledApp[] }>(`/api/uninstaller/apps${force ? '?force=1' : ''}`);
-      setApps(data.apps || []);
+      const list = data.apps || [];
+      setApps(list);
+      warmIcons(list);
     } catch (e: any) {
       setError(e.message || 'Gagal memuat daftar program.');
     } finally {
       setLoading(false);
     }
+  }
+
+  function warmIcons(list: InstalledApp[]) {
+    const unique = [...new Set(list.map((a) => a.displayIcon).filter((p): p is string => !!p))];
+    if (unique.length === 0) return;
+    fetch('/api/uninstaller/icons', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ paths: unique }),
+    }).catch(() => {});
   }
 
   useEffect(() => {
@@ -219,8 +231,23 @@ function StatsPill({ label, value }: { label: string; value: string }) {
   );
 }
 
-function AppIcon({ name, index }: { name: string; index: number }) {
-  const letter = (name.trim()[0] || '?').toUpperCase();
+function AppIcon({ app, index, iconUrl }: { app: InstalledApp; index: number; iconUrl?: string }) {
+  const [iconFailed, setIconFailed] = useState(false);
+  if (iconUrl && !iconFailed) {
+    return (
+      <div className="w-10 h-10 rounded-xl bg-white/[0.07] border border-white/10 grid place-items-center overflow-hidden shrink-0 select-none">
+        <img
+          src={iconUrl}
+          alt=""
+          className="w-full h-full object-contain"
+          draggable={false}
+          loading="lazy"
+          onError={() => setIconFailed(true)}
+        />
+      </div>
+    );
+  }
+  const letter = (app.name.trim()[0] || '?').toUpperCase();
   return (
     <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${GRADIENTS[index % GRADIENTS.length]} grid place-items-center text-white font-bold text-sm shadow-lg shrink-0 select-none`}>
       {letter}
@@ -240,7 +267,7 @@ function AppRow({ app, index, expanded, onToggle, onUninstall, onResidue }: {
   return (
     <div className="row">
       <div className="flex items-center gap-3 px-4 py-3">
-        <AppIcon name={app.name} index={index} />
+        <AppIcon app={app} index={index} iconUrl={app.displayIcon ? '/api/uninstaller/icon?path=' + encodeURIComponent(app.displayIcon) : undefined} />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 min-w-0">
             <span className="text-sm font-semibold text-white truncate">{app.name}</span>
