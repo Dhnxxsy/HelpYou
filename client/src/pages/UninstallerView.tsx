@@ -110,7 +110,7 @@ export default function UninstallerView({ onBack }: { onBack: () => void }) {
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
             <span className="text-gradient">Uninstaller Program</span>
           </h1>
-          <p className="text-sm text-gray-400 mt-1.5 max-w-2xl">
+          <p className="text-sm text-[var(--text-2)] mt-1.5 max-w-2xl">
             Hapus pasang aplikasi dengan cepat dan bersih — termasuk bekas folder, data aplikasi, dan pintasan Start Menu.
           </p>
         </div>
@@ -123,7 +123,7 @@ export default function UninstallerView({ onBack }: { onBack: () => void }) {
       {/* Toolbar */}
       <div className="card p-4 flex flex-col lg:flex-row lg:items-center gap-3">
         <div className="relative flex-1">
-          <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+          <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-3)]" />
           <input
             className="input pl-9"
             placeholder="Cari program atau penerbit..."
@@ -136,7 +136,7 @@ export default function UninstallerView({ onBack }: { onBack: () => void }) {
             <option value="name">Urut Nama (A-Z)</option>
             <option value="size">Urut Ukuran Terbesar</option>
           </select>
-          <label className="flex items-center gap-2 text-xs text-gray-300 cursor-pointer select-none px-1" title="Jalankan uninstaller tanpa dialog bila memungkinkan">
+          <label className="flex items-center gap-2 text-xs text-[var(--text-2)] cursor-pointer select-none px-1" title="Jalankan uninstaller tanpa dialog bila memungkinkan">
             <input type="checkbox" className="accent-indigo-500 w-4 h-4" checked={silent} onChange={(e) => setSilent(e.target.checked)} />
             Mode senyap
           </label>
@@ -147,7 +147,7 @@ export default function UninstallerView({ onBack }: { onBack: () => void }) {
       </div>
 
       {error && (
-        <div className="card border-rose-500/25 bg-rose-500/10 text-rose-200 text-sm p-4 flex items-center gap-2.5">
+        <div className="card border-[var(--danger-border)] bg-[var(--danger-soft)] text-[var(--danger-strong)] text-sm p-4 flex items-center gap-2.5">
           <Icon name="alert" className="w-4 h-4 shrink-0" /> {error}
         </div>
       )}
@@ -160,10 +160,10 @@ export default function UninstallerView({ onBack }: { onBack: () => void }) {
           ))}
         </div>
       ) : (
-        <div className="rounded-2xl border border-white/10 overflow-hidden bg-white/[0.02]">
+        <div className="rounded-2xl border border-[var(--border)] overflow-hidden bg-[var(--overlay)]">
           {filtered.length === 0 ? (
-            <div className="py-14 text-center text-sm text-gray-500 flex flex-col items-center gap-2">
-              <Icon name="package" className="w-6 h-6 text-gray-600" />
+            <div className="py-14 text-center text-sm text-[var(--text-3)] flex flex-col items-center gap-2">
+              <Icon name="package" className="w-6 h-6 text-[var(--text-3)]" />
               {apps.length === 0 ? 'Belum ada aplikasi terdeteksi.' : 'Tidak ada program yang cocok.'}
               <button className="btn-ghost !py-2 !px-3 text-xs mt-2" onClick={() => loadApps(true)}>Coba muat ulang</button>
             </div>
@@ -185,7 +185,7 @@ export default function UninstallerView({ onBack }: { onBack: () => void }) {
         </div>
       )}
 
-      <p className="text-[11px] text-gray-500">{filtered.length.toLocaleString('id-ID')} program · ukuran adalah perkiraan dari registry</p>
+      <p className="text-[11px] text-[var(--text-3)]">{filtered.length.toLocaleString('id-ID')} program · ukuran adalah perkiraan dari registry</p>
 
       {/* Confirm uninstall */}
       <ConfirmDialog
@@ -227,8 +227,8 @@ export default function UninstallerView({ onBack }: { onBack: () => void }) {
 function StatsPill({ label, value }: { label: string; value: string }) {
   return (
     <div className="card px-3.5 py-2">
-      <div className="text-[10px] uppercase tracking-wider text-gray-500">{label}</div>
-      <div className="text-sm font-semibold tabular-nums text-white mt-0.5">{value}</div>
+      <div className="text-[10px] uppercase tracking-wider text-[var(--text-3)]">{label}</div>
+      <div className="text-sm font-semibold tabular-nums text-[var(--text)] mt-0.5">{value}</div>
     </div>
   );
 }
@@ -248,18 +248,18 @@ function AppRow({ app, index, expanded, onToggle, onUninstall, onResidue }: {
         <AppIcon name={app.name} index={index} iconUrl={app.displayIcon ? '/api/uninstaller/icon?path=' + encodeURIComponent(app.displayIcon) : undefined} />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="text-sm font-semibold text-white truncate">{app.name}</span>
-            {app.displayVersion && <span className="chip bg-white/[0.06] text-gray-400 border border-white/10 text-[10px] shrink-0">{app.displayVersion}</span>}
+            <span className="text-sm font-semibold text-[var(--text)] truncate">{app.name}</span>
+            {app.displayVersion && <span className="chip bg-[var(--overlay)] text-[var(--text-2)] border border-[var(--border)] text-[10px] shrink-0">{app.displayVersion}</span>}
           </div>
-          <div className="text-xs text-gray-500 truncate mt-0.5">
+          <div className="text-xs text-[var(--text-3)] truncate mt-0.5">
             {[app.publisher, app.arch, bytesOfApp(app) !== undefined ? formatBytes(bytesOfApp(app)) : null].filter(Boolean).join(' · ') || 'Program terpasang'}
           </div>
         </div>
-        <div className="hidden sm:flex flex-col items-end text-xs text-gray-500 shrink-0 mr-1">
+        <div className="hidden sm:flex flex-col items-end text-xs text-[var(--text-3)] shrink-0 mr-1">
           {app.installDate ? <span className="tabular-nums">{formatInstallDate(app.installDate)}</span> : <span>—</span>}
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
-          <button className="btn-ghost !p-2 text-gray-400" title="Periksa residu" onClick={onResidue}>
+          <button className="btn-ghost !p-2 text-[var(--text-2)]" title="Periksa residu" onClick={onResidue}>
             <Icon name="broom" className="w-4 h-4" />
           </button>
           <button
@@ -271,7 +271,7 @@ function AppRow({ app, index, expanded, onToggle, onUninstall, onResidue }: {
             <Icon name="trash" className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Uninstall</span>
           </button>
-          <button className="btn-ghost !p-2 text-gray-400" onClick={onToggle} title="Detail">
+          <button className="btn-ghost !p-2 text-[var(--text-2)]" onClick={onToggle} title="Detail">
             <Icon name="chevronRight" className={`w-4 h-4 transition-transform duration-200 ${expanded ? 'rotate-90' : ''}`} />
           </button>
         </div>
@@ -298,7 +298,7 @@ function AppRow({ app, index, expanded, onToggle, onUninstall, onResidue }: {
               <Icon name="broom" className="w-3.5 h-3.5" /> Periksa &amp; Bersihkan Residu
             </button>
             {!canUninstall && (
-              <span className="text-[11px] text-amber-300/90 self-center">Aplikasi ini tidak menyediakan uninstaller (mis. aplikasi portable).</span>
+              <span className="text-[11px] text-[var(--warn-strong)]/90 self-center">Aplikasi ini tidak menyediakan uninstaller (mis. aplikasi portable).</span>
             )}
           </div>
         </div>
@@ -310,8 +310,8 @@ function AppRow({ app, index, expanded, onToggle, onUninstall, onResidue }: {
 function DetailRow({ label, value, mono }: { label: string; value?: string; mono?: boolean }) {
   return (
     <div className="min-w-0">
-      <div className="text-[10px] uppercase tracking-wider text-gray-500">{label}</div>
-      <div className={`text-xs text-gray-300 mt-0.5 truncate ${mono ? 'font-mono' : ''}`} title={value}>{value || '—'}</div>
+      <div className="text-[10px] uppercase tracking-wider text-[var(--text-3)]">{label}</div>
+      <div className={`text-xs text-[var(--text-2)] mt-0.5 truncate ${mono ? 'font-mono' : ''}`} title={value}>{value || '—'}</div>
     </div>
   );
 }
@@ -342,22 +342,22 @@ function ModalShell({ icon, tone, title, children, onClose, wide }: {
   wide?: boolean;
 }) {
   const toneCls =
-    tone === 'indigo' ? 'bg-indigo-500/15 text-indigo-300 border-indigo-500/25'
-    : tone === 'emerald' ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/25'
-    : tone === 'rose' ? 'bg-rose-500/15 text-rose-300 border-rose-500/25'
-    : 'bg-violet-500/15 text-violet-300 border-violet-500/25';
+    tone === 'indigo' ? 'bg-[var(--accent-soft)] text-[var(--accent-strong)] border-[var(--accent-border)]'
+    : tone === 'emerald' ? 'bg-[var(--ok-soft)] text-[var(--ok-strong)] border-[var(--ok-border)]'
+    : tone === 'rose' ? 'bg-[var(--danger-soft)] text-[var(--danger-strong)] border-[var(--danger-border)]'
+    : 'bg-[var(--accent-soft)] text-[var(--accent-strong)] border-[var(--accent-border)]';
   return createPortal(
     <div className="fixed inset-0 z-50 grid place-items-center p-4" role="dialog" aria-modal="true" aria-label={title}>
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
-      <div className={`relative card p-6 w-full ${wide ? 'max-w-2xl' : 'max-w-md'} border-white/15 animate-scale-in max-h-[85vh] overflow-y-auto`}>
+      <div className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm" onClick={onClose} />
+      <div className={`relative card p-6 w-full ${wide ? 'max-w-2xl' : 'max-w-md'} border-[var(--border-2)] animate-scale-in max-h-[85vh] overflow-y-auto`}>
         <div className="flex items-start gap-3.5 mb-5">
           <div className={`w-10 h-10 rounded-xl grid place-items-center shrink-0 border ${toneCls}`}>
             <Icon name={icon} className="w-5 h-5" />
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="text-base font-semibold text-white leading-tight">{title}</h3>
+            <h3 className="text-base font-semibold text-[var(--text)] leading-tight">{title}</h3>
           </div>
-          <button className="btn-ghost !p-2 text-gray-400 hover:text-white shrink-0" onClick={onClose} title="Tutup">
+          <button className="btn-ghost !p-2 text-[var(--text-2)] hover:text-[var(--text)] shrink-0" onClick={onClose} title="Tutup">
             <Icon name="x" className="w-4 h-4" />
           </button>
         </div>
@@ -442,7 +442,7 @@ function RunModal({ app, initialSilent, onClose, onResidue, onChanged }: {
   return (
     <ModalShell icon="trash" tone="violet" title={`Uninstall ${app.name}`} onClose={onClose}>
       {error && (
-        <div className="rounded-xl border border-rose-500/25 bg-rose-500/10 p-3.5 text-sm text-rose-200 flex flex-col gap-3">
+        <div className="rounded-xl border border-[var(--danger-border)] bg-[var(--danger-soft)] p-3.5 text-sm text-[var(--danger-strong)] flex flex-col gap-3">
           <span className="flex items-start gap-2">
             <Icon name="alert" className="w-4 h-4 mt-0.5 shrink-0" /> {error}
           </span>
@@ -455,8 +455,8 @@ function RunModal({ app, initialSilent, onClose, onResidue, onChanged }: {
       )}
 
       {!info && !error && (
-        <div className="flex items-center gap-3 text-sm text-gray-300">
-          <div className="w-5 h-5 rounded-full border-2 border-violet-500/30 border-t-violet-400 animate-spin" />
+        <div className="flex items-center gap-3 text-sm text-[var(--text-2)]">
+          <div className="w-5 h-5 rounded-full border-2 border-[var(--accent-border)] border-t-[var(--accent-strong)] animate-spin" />
           Menyiapkan uninstaller…
         </div>
       )}
@@ -464,12 +464,12 @@ function RunModal({ app, initialSilent, onClose, onResidue, onChanged }: {
       {running && (
         <div className="flex flex-col items-center gap-4 py-3 text-center">
           <div className="relative">
-            <div className="w-12 h-12 rounded-full border-4 border-violet-500/20 border-t-violet-400 animate-spin" />
-            <span className="absolute inset-0 m-auto w-full h-full rounded-full border border-violet-400/10 animate-ping-slow" />
+            <div className="w-12 h-12 rounded-full border-4 border-[var(--accent-border)] border-t-[var(--accent-strong)] animate-spin" />
+            <span className="absolute inset-0 m-auto w-full h-full rounded-full border border-[var(--accent-border)] animate-ping-slow" />
           </div>
           <div>
-            <div className="text-sm font-semibold text-white">Uninstall sedang berjalan…</div>
-            <div className="text-xs text-gray-400 mt-1">
+            <div className="text-sm font-semibold text-[var(--text)]">Uninstall sedang berjalan…</div>
+            <div className="text-xs text-[var(--text-2)] mt-1">
               {info?.asAdmin ? 'Di jalankan sebagai administrator.' : 'Selesaikan wizard uninstall (bila muncul) di layar Anda.'}
             </div>
           </div>
@@ -478,7 +478,7 @@ function RunModal({ app, initialSilent, onClose, onResidue, onChanged }: {
 
       {info?.finished && (
         <div className="space-y-4">
-          <div className={`rounded-xl border p-4 flex items-start gap-3 text-sm ${success && info.verified !== false ? 'border-emerald-500/25 bg-emerald-500/10 text-emerald-200' : 'border-amber-500/25 bg-amber-500/10 text-amber-200'}`}>
+          <div className={`rounded-xl border p-4 flex items-start gap-3 text-sm ${success && info.verified !== false ? 'border-[var(--ok-border)] bg-[var(--ok-soft)] text-[var(--ok-strong)]' : 'border-[var(--warn-border)] bg-[var(--warn-soft)] text-[var(--warn-strong)]'}`}>
             <Icon name={success && info.verified !== false ? 'check' : 'info'} className="w-4 h-4 mt-0.5 shrink-0" />
             <div>
               {success && info.verified !== false ? (
@@ -562,44 +562,44 @@ function ResidueModal({ app, onClose }: { app: InstalledApp; onClose: () => void
   return (
     <ModalShell icon="broom" tone="emerald" title={`Residu: ${app.name}`} onClose={onClose} wide>
       {scanning ? (
-        <div className="flex items-center gap-3 text-sm text-gray-300 py-4">
-          <div className="w-5 h-5 rounded-full border-2 border-emerald-500/30 border-t-emerald-400 animate-spin" />
+        <div className="flex items-center gap-3 text-sm text-[var(--text-2)] py-4">
+          <div className="w-5 h-5 rounded-full border-2 border-[var(--ok-border)] border-t-[var(--ok-strong)] animate-spin" />
           Memindai sisa file… ini bisa beberapa saat.
         </div>
       ) : notice && !entries?.length ? (
         <Notice ok={notice.ok}>{notice.text}</Notice>
       ) : entries && entries.length === 0 ? (
         <div className="py-8 text-center flex flex-col items-center gap-2">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-500/12 border border-emerald-500/25 grid place-items-center text-emerald-300">
+          <div className="w-12 h-12 rounded-2xl bg-[var(--ok-soft)] border border-[var(--ok-border)] grid place-items-center text-[var(--ok-strong)]">
             <Icon name="check" className="w-6 h-6" />
           </div>
-          <div className="text-sm font-semibold text-white">Bersih! Tidak ditemukan sisa file</div>
-          <div className="text-xs text-gray-500">Folder &amp; data aplikasi sudah bersih dari {app.name}.</div>
+          <div className="text-sm font-semibold text-[var(--text)]">Bersih! Tidak ditemukan sisa file</div>
+          <div className="text-xs text-[var(--text-3)]">Folder &amp; data aplikasi sudah bersih dari {app.name}.</div>
         </div>
       ) : (
         <>
           {notice && <Notice ok={notice.ok}>{notice.text}</Notice>}
-          <div className="rounded-xl border border-white/10 bg-white/[0.03] overflow-hidden">
-            <div className="grid grid-cols-12 gap-2 px-4 py-2 bg-white/[0.04] text-[11px] uppercase tracking-wider text-gray-500 font-semibold">
+          <div className="rounded-xl border border-[var(--border)] bg-[var(--overlay)] overflow-hidden">
+            <div className="grid grid-cols-12 gap-2 px-4 py-2 bg-[var(--overlay)] text-[11px] uppercase tracking-wider text-[var(--text-3)] font-semibold">
               <div className="col-span-6">Lokasi</div>
               <div className="col-span-3">Jenis</div>
               <div className="col-span-3 text-right">Ukuran</div>
             </div>
             <div className="divide-y divide-white/5 max-h-56 overflow-y-auto">
               {list.map((e) => (
-                <div key={e.path} className={`grid grid-cols-12 gap-2 px-4 py-2.5 items-center text-sm ${e.kind === 'executable' ? 'bg-amber-500/[0.06]' : ''}`}>
-                  <div className="col-span-6 truncate text-gray-300 font-mono text-xs" title={e.path}>{e.path}</div>
+                <div key={e.path} className={`grid grid-cols-12 gap-2 px-4 py-2.5 items-center text-sm ${e.kind === 'executable' ? 'bg-[var(--warn)]/[0.06]' : ''}`}>
+                  <div className="col-span-6 truncate text-[var(--text-2)] font-mono text-xs" title={e.path}>{e.path}</div>
                   <div className="col-span-3 text-xs flex items-center gap-1.5">
-                    <Icon name={KIND_ICON[e.kind]} className={`w-3.5 h-3.5 ${e.kind === 'executable' ? 'text-amber-300' : 'text-gray-500'}`} />
+                    <Icon name={KIND_ICON[e.kind]} className={`w-3.5 h-3.5 ${e.kind === 'executable' ? 'text-[var(--warn-strong)]' : 'text-[var(--text-3)]'}`} />
                     {e.kind === 'executable' ? (
-                      <span className="chip bg-amber-500/10 text-amber-300 border border-amber-500/20 text-[10px]" title="Berkas program (EXE) — akan dihapus ke Recycle Bin bila ditekan">Program (EXE)</span>
+                      <span className="chip bg-[var(--warn-soft)] text-[var(--warn-strong)] border border-[var(--warn-border)] text-[10px]" title="Berkas program (EXE) — akan dihapus ke Recycle Bin bila ditekan">Program (EXE)</span>
                     ) : (
-                      <span className="text-gray-500">{kindLabel(e.kind)}</span>
+                      <span className="text-[var(--text-3)]">{kindLabel(e.kind)}</span>
                     )}
                   </div>
                   <div className="col-span-3 flex items-center justify-end gap-2">
-                    <span className="text-xs text-gray-400 tabular-nums">{e.sizeBytes > 0 ? formatBytes(e.sizeBytes) : '—'}</span>
-                    <button className="btn-ghost !p-1.5 text-gray-400 hover:text-rose-300" title="Hapus" disabled={busy} onClick={() => remove([e.path])}>
+                    <span className="text-xs text-[var(--text-2)] tabular-nums">{e.sizeBytes > 0 ? formatBytes(e.sizeBytes) : '—'}</span>
+                    <button className="btn-ghost !p-1.5 text-[var(--text-2)] hover:text-[var(--danger-strong)]" title="Hapus" disabled={busy} onClick={() => remove([e.path])}>
                       <Icon name="trash" className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -608,7 +608,7 @@ function ResidueModal({ app, onClose }: { app: InstalledApp; onClose: () => void
             </div>
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-[var(--text-3)]">
               {list.length} item · ±{formatBytes(totalBytes)} · dihapus ke <b>Recycle Bin</b> (bisa dikembalikan)
             </div>
             <div className="flex gap-2.5">
@@ -628,7 +628,7 @@ function ResidueModal({ app, onClose }: { app: InstalledApp; onClose: () => void
 
 function Notice({ ok, children }: { ok: boolean; children: React.ReactNode }) {
   return (
-    <div className={`rounded-xl border p-3.5 text-sm flex items-start gap-2.5 ${ok ? 'border-emerald-500/25 bg-emerald-500/10 text-emerald-200' : 'border-rose-500/25 bg-rose-500/10 text-rose-200'}`}>
+    <div className={`rounded-xl border p-3.5 text-sm flex items-start gap-2.5 ${ok ? 'border-[var(--ok-border)] bg-[var(--ok-soft)] text-[var(--ok-strong)]' : 'border-[var(--danger-border)] bg-[var(--danger-soft)] text-[var(--danger-strong)]'}`}>
       <Icon name={ok ? 'check' : 'alert'} className="w-4 h-4 mt-0.5 shrink-0" /> {children}
     </div>
   );

@@ -652,8 +652,6 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
     <div className="space-y-5 animate-fade-in">
       <PageHeader
         icon="fileText"
-        accent="from-amber-400 to-orange-600"
-        glow="shadow-amber-500/30"
         title="Notepad"
         desc="Catat ide, daftar, dan catatan penting dalam editor yang nyaman — auto-save, format teks, cari & ganti, dan ekspor kapan saja."
         onBack={onBack}
@@ -676,21 +674,21 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
       />
 
       {error && (
-        <div className="flex items-start justify-between gap-3 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-300 animate-scale-in">
+        <div className="flex items-start justify-between gap-3 rounded-xl border border-[var(--danger-border)] bg-[var(--danger-soft)] px-4 py-3 text-sm text-[var(--danger-strong)] animate-scale-in">
           <span>{error}</span>
-          <button className="shrink-0 text-rose-300/80 hover:text-white" onClick={() => setError(null)} aria-label="Tutup">
+          <button className="shrink-0 text-[var(--danger-strong)] hover:text-[var(--text)]" onClick={() => setError(null)} aria-label="Tutup">
             <Icon name="x" className="w-4 h-4" />
           </button>
         </div>
       )}
       {notice && (
-        <div className="flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300 animate-scale-in">
+        <div className="flex items-center gap-2 rounded-xl border border-[var(--ok-border)] bg-[var(--ok-soft)] px-4 py-3 text-sm text-[var(--ok-strong)] animate-scale-in">
           <Icon name="check" className="w-4 h-4 shrink-0" />
           {notice}
         </div>
       )}
       {looped && (
-        <div className="text-xs text-indigo-300/90 animate-scale-in">
+        <div className="text-xs text-[var(--accent-strong)] animate-scale-in">
           Sudah di akhir &mdash; dilanjutkan dari awal.
         </div>
       )}
@@ -716,10 +714,10 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
           <div className="px-1.5 pt-1 pb-2">
             <div className="flex items-center justify-between gap-2 mb-2">
               <span className="eyebrow">Catatan</span>
-              <span className="chip bg-white/[0.04] text-gray-500">{filtered.length}</span>
+              <span className="chip bg-[var(--overlay)] text-[var(--text-3)]">{filtered.length}</span>
             </div>
             <div className="relative">
-              <Icon name="search" className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+              <Icon name="search" className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-3)] pointer-events-none" />
               <input
                 className="input-field !pl-9 !py-2 text-[13px]"
                 placeholder="Cari catatan…"
@@ -730,7 +728,7 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
           </div>
           <div className="space-y-1 max-h-[46vh] overflow-y-auto pr-1 pb-1">
             {filtered.length === 0 && (
-              <div className="px-3 py-6 text-center text-xs text-gray-500">Tidak ada catatan.</div>
+              <div className="px-3 py-6 text-center text-xs text-[var(--text-3)]">Tidak ada catatan.</div>
             )}
             {filtered.map((note) => {
               const active = note.id === currentId;
@@ -748,21 +746,21 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
                   }}
                   className={`group relative w-full text-left rounded-xl px-3 py-2.5 cursor-pointer transition-colors border ${
                     active
-                      ? 'bg-indigo-500/15 border-indigo-500/30'
-                      : 'border-transparent hover:bg-white/[0.05]'
+                      ? 'bg-[var(--accent-soft)] border-[var(--accent-border)]'
+                      : 'border-transparent hover:bg-[var(--overlay)]'
                   }`}
                 >
                   <div className="flex items-center gap-2">
                     {note.pinned ? (
-                      <Icon name="pin" className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <Icon name="pin" className="w-3.5 h-3.5 text-[var(--warn-strong)] shrink-0" />
                     ) : (
-                      <Icon name="pinOff" className="w-3.5 h-3.5 text-gray-600 shrink-0" />
+                      <Icon name="pinOff" className="w-3.5 h-3.5 text-[var(--text-3)] shrink-0" />
                     )}
-                    <span className={`flex-1 truncate text-sm ${active ? 'text-white font-medium' : 'text-gray-200'}`}>
+                    <span className={`flex-1 truncate text-sm ${active ? 'text-[var(--text)] font-medium' : 'text-[var(--text)]'}`}>
                       {note.title}
                     </span>
                     <button
-                      className="hidden sm:grid w-6 h-6 place-items-center rounded-md text-gray-600 hover:text-rose-400 hover:bg-rose-500/10 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="hidden sm:grid w-6 h-6 place-items-center rounded-md text-[var(--text-3)] hover:text-[var(--danger-strong)] hover:bg-[var(--danger-soft)] shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
                       title="Hapus catatan"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -775,12 +773,12 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
                   {(() => {
                     const sn = snippetOf(note.content);
                     return sn ? (
-                      <p className="mt-0.5 ml-5 pl-0 truncate text-[11px] text-gray-500 line-clamp-1">{sn}</p>
+                      <p className="mt-0.5 ml-5 pl-0 truncate text-[11px] text-[var(--text-3)] line-clamp-1">{sn}</p>
                     ) : null;
                   })()}
-                  <div className="mt-1 flex items-center justify-between text-[10px] text-gray-600">
+                  <div className="mt-1 flex items-center justify-between text-[10px] text-[var(--text-3)]">
                     <span>{timeAgo(note.updatedAt)}</span>
-                    {note.pinned && <span className="text-amber-500/80">disematkan</span>}
+                    {note.pinned && <span className="text-[var(--warn-strong)]">disematkan</span>}
                   </div>
                 </div>
               );
@@ -801,11 +799,11 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
           ) : !currentId ? (
             <div className="flex-1 grid place-items-center p-10 text-center">
               <div className="flex flex-col items-center gap-4 max-w-sm">
-                <div className="icon-tile w-16 h-16 rounded-3xl bg-gradient-to-br from-amber-400 to-orange-600 shadow-lg shadow-amber-500/30">
+                <div className="icon-tile w-16 h-16 rounded-3xl bg-gradient-to-br from-amber-400 to-orange-600 shadow-lg shadow-[0_10px_30px_-10px_var(--warn-glow)]">
                   <Icon name="fileText" className="w-8 h-8" />
                 </div>
-                <h2 className="text-lg font-semibold text-white">Belum ada catatan</h2>
-                <p className="text-sm text-gray-400 leading-relaxed">
+                <h2 className="text-lg font-semibold text-[var(--text)]">Belum ada catatan</h2>
+                <p className="text-sm text-[var(--text-2)] leading-relaxed">
                   Buat catatan baru untuk mulai menulis, atau buka file teks yang sudah ada.
                 </p>
                 <button className="btn-primary" onClick={newNote}>
@@ -817,10 +815,10 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
           ) : (
             <div className="flex flex-col h-full">
               {/* title row */}
-              <div className="flex items-center gap-2 px-4 pt-3.5 pb-2.5 border-b border-white/10">
+              <div className="flex items-center gap-2 px-4 pt-3.5 pb-2.5 border-b border-[var(--border)]">
                 <input
                   ref={titleInputRef}
-                  className="flex-1 min-w-0 bg-transparent text-lg font-semibold text-white placeholder-gray-600 focus:outline-none truncate"
+                  className="flex-1 min-w-0 bg-transparent text-lg font-semibold text-[var(--text)] placeholder-gray-600 focus:outline-none truncate"
                   placeholder="Judul catatan…"
                   value={titleDraft}
                   onChange={(e) => {
@@ -834,8 +832,8 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
                 <button
                   className={`w-9 h-9 grid place-items-center rounded-lg transition-colors ${
                     currentNote?.pinned
-                      ? 'bg-amber-500/15 text-amber-400'
-                      : 'text-gray-500 hover:bg-white/[0.07] hover:text-white'
+                      ? 'bg-[var(--warn-soft)] text-[var(--warn-strong)]'
+                      : 'text-[var(--text-3)] hover:bg-[var(--overlay)] hover:text-[var(--text)]'
                   }`}
                   title={currentNote?.pinned ? 'Lepas pin' : 'Sematkan di atas'}
                   onClick={() => currentNote && void togglePin(currentNote)}
@@ -844,7 +842,7 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
                 </button>
                 <button
                   className={`w-9 h-9 grid place-items-center rounded-lg transition-colors ${
-                    findOpen ? 'bg-indigo-500/20 text-indigo-300' : 'text-gray-500 hover:bg-white/[0.07] hover:text-white'
+                    findOpen ? 'bg-[var(--accent-soft)] text-[var(--accent-strong)]' : 'text-[var(--text-3)] hover:bg-[var(--overlay)] hover:text-[var(--text)]'
                   }`}
                   title="Cari & ganti (Ctrl+F)"
                   onClick={() => {
@@ -855,7 +853,7 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
                   <Icon name="search" className="w-[18px] h-[18px]" />
                 </button>
                 <span
-                  className={`chip ml-1 ${saveState === 'saved' ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20' : saveState === 'saving' ? 'bg-amber-500/10 text-amber-300 border-amber-500/20' : 'bg-rose-500/10 text-rose-300 border-rose-500/20'}`}
+                  className={`chip ml-1 ${saveState === 'saved' ? 'bg-[var(--ok-soft)] text-[var(--ok-strong)] border-[var(--ok-border)]' : saveState === 'saving' ? 'bg-[var(--warn-soft)] text-[var(--warn-strong)] border-[var(--warn-border)]' : 'bg-[var(--danger-soft)] text-[var(--danger-strong)] border-[var(--danger-border)]'}`}
                 >
                   {saveState === 'saved'
                     ? `Tersimpan${savedAt ? ' ' + new Date(savedAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : ''}`
@@ -866,7 +864,7 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
               </div>
 
               {/* formatting toolbar */}
-              <div className="flex flex-wrap items-center gap-0.5 px-3 py-2 border-b border-white/10 bg-white/[0.02]">
+              <div className="flex flex-wrap items-center gap-0.5 px-3 py-2 border-b border-[var(--border)] bg-[var(--overlay)]">
                 <ToolButton label="B" title="Tebal (Ctrl+B)" className="font-bold" onClick={() => wrapMarkdown('**')} />
                 <ToolButton label="I" title="Miring (Ctrl+I)" className="italic" onClick={() => wrapMarkdown('*')} />
                 <ToolButton label="U" title="Garis bawah (Ctrl+U)" className="underline" onClick={() => wrapMarkdown('<u>', '</u>')} />
@@ -895,7 +893,7 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
                 </button>
                 <div className="flex-1" />
                 <button
-                  className={`tool-btn ${mono ? 'text-indigo-300 bg-indigo-500/15' : ''}`}
+                  className={`tool-btn ${mono ? 'text-[var(--accent-strong)] bg-[var(--accent-soft)]' : ''}`}
                   title="Ganti jenis huruf (monospace)"
                   onClick={() => setMono((v) => !v)}
                 >
@@ -905,9 +903,9 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
 
               {/* find & replace */}
               {findOpen && (
-                <div className="flex flex-wrap items-center gap-2 px-3 py-2 border-b border-white/10 bg-white/[0.02] animate-scale-in">
+                <div className="flex flex-wrap items-center gap-2 px-3 py-2 border-b border-[var(--border)] bg-[var(--overlay)] animate-scale-in">
                   <div className="relative">
-                    <Icon name="search" className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                    <Icon name="search" className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--text-3)] pointer-events-none" />
                     <input
                       ref={findInputRef}
                       className="input-field !pl-8 !py-1.5 !text-xs w-40"
@@ -939,7 +937,7 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
                     }}
                   />
                   <button
-                    className={`tool-btn ${caseSensitive ? 'text-indigo-300 bg-indigo-500/15' : ''}`}
+                    className={`tool-btn ${caseSensitive ? 'text-[var(--accent-strong)] bg-[var(--accent-soft)]' : ''}`}
                     title="Cocokkan huruf besar/kecil"
                     onClick={() => setCaseSensitive((v) => !v)}
                   >
@@ -957,7 +955,7 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
                   <button className="btn-ghost !px-2.5 !py-1.5 !text-xs" onClick={replaceAll} disabled={!findText || !matches.length}>
                     Ganti Semua
                   </button>
-                  <span className="text-[11px] tabular-nums text-gray-500">
+                  <span className="text-[11px] tabular-nums text-[var(--text-3)]">
                     {matches.length ? `${Math.min((matchIdx < 0 ? 0 : matchIdx) + 1, matches.length)}/${matches.length}` : '0/0'}
                   </span>
                   <div className="flex-1" />
@@ -983,12 +981,12 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
               />
 
               {/* status bar */}
-              <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2 border-t border-white/10 bg-white/[0.02] text-[11px] text-gray-500">
+              <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2 border-t border-[var(--border)] bg-[var(--overlay)] text-[11px] text-[var(--text-3)]">
                 <span className="tabular-nums">
                   {stats.words} kata &middot; {stats.chars} karakter &middot; {stats.lines} baris &middot; &plusmn;{stats.mins} mnt baca
                 </span>
-                <span className="flex items-center gap-1.5 text-gray-600">
-                  <span className={`w-1.5 h-1.5 rounded-full ${saveState === 'saved' ? 'bg-emerald-400' : saveState === 'saving' ? 'bg-amber-400 animate-pulse' : 'bg-rose-400'}`} />
+                <span className="flex items-center gap-1.5 text-[var(--text-3)]">
+                  <span className={`w-1.5 h-1.5 rounded-full ${saveState === 'saved' ? 'bg-[var(--ok)]' : saveState === 'saving' ? 'bg-[var(--warn)] animate-pulse' : 'bg-rose-400'}`} />
                   Auto-simpan {saveState === 'saved' ? 'aktif' : saveState === 'saving' ? 'sedang menyimpan' : 'menunggu…'}
                 </span>
               </div>
@@ -1027,5 +1025,5 @@ function ToolIcon({ name, title, onClick }: { name: Parameters<typeof Icon>[0]['
 }
 
 function ToolDivider() {
-  return <span className="inline-block w-px h-5 bg-white/10 mx-1.5 self-center" aria-hidden="true" />;
+  return <span className="inline-block w-px h-5 bg-[var(--overlay-2)] mx-1.5 self-center" aria-hidden="true" />;
 }

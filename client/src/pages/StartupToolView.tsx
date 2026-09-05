@@ -103,34 +103,34 @@ export default function StartupToolView({ onBack }: { onBack: () => void }) {
       />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm font-medium text-gray-200">{item.name}</span>
+          <span className="text-sm font-medium text-[var(--text)]">{item.name}</span>
           {item.admin && (
-            <span className="chip bg-amber-500/10 text-amber-300 border border-amber-500/20 text-[10px]" title="Perubahan membutuhkan izin administrator">
+            <span className="chip bg-[var(--warn-soft)] text-[var(--warn-strong)] border border-[var(--warn-border)] text-[10px]" title="Perubahan membutuhkan izin administrator">
               <Icon name="lock" className="w-3 h-3" /> Admin
             </span>
           )}
           {item.exists === false && (
-            <span className="chip bg-rose-500/10 text-rose-300 border border-rose-500/20 text-[10px]">
+            <span className="chip bg-[var(--danger-soft)] text-[var(--danger-strong)] border border-[var(--danger-border)] text-[10px]">
               <Icon name="alert" className="w-3 h-3" /> File tidak ditemukan
             </span>
           )}
         </div>
-        <div className="text-[11px] text-gray-500 truncate" title={item.command}>{item.command || '—'}</div>
-        <div className="text-[10px] text-gray-600 flex items-center gap-1">
+        <div className="text-[11px] text-[var(--text-3)] truncate" title={item.command}>{item.command || '—'}</div>
+        <div className="text-[10px] text-[var(--text-3)] flex items-center gap-1">
           <Icon name="folder" className="w-3 h-3" /> {locLabel(item)}
         </div>
       </div>
       <div className="flex items-center gap-1.5 shrink-0">
-        <button className="btn-ghost !p-2 text-gray-400" title="Buka lokasi" disabled={!!busyId} onClick={() => openLocation(item)}>
+        <button className="btn-ghost !p-2 text-[var(--text-2)]" title="Buka lokasi" disabled={!!busyId} onClick={() => openLocation(item)}>
           <Icon name="external" className="w-4 h-4" />
         </button>
-        <button className="btn-ghost !p-2 text-gray-400 hover:!text-rose-300" title="Hapus" disabled={!!busyId} onClick={() => setDeleteTarget(item)}>
+        <button className="btn-ghost !p-2 text-[var(--text-2)] hover:!text-[var(--danger-strong)]" title="Hapus" disabled={!!busyId} onClick={() => setDeleteTarget(item)}>
           <Icon name="trash" className="w-4 h-4" />
         </button>
         <button
           onClick={() => toggle(item, !item.enabled)}
           disabled={!!busyId}
-          className={`relative w-9 h-5 rounded-full transition-colors shrink-0 ${item.enabled ? 'bg-emerald-500' : 'bg-white/15'} ${busyId === item.id ? 'opacity-60' : ''}`}
+          className={`relative w-9 h-5 rounded-full transition-colors shrink-0 ${item.enabled ? 'bg-[var(--ok)]' : 'bg-[var(--overlay-2)]'} ${busyId === item.id ? 'opacity-60' : ''}`}
           title={item.enabled ? 'Nonaktifkan saat startup' : 'Aktifkan saat startup'}
         >
           <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${item.enabled ? 'translate-x-[16px]' : ''}`} />
@@ -143,8 +143,6 @@ export default function StartupToolView({ onBack }: { onBack: () => void }) {
     <div className="space-y-6 animate-fade-in">
       <PageHeader
         icon="gauge"
-        accent="from-cyan-500 to-blue-600"
-        glow="shadow-cyan-500/30"
         title="Pengelola Startup"
         desc="Kelola program yang berjalan otomatis saat Windows menyala. Nonaktifkan atau hapus item yang tidak diperlukan."
         onBack={onBack}
@@ -157,49 +155,49 @@ export default function StartupToolView({ onBack }: { onBack: () => void }) {
 
       <div className="grid sm:grid-cols-3 gap-3">
         <div className="card px-4 py-3">
-          <div className="text-[10px] uppercase tracking-wider text-gray-500">Total Item</div>
-          <div className="text-lg font-semibold tabular-nums text-white mt-0.5">{stats.total}</div>
+          <div className="text-[10px] uppercase tracking-wider text-[var(--text-3)]">Total Item</div>
+          <div className="text-lg font-semibold tabular-nums text-[var(--text)] mt-0.5">{stats.total}</div>
         </div>
         <div className="card px-4 py-3">
-          <div className="text-[10px] uppercase tracking-wider text-gray-500">Aktif</div>
-          <div className="text-lg font-semibold tabular-nums text-emerald-300 mt-0.5">{stats.enabled}</div>
+          <div className="text-[10px] uppercase tracking-wider text-[var(--text-3)]">Aktif</div>
+          <div className="text-lg font-semibold tabular-nums text-[var(--ok-strong)] mt-0.5">{stats.enabled}</div>
         </div>
         <div className="card px-4 py-3">
-          <div className="text-[10px] uppercase tracking-wider text-gray-500">Butuh Admin</div>
-          <div className="text-lg font-semibold tabular-nums text-amber-300 mt-0.5">{stats.admin}</div>
+          <div className="text-[10px] uppercase tracking-wider text-[var(--text-3)]">Butuh Admin</div>
+          <div className="text-lg font-semibold tabular-nums text-[var(--warn-strong)] mt-0.5">{stats.admin}</div>
         </div>
       </div>
 
-      {error && <p className="text-sm text-rose-400 flex items-center gap-1.5"><Icon name="alert" className="w-4 h-4 shrink-0" />{error}</p>}
+      {error && <p className="text-sm text-[var(--danger-strong)] flex items-center gap-1.5"><Icon name="alert" className="w-4 h-4 shrink-0" />{error}</p>}
 
       {loading ? (
         <div className="card p-8 text-center">
-          <div className="animate-spin h-6 w-6 border-2 border-cyan-400/40 border-t-cyan-400 rounded-full mx-auto" />
-          <p className="text-sm text-gray-400 mt-3">Membaca registri & folder Startup…</p>
+          <div className="animate-spin h-6 w-6 border-2 border-[var(--accent-border)] border-t-[var(--accent-strong)] rounded-full mx-auto" />
+          <p className="text-sm text-[var(--text-2)] mt-3">Membaca registri & folder Startup…</p>
         </div>
       ) : items.length === 0 ? (
         <div className="card p-8 text-center">
-          <Icon name="gauge" className="w-8 h-8 text-cyan-400/50 mx-auto" />
-          <p className="text-sm text-gray-400 mt-3">Tidak ada item startup yang terdeteksi.</p>
+          <Icon name="gauge" className="w-8 h-8 text-[var(--accent-strong)] mx-auto" />
+          <p className="text-sm text-[var(--text-2)] mt-3">Tidak ada item startup yang terdeteksi.</p>
         </div>
       ) : (
         <>
           <section>
             <div className="flex items-center justify-between px-1 mb-2">
-              <h3 className="text-xs uppercase tracking-wider text-emerald-300/80 font-semibold">Aktif ({grouped.on.length})</h3>
+              <h3 className="text-xs uppercase tracking-wider text-[var(--ok-strong)]/80 font-semibold">Aktif ({grouped.on.length})</h3>
             </div>
-            <div className="rounded-2xl border border-white/10 overflow-hidden bg-white/[0.02] divide-y divide-white/5">
-              {grouped.on.length === 0 && <p className="px-4 py-6 text-center text-sm text-gray-500">Tidak ada item aktif.</p>}
+            <div className="rounded-2xl border border-[var(--border)] overflow-hidden bg-[var(--overlay)] divide-y divide-white/5">
+              {grouped.on.length === 0 && <p className="px-4 py-6 text-center text-sm text-[var(--text-3)]">Tidak ada item aktif.</p>}
               {grouped.on.map((item, i) => <Row key={item.id} item={item} index={i} />)}
             </div>
           </section>
 
           <section>
             <div className="flex items-center justify-between px-1 mb-2">
-              <h3 className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Nonaktif ({grouped.off.length})</h3>
+              <h3 className="text-xs uppercase tracking-wider text-[var(--text-3)] font-semibold">Nonaktif ({grouped.off.length})</h3>
             </div>
-            <div className="rounded-2xl border border-white/10 overflow-hidden bg-white/[0.02] divide-y divide-white/5">
-              {grouped.off.length === 0 && <p className="px-4 py-6 text-center text-sm text-gray-500">Tidak ada item nonaktif.</p>}
+            <div className="rounded-2xl border border-[var(--border)] overflow-hidden bg-[var(--overlay)] divide-y divide-white/5">
+              {grouped.off.length === 0 && <p className="px-4 py-6 text-center text-sm text-[var(--text-3)]">Tidak ada item nonaktif.</p>}
               {grouped.off.map((item, i) => <Row key={item.id} item={item} index={grouped.on.length + i} />)}
             </div>
           </section>

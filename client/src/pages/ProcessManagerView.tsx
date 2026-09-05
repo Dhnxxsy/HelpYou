@@ -61,8 +61,6 @@ export default function ProcessManagerView({ onBack }: { onBack: () => void }) {
     <div className="space-y-6 animate-fade-in">
       <PageHeader
         icon="activity"
-        accent="from-cyan-500 to-blue-600"
-        glow="shadow-cyan-500/30"
         title="Pengelola Proses"
         desc="Lihat program yang sedang berjalan dan pemakaian memorinya, lalu hentikan proses yang macet."
         onBack={onBack}
@@ -73,29 +71,29 @@ export default function ProcessManagerView({ onBack }: { onBack: () => void }) {
         }
       />
 
-      {error && <p className="text-sm text-rose-400 flex items-center gap-1.5"><Icon name="alert" className="w-4 h-4 shrink-0" />{error}</p>}
+      {error && <p className="text-sm text-[var(--danger-strong)] flex items-center gap-1.5"><Icon name="alert" className="w-4 h-4 shrink-0" />{error}</p>}
 
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="relative flex-1">
-          <Icon name="search" className="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Icon name="search" className="w-4 h-4 text-[var(--text-3)] absolute left-3 top-1/2 -translate-y-1/2" />
           <input className="input-field pl-9 !py-2 text-sm" placeholder="Cari nama / PID / jendela…" value={query} onChange={(e) => setQuery(e.target.value)} />
         </div>
-        <div className="chip bg-cyan-500/10 text-cyan-300 border-cyan-500/20">
+        <div className="chip bg-[var(--accent-soft)] text-[var(--accent-strong)] border-[var(--accent-border)]">
           {filtered.length} proses · {formatBytes(memTotal * 1024 * 1024)}
         </div>
       </div>
 
       {loading && !processes.length && (
         <div className="card p-8 text-center">
-          <div className="animate-spin h-6 w-6 border-2 border-cyan-400/40 border-t-cyan-400 rounded-full mx-auto" />
-          <p className="text-sm text-gray-400 mt-3">Membaca daftar proses…</p>
+          <div className="animate-spin h-6 w-6 border-2 border-[var(--accent-border)] border-t-[var(--accent-strong)] rounded-full mx-auto" />
+          <p className="text-sm text-[var(--text-2)] mt-3">Membaca daftar proses…</p>
         </div>
       )}
 
       {!loading && (
         <div className="card overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-white/[0.02] text-[10px] uppercase tracking-wider text-gray-500">
+            <thead className="bg-[var(--overlay)] text-[10px] uppercase tracking-wider text-[var(--text-3)]">
               <tr>
                 <th className="text-left px-4 py-2.5 font-semibold">Proses</th>
                 <th className="text-left px-4 py-2.5 font-semibold hidden sm:table-cell">PID</th>
@@ -107,18 +105,18 @@ export default function ProcessManagerView({ onBack }: { onBack: () => void }) {
             </thead>
             <tbody className="divide-y divide-white/5">
               {filtered.map((p) => (
-                <tr key={p.pid} className="hover:bg-white/[0.02]">
+                <tr key={p.pid} className="hover:bg-[var(--overlay)]">
                   <td className="px-4 py-2 max-w-[240px]">
                     <button className="flex items-center gap-2 text-left" onClick={() => setSelected(p)}>
-                      <Icon name="box" className={`w-4 h-4 shrink-0 ${p.windowTitle ? 'text-cyan-300' : 'text-gray-600'}`} />
-                      <span className="truncate text-gray-200">{p.name}</span>
-                      <span className="text-[10px] text-gray-600">.exe</span>
+                      <Icon name="box" className={`w-4 h-4 shrink-0 ${p.windowTitle ? 'text-[var(--accent-strong)]' : 'text-[var(--text-3)]'}`} />
+                      <span className="truncate text-[var(--text)]">{p.name}</span>
+                      <span className="text-[10px] text-[var(--text-3)]">.exe</span>
                     </button>
                   </td>
-                  <td className="px-4 py-2 text-xs text-gray-500 tabular-nums hidden sm:table-cell">{p.pid}</td>
-                  <td className="px-4 py-2 text-xs text-gray-300 tabular-nums text-right">{p.memMB.toFixed(1)} MB</td>
-                  <td className="px-4 py-2 text-xs text-gray-500 tabular-nums hidden md:table-cell">{p.cpuSeconds.toFixed(0)}</td>
-                  <td className="px-4 py-2 text-xs text-gray-500 truncate max-w-[160px] hidden lg:table-cell">{p.windowTitle || '—'}</td>
+                  <td className="px-4 py-2 text-xs text-[var(--text-3)] tabular-nums hidden sm:table-cell">{p.pid}</td>
+                  <td className="px-4 py-2 text-xs text-[var(--text-2)] tabular-nums text-right">{p.memMB.toFixed(1)} MB</td>
+                  <td className="px-4 py-2 text-xs text-[var(--text-3)] tabular-nums hidden md:table-cell">{p.cpuSeconds.toFixed(0)}</td>
+                  <td className="px-4 py-2 text-xs text-[var(--text-3)] truncate max-w-[160px] hidden lg:table-cell">{p.windowTitle || '—'}</td>
                   <td className="px-3 py-2 text-right">
                     {confirmPid === p.pid ? (
                       <div className="flex items-center gap-1.5 justify-end">
@@ -126,7 +124,7 @@ export default function ProcessManagerView({ onBack }: { onBack: () => void }) {
                         <button className="btn-ghost !py-1 !px-2 text-[11px]" onClick={() => setConfirmPid(null)}>Batal</button>
                       </div>
                     ) : (
-                      <button className="btn-ghost !py-1 !px-2 text-[11px] hover:!bg-rose-500/10 hover:!text-rose-300" onClick={() => setConfirmPid(p.pid)}>
+                      <button className="btn-ghost !py-1 !px-2 text-[11px] hover:!bg-[var(--danger-soft)] hover:!text-[var(--danger-strong)]" onClick={() => setConfirmPid(p.pid)}>
                         Hentikan
                       </button>
                     )}
@@ -134,7 +132,7 @@ export default function ProcessManagerView({ onBack }: { onBack: () => void }) {
                 </tr>
               ))}
               {filtered.length === 0 && (
-                <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-gray-500">Tidak ada proses yang cocok.</td></tr>
+                <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-[var(--text-3)]">Tidak ada proses yang cocok.</td></tr>
               )}
             </tbody>
           </table>
@@ -142,32 +140,32 @@ export default function ProcessManagerView({ onBack }: { onBack: () => void }) {
       )}
 
       {selected && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm grid place-items-center p-4" onClick={() => setSelected(null)}>
+        <div className="fixed inset-0 z-50 bg-[var(--scrim)] backdrop-blur-sm grid place-items-center p-4" onClick={() => setSelected(null)}>
           <div className="card w-full max-w-md p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-3">
               <span className="w-11 h-11 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 grid place-items-center text-white">
                 <Icon name="activity" className="w-5 h-5" />
               </span>
               <div>
-                <div className="font-bold text-white">{selected.name}.exe</div>
-                <div className="text-xs text-gray-500">PID {selected.pid} · Sesi {selected.sessionId}</div>
+                <div className="font-bold text-[var(--text)]">{selected.name}.exe</div>
+                <div className="text-xs text-[var(--text-3)]">PID {selected.pid} · Sesi {selected.sessionId}</div>
               </div>
             </div>
             <div className="grid grid-cols-3 gap-2 text-center">
-              <div className="rounded-xl bg-white/[0.04] border border-white/10 py-3">
-                <div className="text-lg font-bold text-white tabular-nums">{selected.memMB.toFixed(1)}</div>
-                <div className="text-[10px] uppercase tracking-wider text-gray-500">MB RAM</div>
+              <div className="rounded-xl bg-[var(--overlay)] border border-[var(--border)] py-3">
+                <div className="text-lg font-bold text-[var(--text)] tabular-nums">{selected.memMB.toFixed(1)}</div>
+                <div className="text-[10px] uppercase tracking-wider text-[var(--text-3)]">MB RAM</div>
               </div>
-              <div className="rounded-xl bg-white/[0.04] border border-white/10 py-3">
-                <div className="text-lg font-bold text-white tabular-nums">{selected.cpuSeconds.toFixed(0)}</div>
-                <div className="text-[10px] uppercase tracking-wider text-gray-500">Cpu (dtk)</div>
+              <div className="rounded-xl bg-[var(--overlay)] border border-[var(--border)] py-3">
+                <div className="text-lg font-bold text-[var(--text)] tabular-nums">{selected.cpuSeconds.toFixed(0)}</div>
+                <div className="text-[10px] uppercase tracking-wider text-[var(--text-3)]">Cpu (dtk)</div>
               </div>
-              <div className="rounded-xl bg-white/[0.04] border border-white/10 py-3">
-                <div className="text-lg font-bold text-white tabular-nums truncate">{selected.path ? formatPathBase(selected.path) : '—'}</div>
-                <div className="text-[10px] uppercase tracking-wider text-gray-500">Path</div>
+              <div className="rounded-xl bg-[var(--overlay)] border border-[var(--border)] py-3">
+                <div className="text-lg font-bold text-[var(--text)] tabular-nums truncate">{selected.path ? formatPathBase(selected.path) : '—'}</div>
+                <div className="text-[10px] uppercase tracking-wider text-[var(--text-3)]">Path</div>
               </div>
             </div>
-            <div className="rounded-xl bg-white/[0.04] border border-white/10 px-4 py-3 text-sm text-gray-300 break-all">{selected.path || 'Lokasi tidak dapat diakses.'}</div>
+            <div className="rounded-xl bg-[var(--overlay)] border border-[var(--border)] px-4 py-3 text-sm text-[var(--text-2)] break-all">{selected.path || 'Lokasi tidak dapat diakses.'}</div>
             <div className="flex gap-2 justify-end">
               <button className="btn-ghost" onClick={() => setSelected(null)}>Tutup</button>
               <button className="btn-danger" onClick={() => { setConfirmPid(selected.pid); setSelected(null); }}>

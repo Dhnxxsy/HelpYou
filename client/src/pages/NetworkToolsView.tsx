@@ -79,18 +79,16 @@ export default function NetworkToolsView({ onBack }: { onBack: () => void }) {
     <div className="space-y-6 animate-fade-in">
       <PageHeader
         icon="network"
-        accent="from-sky-500 to-indigo-600"
-        glow="shadow-sky-500/30"
         title="Alat Jaringan"
         desc="Ping, traceroute, cek DNS, dan pindai port untuk mendiagnosis koneksi."
         onBack={onBack}
       />
 
-      {error && <p className="text-sm text-rose-400 flex items-center gap-1.5"><Icon name="alert" className="w-4 h-4 shrink-0" />{error}</p>}
+      {error && <p className="text-sm text-[var(--danger-strong)] flex items-center gap-1.5"><Icon name="alert" className="w-4 h-4 shrink-0" />{error}</p>}
 
       <div className="flex flex-col sm:flex-row sm:items-end gap-3">
         <div className="flex-1">
-          <label className="text-[11px] uppercase tracking-wider text-gray-500 mb-1.5 block font-semibold">Host / Alamat</label>
+          <label className="text-[11px] uppercase tracking-wider text-[var(--text-3)] mb-1.5 block font-semibold">Host / Alamat</label>
           <input
             className="input-field !py-2.5 text-sm font-mono"
             placeholder="mis. google.com atau 8.8.8.8"
@@ -106,18 +104,18 @@ export default function NetworkToolsView({ onBack }: { onBack: () => void }) {
       </div>
 
       {tab === 'ping' && summary && (
-        <div className={`rounded-xl border px-4 py-3 text-sm ${summary.startsWith('Terhubung') ? 'border-emerald-500/25 bg-emerald-500/10 text-emerald-200' : 'border-rose-500/25 bg-rose-500/10 text-rose-200 flex items-center gap-2'}`}>
+        <div className={`rounded-xl border px-4 py-3 text-sm ${summary.startsWith('Terhubung') ? 'border-[var(--ok-border)] bg-[var(--ok-soft)] text-[var(--ok-strong)]' : 'border-[var(--danger-border)] bg-[var(--danger-soft)] text-[var(--danger-strong)] flex items-center gap-2'}`}>
           {summary.startsWith('Terhubung') ? <Icon name="check" className="w-4 h-4" /> : <Icon name="alert" className="w-4 h-4" />}
           {summary}
         </div>
       )}
 
-      <div className="flex gap-1 bg-white/[0.05] border border-white/10 rounded-xl p-1 overflow-x-auto">
+      <div className="flex gap-1 bg-[var(--overlay)] border border-[var(--border)] rounded-xl p-1 overflow-x-auto">
         {TABS.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${tab === t.id ? 'bg-gradient-to-r from-sky-500 to-indigo-500 text-white' : 'text-gray-400 hover:text-white'}`}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${tab === t.id ? 'bg-gradient-to-r from-sky-500 to-indigo-500 text-white' : 'text-[var(--text-2)] hover:text-[var(--text)]'}`}
           >
             <Icon name={t.icon} className="w-4 h-4" /> {t.label}
           </button>
@@ -131,12 +129,12 @@ export default function NetworkToolsView({ onBack }: { onBack: () => void }) {
             {!pings && <EmptyBox loading={busy === 'ping'} label="Jalankan ping untuk mengukur latensi." />}
             {pings && pings.map((p) => (
               <div key={p.seq} className="flex items-center justify-between px-4 py-2.5 text-sm">
-                <span className="text-gray-500 tabular-nums w-16">#{p.seq}</span>
-                <span className={`flex items-center gap-2 ${p.timedOut ? 'text-rose-400' : 'text-emerald-300'}`}>
-                  <span className={`w-2 h-2 rounded-full ${p.timedOut ? 'bg-rose-400' : 'bg-emerald-400'}`} />
+                <span className="text-[var(--text-3)] tabular-nums w-16">#{p.seq}</span>
+                <span className={`flex items-center gap-2 ${p.timedOut ? 'text-[var(--danger-strong)]' : 'text-[var(--ok-strong)]'}`}>
+                  <span className={`w-2 h-2 rounded-full ${p.timedOut ? 'bg-rose-400' : 'bg-[var(--ok)]'}`} />
                   {p.timedOut ? 'Tidak ada balasan (timeout)' : `${p.ms} ms`}
                 </span>
-                <span className="text-xs text-gray-500 tabular-nums">{p.ttl != null ? `TTL ${p.ttl}` : ''}</span>
+                <span className="text-xs text-[var(--text-3)] tabular-nums">{p.ttl != null ? `TTL ${p.ttl}` : ''}</span>
               </div>
             ))}
           </div>
@@ -151,11 +149,11 @@ export default function NetworkToolsView({ onBack }: { onBack: () => void }) {
                 <tbody className="divide-y divide-white/5">
                   {hops.map((h) => (
                     <tr key={h.hop}>
-                      <td className="px-4 py-2 text-xs text-gray-500 tabular-nums w-12">{h.hop}</td>
-                      <td className="px-3 py-2 text-xs text-gray-400 tabular-nums w-44 whitespace-nowrap">
-                        {h.times.length === 0 ? <span className="text-gray-600">—</span> : h.times.join('  ')}
+                      <td className="px-4 py-2 text-xs text-[var(--text-3)] tabular-nums w-12">{h.hop}</td>
+                      <td className="px-3 py-2 text-xs text-[var(--text-2)] tabular-nums w-44 whitespace-nowrap">
+                        {h.times.length === 0 ? <span className="text-[var(--text-3)]">—</span> : h.times.join('  ')}
                       </td>
-                      <td className="px-4 py-2 text-xs text-gray-300 font-mono">{h.address || '(tidak ada rute / timeout)'}</td>
+                      <td className="px-4 py-2 text-xs text-[var(--text-2)] font-mono">{h.address || '(tidak ada rute / timeout)'}</td>
                     </tr>
                   ))}
                   {hops.length === 0 && <EmptyBox loading={false} label="Tidak ada hop yang terdeteksi." />}
@@ -171,14 +169,14 @@ export default function NetworkToolsView({ onBack }: { onBack: () => void }) {
             {dns === null && <EmptyBox loading={busy === 'dns'} label="Cek catatan DNS untuk host ini." />}
             {dns !== null && (
               <table className="w-full text-sm">
-                <thead className="bg-white/[0.02] text-[10px] uppercase tracking-wider text-gray-500">
+                <thead className="bg-[var(--overlay)] text-[10px] uppercase tracking-wider text-[var(--text-3)]">
                   <tr><th className="text-left px-4 py-2.5 font-semibold w-16">Tipe</th><th className="text-left px-4 py-2.5 font-semibold">Nilai</th></tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
                   {dns.map((r, i) => (
                     <tr key={i}>
-                      <td className="px-4 py-2 text-xs font-semibold text-sky-300">{r.type}</td>
-                      <td className="px-4 py-2 text-xs text-gray-300 font-mono break-all">{r.value || r.name}</td>
+                      <td className="px-4 py-2 text-xs font-semibold text-[var(--accent-strong)]">{r.type}</td>
+                      <td className="px-4 py-2 text-xs text-[var(--text-2)] font-mono break-all">{r.value || r.name}</td>
                     </tr>
                   ))}
                   {dns.length === 0 && <EmptyBox loading={false} label="Tidak ada catatan yang ditemukan." />}
@@ -195,13 +193,13 @@ export default function NetworkToolsView({ onBack }: { onBack: () => void }) {
             {ports !== null && (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 p-4">
                 {ports.map((p) => (
-                  <div key={p.port} className={`rounded-xl border px-3 py-2.5 ${p.open ? 'border-emerald-500/30 bg-emerald-500/10' : 'border-white/10 bg-white/[0.02]'}`}>
+                  <div key={p.port} className={`rounded-xl border px-3 py-2.5 ${p.open ? 'border-[var(--ok-border)] bg-[var(--ok-soft)]' : 'border-[var(--border)] bg-[var(--overlay)]'}`}>
                     <div className="flex items-center justify-between">
-                      <span className="font-mono text-sm text-gray-200">{p.port}</span>
-                      <span className={`w-2 h-2 rounded-full ${p.open ? 'bg-emerald-400' : 'bg-gray-600'}`} />
+                      <span className="font-mono text-sm text-[var(--text)]">{p.port}</span>
+                      <span className={`w-2 h-2 rounded-full ${p.open ? 'bg-[var(--ok)]' : 'bg-[var(--bg-3)]'}`} />
                     </div>
-                    <div className="text-[11px] text-gray-500 mt-0.5 truncate">{p.service || '—'}</div>
-                    <div className={`text-[10px] mt-0.5 ${p.open ? 'text-emerald-300' : 'text-gray-600'}`}>{p.open ? 'Terbuka' : 'Tertutup'} · {p.ms} ms</div>
+                    <div className="text-[11px] text-[var(--text-3)] mt-0.5 truncate">{p.service || '—'}</div>
+                    <div className={`text-[10px] mt-0.5 ${p.open ? 'text-[var(--ok-strong)]' : 'text-[var(--text-3)]'}`}>{p.open ? 'Terbuka' : 'Tertutup'} · {p.ms} ms</div>
                   </div>
                 ))}
                 {ports.length === 0 && <EmptyBox loading={false} label="Tidak ada hasil." />}
@@ -222,11 +220,11 @@ function EmptyBox({ loading, label }: { loading: boolean; label: string }) {
   return (
     <div className="px-4 py-10 text-center">
       {loading ? (
-        <div className="animate-spin h-6 w-6 border-2 border-sky-400/40 border-t-sky-400 rounded-full mx-auto" />
+        <div className="animate-spin h-6 w-6 border-2 border-[var(--accent-border)] border-t-[var(--accent-strong)] rounded-full mx-auto" />
       ) : (
-        <Icon name="network" className="w-8 h-8 text-gray-700 mx-auto" />
+        <Icon name="network" className="w-8 h-8 text-[var(--text-3)] mx-auto" />
       )}
-      <p className="text-sm text-gray-500 mt-3">{label}</p>
+      <p className="text-sm text-[var(--text-3)] mt-3">{label}</p>
     </div>
   );
 }

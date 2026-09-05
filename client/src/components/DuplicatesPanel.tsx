@@ -99,9 +99,9 @@ export default function DuplicatesPanel({
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-[var(--text-2)]">
           {groups.length} grup duplikat · potensi hemat{' '}
-          <b className="text-emerald-300">{formatBytes(groups.reduce((s, g) => s + g.reclaimable, 0))}</b>
+          <b className="text-[var(--ok-strong)]">{formatBytes(groups.reduce((s, g) => s + g.reclaimable, 0))}</b>
         </p>
         <button className="btn-primary !py-2 !px-4 text-xs" onClick={() => setConfirmOpen(true)} disabled={busy || selectedCount === 0}>
           <Icon name="duplicate" className="w-3.5 h-3.5" />
@@ -114,17 +114,17 @@ export default function DuplicatesPanel({
           const st = checked[g.id] || [];
           const allChecked = st.every(Boolean);
           return (
-            <div key={g.id} className="border border-white/10 rounded-xl p-4 bg-white/[0.02]">
+            <div key={g.id} className="border border-[var(--border)] rounded-xl p-4 bg-[var(--overlay)]">
               <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-                <div className="flex flex-wrap items-center gap-2 text-sm text-gray-300">
-                  <span className="chip bg-amber-500/15 text-amber-300 border border-amber-500/20">
+                <div className="flex flex-wrap items-center gap-2 text-sm text-[var(--text-2)]">
+                  <span className="chip bg-[var(--warn-soft)] text-[var(--warn-strong)] border border-[var(--warn-border)]">
                     <Icon name="duplicate" className="w-3 h-3" /> Duplikat
                   </span>
                   <b className="tabular-nums">{formatBytes(g.size)}</b>
-                  <span className="text-gray-500">× {g.files.length} file</span>
-                  <span className="text-[11px] text-emerald-400/80">hemat {formatBytes(g.reclaimable)}</span>
+                  <span className="text-[var(--text-3)]">× {g.files.length} file</span>
+                  <span className="text-[11px] text-[var(--ok-strong)]/80">hemat {formatBytes(g.reclaimable)}</span>
                 </div>
-                <label className="flex items-center gap-1.5 text-xs text-gray-400 cursor-pointer select-none">
+                <label className="flex items-center gap-1.5 text-xs text-[var(--text-2)] cursor-pointer select-none">
                   <input
                     type="checkbox"
                     className="accent-indigo-500 w-3.5 h-3.5"
@@ -136,13 +136,13 @@ export default function DuplicatesPanel({
               </div>
               <div className="space-y-1">
                 {g.files.map((f, i) => (
-                  <label key={f.path} className="flex items-center gap-2.5 text-xs cursor-pointer hover:bg-white/[0.04] rounded-lg px-2.5 py-1.5 group">
+                  <label key={f.path} className="flex items-center gap-2.5 text-xs cursor-pointer hover:bg-[var(--overlay)] rounded-lg px-2.5 py-1.5 group">
                     <input type="checkbox" className="accent-indigo-500 w-3.5 h-3.5 shrink-0" checked={st[i]} onChange={() => toggle(g, i)} />
-                    <span className={`chip shrink-0 ${i === 0 ? 'bg-emerald-500/15 text-emerald-300' : 'bg-white/10 text-gray-400'}`}>
+                    <span className={`chip shrink-0 ${i === 0 ? 'bg-[var(--ok-soft)] text-[var(--ok-strong)]' : 'bg-[var(--overlay-2)] text-[var(--text-2)]'}`}>
                       {i === 0 ? 'Simpan' : 'Duplikat'}
                     </span>
-                    <span className="truncate flex-1 text-gray-300 group-hover:text-gray-200" title={f.path}>{f.path.replace(root + '\\', '')}</span>
-                    <span className="text-gray-500 tabular-nums shrink-0">{formatBytes(f.size)}</span>
+                    <span className="truncate flex-1 text-[var(--text-2)] group-hover:text-[var(--text)]" title={f.path}>{f.path.replace(root + '\\', '')}</span>
+                    <span className="text-[var(--text-3)] tabular-nums shrink-0">{formatBytes(f.size)}</span>
                   </label>
                 ))}
               </div>
@@ -151,9 +151,9 @@ export default function DuplicatesPanel({
         })}
       </div>
 
-      <p className="text-[11px] text-gray-500 mt-3 flex items-center gap-1.5">
+      <p className="text-[11px] text-[var(--text-3)] mt-3 flex items-center gap-1.5">
         <Icon name="info" className="w-3.5 h-3.5" />
-        File duplikat <b>dipindahkan</b> (bukan dihapus) ke <code className="text-amber-300/80">_TerSortir\Duplikat</code> dan bisa dikembalikan lewat Riwayat.
+        File duplikat <b>dipindahkan</b> (bukan dihapus) ke <code className="text-[var(--warn-strong)]">_TerSortir\Duplikat</code> dan bisa dikembalikan lewat Riwayat.
       </p>
 
       <ConfirmDialog
@@ -172,15 +172,15 @@ export default function DuplicatesPanel({
 
 export function EmptyState({ icon, title, sub, tone = 'default' }: { icon: IconName; title: string; sub?: string; tone?: 'emerald' | 'default' }) {
   const cls = tone === 'emerald'
-    ? 'bg-emerald-500/12 text-emerald-300 border border-emerald-500/25'
-    : 'bg-white/[0.05] text-gray-400 border border-white/10';
+    ? 'bg-[var(--ok-soft)] text-[var(--ok-strong)] border border-[var(--ok-border)]'
+    : 'bg-[var(--overlay)] text-[var(--text-2)] border border-[var(--border)]';
   return (
     <div className="py-10 text-center flex flex-col items-center gap-3">
       <div className={`w-12 h-12 rounded-2xl grid place-items-center ${cls}`}>
         <Icon name={icon} className="w-6 h-6" />
       </div>
-      <div className="text-sm font-medium text-gray-200">{title}</div>
-      {sub && <div className="text-xs text-gray-500 max-w-sm">{sub}</div>}
+      <div className="text-sm font-medium text-[var(--text)]">{title}</div>
+      {sub && <div className="text-xs text-[var(--text-3)] max-w-sm">{sub}</div>}
     </div>
   );
 }

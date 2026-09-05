@@ -60,8 +60,6 @@ export default function RecycleBinView({ onBack }: { onBack: () => void }) {
     <div className="space-y-6 animate-fade-in">
       <PageHeader
         icon="recycle"
-        accent="from-emerald-500 to-teal-600"
-        glow="shadow-emerald-500/30"
         title="Tempat Sampah"
         desc="Pulihkan file/folder yang terhapus, atau kosongkan isi Tempat Sampah semuanya."
         onBack={onBack}
@@ -77,12 +75,12 @@ export default function RecycleBinView({ onBack }: { onBack: () => void }) {
         }
       />
 
-      {error && <p className="text-sm text-rose-400 flex items-center gap-1.5"><Icon name="alert" className="w-4 h-4 shrink-0" />{error}</p>}
+      {error && <p className="text-sm text-[var(--danger-strong)] flex items-center gap-1.5"><Icon name="alert" className="w-4 h-4 shrink-0" />{error}</p>}
 
       {loading && (
         <div className="card p-8 text-center">
-          <div className="animate-spin h-6 w-6 border-2 border-emerald-400/40 border-t-emerald-400 rounded-full mx-auto" />
-          <p className="text-sm text-gray-400 mt-3">Membaca Tempat Sampah…</p>
+          <div className="animate-spin h-6 w-6 border-2 border-[var(--ok-border)] border-t-[var(--ok-strong)] rounded-full mx-auto" />
+          <p className="text-sm text-[var(--text-2)] mt-3">Membaca Tempat Sampah…</p>
         </div>
       )}
 
@@ -90,23 +88,23 @@ export default function RecycleBinView({ onBack }: { onBack: () => void }) {
         <>
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <div className="relative flex-1">
-              <Icon name="search" className="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Icon name="search" className="w-4 h-4 text-[var(--text-3)] absolute left-3 top-1/2 -translate-y-1/2" />
               <input className="input-field pl-9 !py-2 text-sm" placeholder="Cari di Tempat Sampah…" value={query} onChange={(e) => setQuery(e.target.value)} />
             </div>
-            <div className="chip bg-emerald-500/10 text-emerald-300 border-emerald-500/20">
+            <div className="chip bg-[var(--ok-soft)] text-[var(--ok-strong)] border-[var(--ok-border)]">
               {data.count} item · {formatBytes(data.totalBytes)}
             </div>
           </div>
 
           {rows.length === 0 ? (
             <div className="card p-10 text-center">
-              <Icon name="recycle" className="w-10 h-10 text-gray-600 mx-auto" />
-              <p className="text-sm text-gray-400 mt-3">{data.count === 0 ? 'Tempat Sampah kosong. Semua bersih!' : 'Tidak ada hasil yang cocok.'}</p>
+              <Icon name="recycle" className="w-10 h-10 text-[var(--text-3)] mx-auto" />
+              <p className="text-sm text-[var(--text-2)] mt-3">{data.count === 0 ? 'Tempat Sampah kosong. Semua bersih!' : 'Tidak ada hasil yang cocok.'}</p>
             </div>
           ) : (
             <div className="card overflow-hidden">
               <table className="w-full text-sm">
-                <thead className="bg-white/[0.02] text-[10px] uppercase tracking-wider text-gray-500">
+                <thead className="bg-[var(--overlay)] text-[10px] uppercase tracking-wider text-[var(--text-3)]">
                   <tr>
                     <th className="text-left px-4 py-2.5 font-semibold">Nama</th>
                     <th className="text-left px-4 py-2.5 font-semibold hidden md:table-cell">Lokasi Asal</th>
@@ -117,18 +115,18 @@ export default function RecycleBinView({ onBack }: { onBack: () => void }) {
                 </thead>
                 <tbody className="divide-y divide-white/5">
                   {rows.map((item, i) => (
-                    <tr key={i} className="hover:bg-white/[0.02]">
+                    <tr key={i} className="hover:bg-[var(--overlay)]">
                       <td className="px-4 py-2.5 max-w-[220px]">
                         <span className="flex items-center gap-2 truncate">
-                          <Icon name="box" className="w-4 h-4 text-gray-500 shrink-0" />
-                          <span className="truncate text-gray-200">{item.name}</span>
+                          <Icon name="box" className="w-4 h-4 text-[var(--text-3)] shrink-0" />
+                          <span className="truncate text-[var(--text)]">{item.name}</span>
                         </span>
                       </td>
-                      <td className="px-4 py-2.5 text-xs text-gray-500 truncate max-w-[220px] hidden md:table-cell">{item.deletedFrom || '—'}</td>
-                      <td className="px-4 py-2.5 text-xs text-gray-500 tabular-nums text-right hidden sm:table-cell">{item.size > 0 ? formatBytes(item.size) : '—'}</td>
-                      <td className="px-4 py-2.5 text-xs text-gray-500 hidden sm:table-cell">{item.deletedAt || '—'}</td>
+                      <td className="px-4 py-2.5 text-xs text-[var(--text-3)] truncate max-w-[220px] hidden md:table-cell">{item.deletedFrom || '—'}</td>
+                      <td className="px-4 py-2.5 text-xs text-[var(--text-3)] tabular-nums text-right hidden sm:table-cell">{item.size > 0 ? formatBytes(item.size) : '—'}</td>
+                      <td className="px-4 py-2.5 text-xs text-[var(--text-3)] hidden sm:table-cell">{item.deletedAt || '—'}</td>
                       <td className="px-3 py-2.5 text-right">
-                        <button className="btn-secondary !py-1.5 !px-2.5 text-xs !border-emerald-500/30 !text-emerald-300" disabled={busy === (item.origPath || item.name)} onClick={() => restore(item)}>
+                        <button className="btn-secondary !py-1.5 !px-2.5 text-xs !border-[var(--ok-border)] !text-[var(--ok-strong)]" disabled={busy === (item.origPath || item.name)} onClick={() => restore(item)}>
                           <Icon name="undo" className={`w-3.5 h-3.5 ${busy === (item.origPath || item.name) ? 'animate-spin' : ''}`} /> Pulihkan
                         </button>
                       </td>

@@ -104,8 +104,6 @@ export default function JunkCleanerView({ onBack }: { onBack: () => void }) {
     <div className="space-y-6 animate-fade-in">
       <PageHeader
         icon="broom"
-        accent="from-emerald-500 to-teal-500"
-        glow="shadow-emerald-500/30"
         title="Pembersih File Sampah"
         desc="Bersihkan temp, cache, dan file sementara dengan aman. File yang sedang dipakai otomatis dilewati."
         onBack={onBack}
@@ -117,13 +115,13 @@ export default function JunkCleanerView({ onBack }: { onBack: () => void }) {
       />
 
       {error && (
-        <p className="text-sm text-rose-400 flex items-center gap-1.5"><Icon name="alert" className="w-4 h-4 shrink-0" />{error}</p>
+        <p className="text-sm text-[var(--danger-strong)] flex items-center gap-1.5"><Icon name="alert" className="w-4 h-4 shrink-0" />{error}</p>
       )}
 
       {phase === 'scanning' && (
         <div className="card p-8 text-center">
-          <div className="animate-spin h-6 w-6 border-2 border-emerald-400/40 border-t-emerald-400 rounded-full mx-auto" />
-          <p className="text-sm text-gray-400 mt-3">Menganalisis lokasi sampah…</p>
+          <div className="animate-spin h-6 w-6 border-2 border-[var(--ok-border)] border-t-[var(--ok-strong)] rounded-full mx-auto" />
+          <p className="text-sm text-[var(--text-2)] mt-3">Menganalisis lokasi sampah…</p>
         </div>
       )}
 
@@ -131,25 +129,25 @@ export default function JunkCleanerView({ onBack }: { onBack: () => void }) {
         <>
           <div className="grid sm:grid-cols-3 gap-3">
             <div className="card px-4 py-3">
-              <div className="text-[10px] uppercase tracking-wider text-gray-500">Total Sampah</div>
-              <div className="text-lg font-semibold tabular-nums text-white mt-0.5">{formatBytes(totalSize)}</div>
+              <div className="text-[10px] uppercase tracking-wider text-[var(--text-3)]">Total Sampah</div>
+              <div className="text-lg font-semibold tabular-nums text-[var(--text)] mt-0.5">{formatBytes(totalSize)}</div>
             </div>
             <div className="card px-4 py-3">
-              <div className="text-[10px] uppercase tracking-wider text-gray-500">Item</div>
-              <div className="text-lg font-semibold tabular-nums text-white mt-0.5">{itemCount.toLocaleString('id-ID')}</div>
+              <div className="text-[10px] uppercase tracking-wider text-[var(--text-3)]">Item</div>
+              <div className="text-lg font-semibold tabular-nums text-[var(--text)] mt-0.5">{itemCount.toLocaleString('id-ID')}</div>
             </div>
             <div className="card px-4 py-3">
-              <div className="text-[10px] uppercase tracking-wider text-gray-500">Lokasi Terdeteksi</div>
-              <div className="text-lg font-semibold tabular-nums text-white mt-0.5">{scan.targets.filter((t) => t.exists).length}</div>
+              <div className="text-[10px] uppercase tracking-wider text-[var(--text-3)]">Lokasi Terdeteksi</div>
+              <div className="text-lg font-semibold tabular-nums text-[var(--text)] mt-0.5">{scan.targets.filter((t) => t.exists).length}</div>
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/10 overflow-hidden bg-white/[0.02]">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
-              <span className="text-sm font-semibold text-white flex items-center gap-2">
-                <Icon name="box" className="w-4 h-4 text-emerald-300" /> Lokasi Sampah
+          <div className="rounded-2xl border border-[var(--border)] overflow-hidden bg-[var(--overlay)]">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border)]">
+              <span className="text-sm font-semibold text-[var(--text)] flex items-center gap-2">
+                <Icon name="box" className="w-4 h-4 text-[var(--ok-strong)]" /> Lokasi Sampah
               </span>
-              <span className="text-[11px] text-gray-500">{selected.size} dipilih</span>
+              <span className="text-[11px] text-[var(--text-3)]">{selected.size} dipilih</span>
             </div>
             <div className="divide-y divide-white/5">
               {scan.targets.map((t) => {
@@ -159,25 +157,25 @@ export default function JunkCleanerView({ onBack }: { onBack: () => void }) {
                     key={t.id}
                     onClick={() => toggle(t.id)}
                     disabled={!t.exists}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-white/[0.03] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[var(--overlay)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    <span className={`w-5 h-5 rounded-md border grid place-items-center shrink-0 transition-colors ${checked ? 'bg-emerald-500 border-emerald-500' : 'border-white/20'}`}>
-                      {checked && <Icon name="check" className="w-3.5 h-3.5 text-white" />}
+                    <span className={`w-5 h-5 rounded-md border grid place-items-center shrink-0 transition-colors ${checked ? 'bg-[var(--ok)] border-[var(--ok-border)]' : 'border-[var(--border-2)]'}`}>
+                      {checked && <Icon name="check" className="w-3.5 h-3.5 text-[var(--text)]" />}
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="text-sm font-medium text-gray-200 flex items-center gap-2">
+                      <span className="text-sm font-medium text-[var(--text)] flex items-center gap-2">
                         {t.label}
                         {t.admin && (
-                          <span className="chip bg-amber-500/10 text-amber-300 border border-amber-500/20 text-[10px]" title="Butuh izin administrator untuk membersihkan">
+                          <span className="chip bg-[var(--warn-soft)] text-[var(--warn-strong)] border border-[var(--warn-border)] text-[10px]" title="Butuh izin administrator untuk membersihkan">
                             <Icon name="lock" className="w-3 h-3" /> Admin
                           </span>
                         )}
                       </span>
-                      <span className="block text-[11px] text-gray-500 truncate" title={t.path}>{t.note}</span>
+                      <span className="block text-[11px] text-[var(--text-3)] truncate" title={t.path}>{t.note}</span>
                     </span>
                     <span className="text-right shrink-0">
-                      <span className="block text-sm font-semibold tabular-nums text-white">{formatBytes(t.sizeBytes)}</span>
-                      <span className="block text-[10px] text-gray-500 tabular-nums">{t.itemCount.toLocaleString('id-ID')} item</span>
+                      <span className="block text-sm font-semibold tabular-nums text-[var(--text)]">{formatBytes(t.sizeBytes)}</span>
+                      <span className="block text-[10px] text-[var(--text-3)] tabular-nums">{t.itemCount.toLocaleString('id-ID')} item</span>
                     </span>
                   </button>
                 );
@@ -194,17 +192,17 @@ export default function JunkCleanerView({ onBack }: { onBack: () => void }) {
               <Icon name="broom" className="w-4 h-4" />
               {cleaning ? 'Membersihkan…' : `Bersihkan ${selected.size} Lokasi${hasAdminSelection ? ' (butuh admin)' : ''}`}
             </button>
-            <p className="text-[11px] text-gray-500">
+            <p className="text-[11px] text-[var(--text-3)]">
               File yang sedang dipakai Windows tidak akan bisa dihapus dan otomatis dilewati. Selalu aman.
             </p>
           </div>
 
           {summary && (
-            <div className="card p-4 flex items-start gap-3 border-emerald-500/20">
-              <span className="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-300 grid place-items-center shrink-0"><Icon name="check" className="w-5 h-5" /></span>
+            <div className="card p-4 flex items-start gap-3 border-[var(--ok-border)]">
+              <span className="w-9 h-9 rounded-xl bg-[var(--ok-soft)] text-[var(--ok-strong)] grid place-items-center shrink-0"><Icon name="check" className="w-5 h-5" /></span>
               <div className="text-sm">
-                <div className="text-white font-medium">Bersih total {formatBytes(summary.freed)} dari {summary.removed.toLocaleString('id-ID')} item{summary.admin ? ' (dengan izin admin)' : ''}.</div>
-                {summary.errors > 0 && <div className="text-gray-400 mt-1 text-xs">{summary.errors.toLocaleString('id-ID')} file masih dipakai/dikunci dan dilewati.</div>}
+                <div className="text-[var(--text)] font-medium">Bersih total {formatBytes(summary.freed)} dari {summary.removed.toLocaleString('id-ID')} item{summary.admin ? ' (dengan izin admin)' : ''}.</div>
+                {summary.errors > 0 && <div className="text-[var(--text-2)] mt-1 text-xs">{summary.errors.toLocaleString('id-ID')} file masih dipakai/dikunci dan dilewati.</div>}
               </div>
             </div>
           )}

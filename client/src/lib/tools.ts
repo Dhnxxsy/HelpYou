@@ -32,7 +32,7 @@ export const ACTIVE_TOOLS: ActiveTool[] = [
     tool: 'organizer',
     accent: 'from-indigo-500 to-fuchsia-500',
     glow: 'shadow-indigo-500/20',
-    chip: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
+    chip: 'bg-[var(--ok-soft)] text-[var(--ok-strong)] border-[var(--ok-border)]',
   },
   {
     icon: 'trash',
@@ -42,7 +42,7 @@ export const ACTIVE_TOOLS: ActiveTool[] = [
     tool: 'uninstaller',
     accent: 'from-violet-500 to-rose-500',
     glow: 'shadow-violet-500/20',
-    chip: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
+    chip: 'bg-[var(--ok-soft)] text-[var(--ok-strong)] border-[var(--ok-border)]',
   },
   {
     icon: 'broom',
@@ -52,7 +52,7 @@ export const ACTIVE_TOOLS: ActiveTool[] = [
     tool: 'junk',
     accent: 'from-emerald-500 to-teal-500',
     glow: 'shadow-emerald-500/20',
-    chip: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
+    chip: 'bg-[var(--ok-soft)] text-[var(--ok-strong)] border-[var(--ok-border)]',
   },
   {
     icon: 'disc',
@@ -62,7 +62,7 @@ export const ACTIVE_TOOLS: ActiveTool[] = [
     tool: 'disk',
     accent: 'from-violet-500 to-indigo-500',
     glow: 'shadow-violet-500/20',
-    chip: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
+    chip: 'bg-[var(--ok-soft)] text-[var(--ok-strong)] border-[var(--ok-border)]',
   },
   {
     icon: 'gauge',
@@ -72,7 +72,7 @@ export const ACTIVE_TOOLS: ActiveTool[] = [
     tool: 'startup',
     accent: 'from-cyan-500 to-blue-600',
     glow: 'shadow-cyan-500/20',
-    chip: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
+    chip: 'bg-[var(--ok-soft)] text-[var(--ok-strong)] border-[var(--ok-border)]',
   },
   {
     icon: 'cpu',
@@ -82,7 +82,7 @@ export const ACTIVE_TOOLS: ActiveTool[] = [
     tool: 'system',
     accent: 'from-amber-500 to-orange-600',
     glow: 'shadow-amber-500/20',
-    chip: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
+    chip: 'bg-[var(--ok-soft)] text-[var(--ok-strong)] border-[var(--ok-border)]',
   },
   {
     icon: 'rename',
@@ -92,7 +92,7 @@ export const ACTIVE_TOOLS: ActiveTool[] = [
     tool: 'rename',
     accent: 'from-fuchsia-500 to-indigo-600',
     glow: 'shadow-fuchsia-500/20',
-    chip: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
+    chip: 'bg-[var(--ok-soft)] text-[var(--ok-strong)] border-[var(--ok-border)]',
   },
   {
     icon: 'recycle',
@@ -102,7 +102,7 @@ export const ACTIVE_TOOLS: ActiveTool[] = [
     tool: 'recycle',
     accent: 'from-emerald-500 to-teal-600',
     glow: 'shadow-emerald-500/20',
-    chip: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
+    chip: 'bg-[var(--ok-soft)] text-[var(--ok-strong)] border-[var(--ok-border)]',
   },
   {
     icon: 'fileText',
@@ -112,7 +112,7 @@ export const ACTIVE_TOOLS: ActiveTool[] = [
     tool: 'notepad',
     accent: 'from-amber-400 to-orange-600',
     glow: 'shadow-amber-500/20',
-    chip: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
+    chip: 'bg-[var(--ok-soft)] text-[var(--ok-strong)] border-[var(--ok-border)]',
   },
   {
     icon: 'lock',
@@ -122,6 +122,6 @@ export const ACTIVE_TOOLS: ActiveTool[] = [
     tool: 'vault',
     accent: 'from-violet-500 to-purple-600',
     glow: 'shadow-violet-500/20',
-    chip: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
+    chip: 'bg-[var(--ok-soft)] text-[var(--ok-strong)] border-[var(--ok-border)]',
   },
 ];

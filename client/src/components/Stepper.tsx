@@ -19,15 +19,15 @@ export default function Stepper({ steps, current }: { steps: Step[]; current: nu
               <div className="flex flex-col items-center w-24 sm:w-32 shrink-0">
                 <div className="relative">
                   {state === 'active' && (
-                    <span className="absolute inset-0 rounded-full bg-indigo-500/40 animate-ping-slow" />
+                    <span className="absolute inset-0 rounded-full bg-[var(--accent-soft-2)] animate-ping-slow" />
                   )}
                   <div
                     className={`relative w-10 h-10 rounded-full grid place-items-center border transition-all duration-300 ${
                       state === 'done'
-                        ? 'bg-gradient-to-br from-indigo-500 to-fuchsia-500 border-transparent text-white shadow-lg shadow-fuchsia-500/35 ring-2 ring-white/20 ring-offset-2 ring-offset-transparent'
+                        ? 'bg-gradient-to-br from-[var(--accent-deep)] to-[var(--accent-2)] border-transparent text-white shadow-lg shadow-[0_10px_30px_-10px_var(--accent-glow)] ring-2 ring-[var(--border-2)] ring-offset-2 ring-offset-transparent'
                         : state === 'active'
-                          ? 'bg-white/[0.09] border-indigo-400/70 text-indigo-200 ring-4 ring-indigo-500/20 shadow-[0_0_18px_-4px_rgba(99,102,241,0.6)]'
-                          : 'bg-white/[0.03] border-white/10 text-gray-500'
+                          ? 'bg-[var(--overlay-2)] border-[var(--accent-border)] text-[var(--accent-strong)] ring-4 ring-[var(--accent-border)] shadow-[0_0_18px_-4px_rgba(99,102,241,0.6)]'
+                          : 'bg-[var(--overlay)] border-[var(--border)] text-[var(--text-3)]'
                     }`}
                   >
                     {state === 'done' ? (
@@ -37,12 +37,12 @@ export default function Stepper({ steps, current }: { steps: Step[]; current: nu
                     )}
                   </div>
                 </div>
-                <div className={`mt-2 text-center leading-tight ${state === 'active' ? 'text-white' : state === 'done' ? 'text-gray-300' : 'text-gray-500'}`}>
+                <div className={`mt-2 text-center leading-tight ${state === 'active' ? 'text-[var(--text)]' : state === 'done' ? 'text-[var(--text-2)]' : 'text-[var(--text-3)]'}`}>
                   <div className="text-[13px] font-semibold whitespace-nowrap">{s.label}</div>
                   {num < current ? (
-                    <div className="text-[10px] text-emerald-400/90 font-medium">Selesai</div>
+                    <div className="text-[10px] text-[var(--ok-strong)]/90 font-medium">Selesai</div>
                   ) : state === 'active' ? (
-                    <div className="text-[10px] text-indigo-300">Langkah {num} dari {steps.length}</div>
+                    <div className="text-[10px] text-[var(--accent-strong)]">Langkah {num} dari {steps.length}</div>
                   ) : null}
                 </div>
               </div>

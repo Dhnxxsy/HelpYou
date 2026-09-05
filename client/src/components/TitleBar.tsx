@@ -37,10 +37,10 @@ export default function TitleBar() {
   const restoreable = state.maximized || state.fullscreen;
 
   return (
-    <div className="fixed top-0 left-0 right-0 h-10 z-[60] flex items-stretch select-none border-b border-white/10 bg-[#0b0d18]/85 backdrop-blur-xl" style={{ WebkitAppRegion: 'drag' } as CSSProperties}>
-      <div className="flex items-center px-3 gap-2 text-zinc-400 text-xs">
-        <span className="w-4 h-4 rounded-lg bg-gradient-to-br from-indigo-500 to-fuchsia-500 inline-block shadow-[0_0_12px_rgba(129,90,246,0.65)]" />
-        <span className="font-semibold tracking-wide text-[13px] text-zinc-300">HelpYou</span>
+    <div className="fixed top-0 left-0 right-0 h-10 z-[60] flex items-stretch select-none border-b border-[var(--border)] bg-[var(--bg-2-glass)] backdrop-blur-xl" style={{ WebkitAppRegion: 'drag' } as CSSProperties}>
+      <div className="flex items-center px-3 gap-2 text-[var(--text-2)] text-xs">
+        <span className="w-4 h-4 rounded-lg bg-gradient-to-br from-[var(--accent-deep)] to-[var(--accent-2)] inline-block shadow-[0_0_12px_rgba(129,90,246,0.65)]" />
+        <span className="font-semibold tracking-wide text-[13px] text-[var(--text)]">HelpYou</span>
       </div>
 
       <div className="flex-1" onDoubleClick={() => controls?.toggleMaximize().then((s) => setState((p) => ({ ...p, ...s })))} />
@@ -49,28 +49,28 @@ export default function TitleBar() {
         <button
           aria-label="Minimalkan"
           onClick={() => controls?.minimize()}
-          className="w-11 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/[0.1] transition-colors"
+          className="w-11 flex items-center justify-center text-[var(--text-2)] hover:text-[var(--text)] hover:bg-[var(--overlay-2)] transition-colors"
         >
           <WindowIcon d={MINIMIZE} />
         </button>
         <button
           aria-label={restoreable ? 'Pulihkan jendela' : 'Maksimalkan jendela'}
           onClick={() => controls?.toggleMaximize().then((s) => setState((p) => ({ ...p, ...s })))}
-          className={`w-11 flex items-center justify-center transition-colors ${restoreable ? 'text-indigo-300 hover:bg-indigo-500/30' : 'text-zinc-400 hover:text-white hover:bg-white/[0.1]'}`}
+          className={`w-11 flex items-center justify-center transition-colors ${restoreable ? 'text-[var(--accent-strong)] hover:bg-[var(--accent-soft-2)]' : 'text-[var(--text-2)] hover:text-[var(--text)] hover:bg-[var(--overlay-2)]'}`}
         >
           <WindowIcon d={restoreable ? RESTORE : MAXIMIZE} />
         </button>
         <button
           aria-label={state.fullscreen ? 'Keluar dari layar penuh' : 'Layar penuh'}
           onClick={() => controls?.toggleFullscreen().then((s) => setState((p) => ({ ...p, ...s })))}
-          className={`w-11 flex items-center justify-center transition-colors ${state.fullscreen ? 'text-indigo-300 hover:bg-indigo-500/30' : 'text-zinc-400 hover:text-white hover:bg-white/[0.1]'}`}
+          className={`w-11 flex items-center justify-center transition-colors ${state.fullscreen ? 'text-[var(--accent-strong)] hover:bg-[var(--accent-soft-2)]' : 'text-[var(--text-2)] hover:text-[var(--text)] hover:bg-[var(--overlay-2)]'}`}
         >
           <WindowIcon d={state.fullscreen ? EXIT_FULLSCREEN : ENTER_FULLSCREEN} />
         </button>
         <button
           aria-label="Tutup"
           onClick={() => controls?.close()}
-          className="w-11 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-red-500/90 transition-colors"
+          className="w-11 flex items-center justify-center text-[var(--text-2)] hover:text-[var(--text)] hover:bg-red-500/90 transition-colors"
         >
           <WindowIcon d={CLOSE} />
         </button>

@@ -25,8 +25,8 @@ export default function LargestFilesPanel({ files, root }: { files: LargestFile[
   }
 
   if (files.length === 0) {
-    return <div className="py-8 text-center text-sm text-gray-500 flex flex-col items-center gap-2">
-      <Icon name="chart" className="w-5 h-5 text-gray-600" /> Tidak ada data file.
+    return <div className="py-8 text-center text-sm text-[var(--text-3)] flex flex-col items-center gap-2">
+      <Icon name="chart" className="w-5 h-5 text-[var(--text-3)]" /> Tidak ada data file.
     </div>;
   }
 
@@ -34,7 +34,7 @@ export default function LargestFilesPanel({ files, root }: { files: LargestFile[
 
   return (
     <div>
-      <div className="grid grid-cols-[auto_1fr_2.4fr_auto_auto] sm:grid-cols-[auto_1fr_2.4fr_auto_auto] items-center gap-3 px-4 pb-2 text-[11px] uppercase tracking-wider text-gray-500 font-semibold">
+      <div className="grid grid-cols-[auto_1fr_2.4fr_auto_auto] sm:grid-cols-[auto_1fr_2.4fr_auto_auto] items-center gap-3 px-4 pb-2 text-[11px] uppercase tracking-wider text-[var(--text-3)] font-semibold">
         <span className="w-8 text-center">#</span>
         <span>File</span>
         <span>Ukuran</span>
@@ -51,22 +51,22 @@ export default function LargestFilesPanel({ files, root }: { files: LargestFile[
             const rank = RANK[i];
             return (
               <div className="flex items-center gap-3 px-3 text-sm" title={f.path}>
-                <div className={`w-8 text-center shrink-0 ${rank ? 'text-lg' : 'text-xs text-gray-500 tabular-nums'}`}>
+                <div className={`w-8 text-center shrink-0 ${rank ? 'text-lg' : 'text-xs text-[var(--text-3)] tabular-nums'}`}>
                   {rank ? rank.badge : i + 1}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-gray-200">
+                  <div className="truncate text-[var(--text)]">
                     <span className="mr-1.5">{meta.icon}</span>{f.name}
                   </div>
-                  <div className="text-[11px] text-gray-500 truncate font-mono">{rel(pathOf(f))}</div>
+                  <div className="text-[11px] text-[var(--text-3)] truncate font-mono">{rel(pathOf(f))}</div>
                 </div>
                 <div className="w-32 shrink-0">
-                  <div className="text-xs text-gray-300 tabular-nums">{formatBytes(f.size)}</div>
-                  <div className="h-1.5 rounded-full bg-white/10 overflow-hidden mt-1">
-                    <div className="h-full bg-gradient-to-r from-fuchsia-500 to-indigo-500" style={{ width: `${Math.max(3, (f.size / max) * 100)}%` }} />
+                  <div className="text-xs text-[var(--text-2)] tabular-nums">{formatBytes(f.size)}</div>
+                  <div className="h-1.5 rounded-full bg-[var(--overlay-2)] overflow-hidden mt-1">
+                    <div className="h-full bg-gradient-to-r from-[var(--accent-deep)] to-[var(--accent-2)]" style={{ width: `${Math.max(3, (f.size / max) * 100)}%` }} />
                   </div>
                 </div>
-                <div className="hidden sm:block w-28 text-right text-[11px] text-gray-500 truncate">{f.sizeBand}</div>
+                <div className="hidden sm:block w-28 text-right text-[11px] text-[var(--text-3)] truncate">{f.sizeBand}</div>
                 <div className="w-20 text-right">
                   <span className="chip" style={{ color: meta.color }}>{meta.label}</span>
                 </div>

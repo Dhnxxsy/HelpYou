@@ -86,8 +86,8 @@ function ToolFallback() {
   return (
     <div className="w-full py-24 grid place-items-center">
       <div className="flex flex-col items-center gap-3">
-        <div className="h-8 w-8 rounded-full border-2 border-indigo-400/30 border-t-indigo-400 animate-spin" />
-        <p className="text-sm text-gray-500">Menyiapkan tools…</p>
+        <div className="h-8 w-8 rounded-full border-2 border-[var(--accent-border)] border-t-[var(--accent-strong)] animate-spin" />
+        <p className="text-sm text-[var(--text-3)]">Menyiapkan tools…</p>
       </div>
     </div>
   );

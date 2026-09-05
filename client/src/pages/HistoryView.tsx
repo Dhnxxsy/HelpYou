@@ -61,21 +61,21 @@ export default function HistoryView() {
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
             <span className="text-gradient">Riwayat Sortir</span>
           </h1>
-          <p className="text-sm text-gray-400 mt-1.5">
+          <p className="text-sm text-[var(--text-2)] mt-1.5">
             Lihat aktivitas pemindahan dan kembalikan (undo) jika diperlukan.
           </p>
         </div>
         {history.length > 0 && (
           <div className="flex gap-2 text-xs">
-            <span className="chip bg-white/10 text-gray-300">{history.length} sesi</span>
-            <span className="chip bg-white/10 text-gray-300">{totalMoves} pemindahan</span>
+            <span className="chip bg-[var(--overlay-2)] text-[var(--text-2)]">{history.length} sesi</span>
+            <span className="chip bg-[var(--overlay-2)] text-[var(--text-2)]">{totalMoves} pemindahan</span>
           </div>
         )}
       </div>
 
       {msg && (
-        <div className={`card p-4 border text-sm flex items-center gap-2.5 ${msg.ok ? 'border-emerald-500/25 bg-emerald-500/10 text-emerald-200' : 'border-rose-500/25 bg-rose-500/10 text-rose-200'}`}>
-          <Icon name={msg.ok ? 'check' : 'alert'} className={`w-4 h-4 ${msg.ok ? 'text-emerald-300' : 'text-rose-300'}`} />
+        <div className={`card p-4 border text-sm flex items-center gap-2.5 ${msg.ok ? 'border-[var(--ok-border)] bg-[var(--ok-soft)] text-[var(--ok-strong)]' : 'border-[var(--danger-border)] bg-[var(--danger-soft)] text-[var(--danger-strong)]'}`}>
+          <Icon name={msg.ok ? 'check' : 'alert'} className={`w-4 h-4 ${msg.ok ? 'text-[var(--ok-strong)]' : 'text-[var(--danger-strong)]'}`} />
           {msg.text}
         </div>
       )}
@@ -86,11 +86,11 @@ export default function HistoryView() {
         </div>
       ) : history.length === 0 ? (
         <div className="card p-10 text-center flex flex-col items-center gap-3">
-          <div className="w-14 h-14 rounded-2xl bg-white/[0.05] border border-white/10 grid place-items-center text-gray-500">
+          <div className="w-14 h-14 rounded-2xl bg-[var(--overlay)] border border-[var(--border)] grid place-items-center text-[var(--text-3)]">
             <Icon name="clock" className="w-7 h-7" />
           </div>
-          <div className="text-sm text-gray-300">Belum ada riwayat</div>
-          <p className="text-xs text-gray-500 max-w-xs">
+          <div className="text-sm text-[var(--text-2)]">Belum ada riwayat</div>
+          <p className="text-xs text-[var(--text-3)] max-w-xs">
             Sortir folder terlebih dahulu di tab <b>Rapihkan</b>. Setiap pemindahan berhasil tercatat di sini dan bisa di-Undo kapan saja.
           </p>
         </div>
@@ -103,12 +103,12 @@ export default function HistoryView() {
               <div key={h.id} className="card card-hover p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-white/[0.06] border border-white/10 grid place-items-center text-indigo-300 shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-[var(--overlay)] border border-[var(--border)] grid place-items-center text-[var(--accent-strong)] shrink-0">
                       <Icon name="organize" className="w-5 h-5" />
                     </div>
                     <div>
-                      <div className="font-medium text-sm text-white">Sortir {h.moves.length} file</div>
-                      <div className="text-xs text-gray-400 flex items-center gap-1.5">
+                      <div className="font-medium text-sm text-[var(--text)]">Sortir {h.moves.length} file</div>
+                      <div className="text-xs text-[var(--text-2)] flex items-center gap-1.5">
                         <Icon name="clock" className="w-3 h-3" /> {formatDate(new Date(h.date).getTime())}
                       </div>
                     </div>
@@ -124,12 +124,12 @@ export default function HistoryView() {
                   </div>
                 </div>
                 {isOpen && (
-                  <div className="mt-3 border-t border-white/10 pt-3 max-h-60 overflow-y-auto space-y-0.5">
+                  <div className="mt-3 border-t border-[var(--border)] pt-3 max-h-60 overflow-y-auto space-y-0.5">
                     {h.moves.map((m, i) => (
-                      <div key={i} className="flex items-center gap-2.5 text-xs rounded-lg px-2 py-1.5 hover:bg-white/[0.03]">
-                        <span className="truncate flex-1 text-gray-400" title={m.from}>{m.from}</span>
-                        <Icon name="arrowRight" className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-                        <span className="truncate flex-1 text-right text-gray-300" title={m.to}>{m.to}</span>
+                      <div key={i} className="flex items-center gap-2.5 text-xs rounded-lg px-2 py-1.5 hover:bg-[var(--overlay)]">
+                        <span className="truncate flex-1 text-[var(--text-2)]" title={m.from}>{m.from}</span>
+                        <Icon name="arrowRight" className="w-3.5 h-3.5 text-[var(--accent-strong)] shrink-0" />
+                        <span className="truncate flex-1 text-right text-[var(--text-2)]" title={m.to}>{m.to}</span>
                       </div>
                     ))}
                   </div>

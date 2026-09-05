@@ -74,7 +74,7 @@ export default function VirtualList<T>({
         })}
       </div>
       {total === 0 && (
-        <div className="py-10 text-center text-sm text-gray-500 flex flex-col items-center gap-2">
+        <div className="py-10 text-center text-sm text-[var(--text-3)] flex flex-col items-center gap-2">
           <span>Daftar kosong.</span>
         </div>
       )}

@@ -327,7 +327,7 @@ export default function OrganizeView() {
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
             <span className="text-gradient">Rapihkan File-mu</span>
           </h1>
-          <p className="text-sm text-gray-400 mt-1.5 max-w-xl">
+          <p className="text-sm text-[var(--text-2)] mt-1.5 max-w-xl">
             Pilih folder, tools mengelompokkan file jadi rapi otomatis. Dilengkapi deteksi duplikat, folder kosong, dan laporan file terbesar.
           </p>
         </div>
@@ -348,12 +348,12 @@ export default function OrganizeView() {
           <div className="grid sm:grid-cols-3 gap-3">
             {FEATURES.map(f => (
               <div key={f.title} className="card card-hover p-4 flex gap-3 items-start">
-                <div className="w-9 h-9 rounded-xl bg-indigo-500/12 border border-indigo-500/20 grid place-items-center text-indigo-300 shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-[var(--accent-soft)] border border-[var(--accent-border)] grid place-items-center text-[var(--accent-strong)] shrink-0">
                   <Icon name={f.icon} className="w-[18px] h-[18px]" />
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-white">{f.title}</div>
-                  <div className="text-xs text-gray-400 mt-0.5 leading-relaxed">{f.desc}</div>
+                  <div className="text-sm font-semibold text-[var(--text)]">{f.title}</div>
+                  <div className="text-xs text-[var(--text-2)] mt-0.5 leading-relaxed">{f.desc}</div>
                 </div>
               </div>
             ))}
@@ -363,15 +363,15 @@ export default function OrganizeView() {
             <div className="flex items-start justify-between gap-3 mb-4">
               <div>
                 <div className="flex items-center gap-2.5">
-                  <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-white grid place-items-center text-xs font-bold">1</span>
-                  <h2 className="text-lg font-semibold text-white">Pilih folder yang ingin dirapikan</h2>
+                  <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-[var(--accent-deep)] to-[var(--accent-2)] text-white grid place-items-center text-xs font-bold">1</span>
+                  <h2 className="text-lg font-semibold text-[var(--text)]">Pilih folder yang ingin dirapikan</h2>
                 </div>
-                <p className="text-xs text-gray-400 mt-1.5 ml-9">
-                  Bisa berupa drive (C:) atau subfolder seperti <code className="text-indigo-300/90">Downloads</code>.
+                <p className="text-xs text-[var(--text-2)] mt-1.5 ml-9">
+                  Bisa berupa drive (C:) atau subfolder seperti <code className="text-[var(--accent-strong)]">Downloads</code>.
                 </p>
               </div>
               <button
-                className="btn-ghost !p-2 text-gray-500"
+                className="btn-ghost !p-2 text-[var(--text-3)]"
                 onClick={() => setSettingsOpen(o => !o)}
                 title="Pengaturan scan"
               >
@@ -382,14 +382,14 @@ export default function OrganizeView() {
             <FolderPicker value={folder} onChange={setFolder} />
 
             {settingsOpen && (
-              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 mt-5 animate-fade-in">
+              <div className="rounded-xl border border-[var(--border)] bg-[var(--overlay)] p-4 mt-5 animate-fade-in">
                 <div className="flex items-center justify-between mb-3">
                   <div className="eyebrow">Pengaturan Scan</div>
-                  <span className="chip bg-white/[0.05] text-gray-400 border border-white/10 text-[10px]">tersimpan otomatis</span>
+                  <span className="chip bg-[var(--overlay)] text-[var(--text-2)] border border-[var(--border)] text-[10px]">tersimpan otomatis</span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
                   <div>
-                    <label className="text-xs text-gray-400 block mb-1.5">Lewati folder (pisah koma)</label>
+                    <label className="text-xs text-[var(--text-2)] block mb-1.5">Lewati folder (pisah koma)</label>
                     <input
                       className="input"
                       placeholder="cth: video_bak, cache, draft"
@@ -398,7 +398,7 @@ export default function OrganizeView() {
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-400 block mb-1.5">Kedalaman maksimum</label>
+                    <label className="text-xs text-[var(--text-2)] block mb-1.5">Kedalaman maksimum</label>
                     <input
                       className="input"
                       type="number"
@@ -409,7 +409,7 @@ export default function OrganizeView() {
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-400 block mb-1.5">Min. ukuran file (KB)</label>
+                    <label className="text-xs text-[var(--text-2)] block mb-1.5">Min. ukuran file (KB)</label>
                     <input
                       className="input"
                       type="number"
@@ -420,7 +420,7 @@ export default function OrganizeView() {
                     />
                   </div>
                 </div>
-                <label className="flex items-center gap-2.5 mt-4 text-xs text-gray-300 cursor-pointer select-none">
+                <label className="flex items-center gap-2.5 mt-4 text-xs text-[var(--text-2)] cursor-pointer select-none">
                   <input
                     type="checkbox"
                     className="accent-indigo-500 w-4 h-4"
@@ -429,13 +429,13 @@ export default function OrganizeView() {
                   />
                   Deteksi file duplikat (berdasarkan isi file)
                 </label>
-                <div className="mt-5 pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
-                  <div className="text-xs text-gray-400">
-                    <span className="font-semibold text-gray-200">Aturan Sortir Kustom</span>
-                    <span className="ml-2 chip bg-indigo-500/15 text-indigo-300 border border-indigo-500/25">
+                <div className="mt-5 pt-4 border-t border-[var(--border)] flex flex-wrap items-center justify-between gap-3">
+                  <div className="text-xs text-[var(--text-2)]">
+                    <span className="font-semibold text-[var(--text)]">Aturan Sortir Kustom</span>
+                    <span className="ml-2 chip bg-[var(--accent-soft)] text-[var(--accent-strong)] border border-[var(--accent-border)]">
                       {settings.rules.filter(r => r.enabled).length} aktif
                     </span>
-                    <p className="text-[11px] text-gray-500 mt-1">Folder sendiri untuk kata kunci, atau lewati file tertentu. Berlaku saat scan berikutnya.</p>
+                    <p className="text-[11px] text-[var(--text-3)] mt-1">Folder sendiri untuk kata kunci, atau lewati file tertentu. Berlaku saat scan berikutnya.</p>
                   </div>
                   <button className="btn-secondary !py-2 !px-3.5 text-xs" onClick={() => setRulesOpen(true)}>
                     <Icon name="settings" className="w-3.5 h-3.5" /> Kelola Aturan
@@ -444,14 +444,14 @@ export default function OrganizeView() {
               </div>
             )}
 
-            <div className="flex flex-wrap items-center gap-3 mt-6 pt-5 border-t border-white/10">
+            <div className="flex flex-wrap items-center gap-3 mt-6 pt-5 border-t border-[var(--border)]">
               <button className="btn-primary !py-3 !px-6" onClick={startScan} disabled={!folder}>
                 <Icon name="scan" className="w-4 h-4" />
                 Mulai Analisis Folder
               </button>
-              {folder && <p className="text-xs text-gray-500">Folder terpilih: <span className="text-gray-300">{folder}</span></p>}
+              {folder && <p className="text-xs text-[var(--text-3)]">Folder terpilih: <span className="text-[var(--text-2)]">{folder}</span></p>}
             </div>
-            {error && <p className="mt-4 text-sm text-rose-400 flex items-center gap-1.5"><Icon name="alert" className="w-4 h-4" />{error}</p>}
+            {error && <p className="mt-4 text-sm text-[var(--danger-strong)] flex items-center gap-1.5"><Icon name="alert" className="w-4 h-4" />{error}</p>}
           </div>
         </div>
       )}
@@ -460,25 +460,25 @@ export default function OrganizeView() {
       {stage === 'scanning' && (
         <div className="card p-8 sm:p-10 flex flex-col items-center gap-6 animate-scale-in">
           <div className="relative">
-            <div className="w-14 h-14 rounded-full border-4 border-indigo-500/20 border-t-indigo-400 animate-spin" />
-            <span className="absolute inset-0 m-auto w-full h-full rounded-full border border-indigo-400/10 animate-ping-slow" />
+            <div className="w-14 h-14 rounded-full border-4 border-[var(--accent-border)] border-t-[var(--accent-strong)] animate-spin" />
+            <span className="absolute inset-0 m-auto w-full h-full rounded-full border border-[var(--accent-border)] animate-ping-slow" />
           </div>
           <div className="text-center">
-            <div className="font-semibold text-white">Menganalisis folder...</div>
-            <div className="text-xs text-gray-400 mt-1.5 max-w-md truncate">{scanMsg || 'Membaca isi folder'}</div>
+            <div className="font-semibold text-[var(--text)]">Menganalisis folder...</div>
+            <div className="text-xs text-[var(--text-2)] mt-1.5 max-w-md truncate">{scanMsg || 'Membaca isi folder'}</div>
           </div>
           <div className="w-full max-w-md space-y-2.5">
-            <div className="flex items-center gap-6 justify-between text-xs text-gray-400">
+            <div className="flex items-center gap-6 justify-between text-xs text-[var(--text-2)]">
               <span className="flex items-center gap-1.5">
-                <Icon name="folder" className="w-3.5 h-3.5 text-indigo-400" />
+                <Icon name="folder" className="w-3.5 h-3.5 text-[var(--accent-strong)]" />
                 File dipindai
               </span>
-              <span className="tabular-nums text-white/90 text-sm font-semibold">{progress.toLocaleString('id-ID')}</span>
+              <span className="tabular-nums text-[var(--text)]/90 text-sm font-semibold">{progress.toLocaleString('id-ID')}</span>
             </div>
-            <div className="h-2 rounded-full bg-white/10 overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-indigo-500 to-fuchsia-500 animate-indeterminate" />
+            <div className="h-2 rounded-full bg-[var(--overlay-2)] overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-[var(--accent-deep)] to-[var(--accent-2)] animate-indeterminate" />
             </div>
-            <div className="flex items-center justify-between text-[11px] text-gray-500">
+            <div className="flex items-center justify-between text-[11px] text-[var(--text-3)]">
               <span className="truncate">Jumlah dan statistik dihitung saat berjalan</span>
               <span className="tabular-nums shrink-0 ml-2">{formatDuration(elapsed * 1000)}</span>
             </div>
@@ -492,7 +492,7 @@ export default function OrganizeView() {
       {/* ============ STEP 3: PREVIEW ============ */}
       {stage === 'preview' && result && (
         <div className="space-y-5 animate-slide-up">
-          {error && <p className="text-sm text-rose-400"><Icon name="alert" className="w-4 h-4 inline mr-1" />{error}</p>}
+          {error && <p className="text-sm text-[var(--danger-strong)]"><Icon name="alert" className="w-4 h-4 inline mr-1" />{error}</p>}
 
           <PreviewSummary result={result} onOpen={() => openFolder(result.root)} />
 
@@ -500,12 +500,12 @@ export default function OrganizeView() {
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-5">
               <div>
                 <div className="flex items-center gap-2.5">
-                  <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-white grid place-items-center text-xs font-bold">3</span>
-                  <h2 className="text-lg font-semibold text-white">Tinjau rencana &amp; pindahkan file</h2>
+                  <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-[var(--accent-deep)] to-[var(--accent-2)] text-white grid place-items-center text-xs font-bold">3</span>
+                  <h2 className="text-lg font-semibold text-[var(--text)]">Tinjau rencana &amp; pindahkan file</h2>
                 </div>
-                <p className="text-xs text-gray-400 mt-1.5 ml-9">
-                  Semua file menuju <code className="text-indigo-300/90">{result.organizeFolder}</code> → <b>Jenis</b> → <b>Ukuran</b>
-                  {customCount > 0 && <> · <span className="text-indigo-300">✨ {customCount} file mengikuti aturan kustom</span></>}.
+                <p className="text-xs text-[var(--text-2)] mt-1.5 ml-9">
+                  Semua file menuju <code className="text-[var(--accent-strong)]">{result.organizeFolder}</code> → <b>Jenis</b> → <b>Ukuran</b>
+                  {customCount > 0 && <> · <span className="text-[var(--accent-strong)]">✨ {customCount} file mengikuti aturan kustom</span></>}.
                 </p>
               </div>
               <div className="flex items-center gap-2 flex-wrap ml-9 lg:ml-0">
@@ -545,15 +545,15 @@ export default function OrganizeView() {
             )}
             {tab === 'largest' && <LargestFilesPanel files={result.largestFiles} root={result.root} />}
 
-            <div className="flex flex-col sm:flex-row gap-3 mt-6 pt-5 border-t border-white/10">
+            <div className="flex flex-col sm:flex-row gap-3 mt-6 pt-5 border-t border-[var(--border)]">
               <button className="btn-primary !py-3" onClick={() => setApplyConfirm(true)} disabled={result.moves.length === 0}>
                 Pindahkan {result.moves.length} file <Icon name="arrowRight" className="w-4 h-4" />
               </button>
               <button className="btn-secondary" onClick={reset}>Ulangi / Pilih Folder Lain</button>
             </div>
-            <p className="text-xs text-gray-500 mt-3 flex items-center gap-1.5">
+            <p className="text-xs text-[var(--text-3)] mt-3 flex items-center gap-1.5">
               <Icon name="info" className="w-3.5 h-3.5" />
-              File akan <b>dipindahkan sungguhan</b> ke <code className="text-indigo-300/80">{result.organizeFolder}</code>. Setiap pemindahan tercatat di tab Riwayat dan bisa di-Undo.
+              File akan <b>dipindahkan sungguhan</b> ke <code className="text-[var(--accent-strong)]">{result.organizeFolder}</code>. Setiap pemindahan tercatat di tab Riwayat dan bisa di-Undo.
             </p>
           </div>
         </div>
@@ -563,11 +563,11 @@ export default function OrganizeView() {
       {stage === 'applying' && (
         <div className="card p-10 flex flex-col items-center gap-5 animate-scale-in">
           <div className="relative">
-            <div className="w-14 h-14 rounded-full border-4 border-fuchsia-500/20 border-t-fuchsia-500 animate-spin" />
-            <span className="absolute inset-0 m-auto w-full h-full rounded-full border border-fuchsia-400/10 animate-ping-slow" />
+            <div className="w-14 h-14 rounded-full border-4 border-[var(--accent-border)] border-t-[var(--accent-strong)] animate-spin" />
+            <span className="absolute inset-0 m-auto w-full h-full rounded-full border border-[var(--accent-border)] animate-ping-slow" />
           </div>
-          <div className="font-semibold text-white">Menerapkan sortir...</div>
-          <div className="text-xs text-gray-400">Memindahkan file ke struktur rapi. Proses ini usahakan jangan ditutup.</div>
+          <div className="font-semibold text-[var(--text)]">Menerapkan sortir...</div>
+          <div className="text-xs text-[var(--text-2)]">Memindahkan file ke struktur rapi. Proses ini usahakan jangan ditutup.</div>
         </div>
       )}
 
@@ -575,14 +575,14 @@ export default function OrganizeView() {
       {stage === 'done' && applyState && result && (
         <div className="card p-10 animate-slide-up flex flex-col items-center text-center">
           <div className="relative mb-5 animate-pop">
-          <span className="absolute inset-0 rounded-2xl bg-emerald-500/25 blur-xl" />
-          <div className="relative w-16 h-16 rounded-2xl bg-emerald-500/12 border border-emerald-500/30 grid place-items-center">
-            <Icon name="check" className="w-9 h-9 text-emerald-300" />
+          <span className="absolute inset-0 rounded-2xl bg-[var(--ok)]/25 blur-xl" />
+          <div className="relative w-16 h-16 rounded-2xl bg-[var(--ok-soft)] border border-[var(--ok-border)] grid place-items-center">
+            <Icon name="check" className="w-9 h-9 text-[var(--ok-strong)]" />
           </div>
         </div>
-          <h2 className="text-2xl font-bold text-white">Berhasil dirapikan! 🎉</h2>
-          <p className="text-sm text-gray-400 mt-1.5">
-            {applyState.moved} file dipindahkan ke <code className="text-indigo-300/90">{result.organizeFolder}</code>
+          <h2 className="text-2xl font-bold text-[var(--text)]">Berhasil dirapikan! 🎉</h2>
+          <p className="text-sm text-[var(--text-2)] mt-1.5">
+            {applyState.moved} file dipindahkan ke <code className="text-[var(--accent-strong)]">{result.organizeFolder}</code>
           </p>
 
           <div className="grid grid-cols-3 gap-3 sm:gap-4 mt-7 w-full max-w-lg">
@@ -592,7 +592,7 @@ export default function OrganizeView() {
           </div>
 
           {applyState.failed > 0 && (
-            <div className="mt-5 rounded-xl border border-rose-500/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-200 max-w-lg flex gap-2.5 text-left">
+            <div className="mt-5 rounded-xl border border-[var(--danger-border)] bg-[var(--danger-soft)] px-4 py-3 text-sm text-[var(--danger-strong)] max-w-lg flex gap-2.5 text-left">
               <Icon name="alert" className="w-4 h-4 mt-0.5 shrink-0" />
               <span>
                 <b>{applyState.failed} file gagal dipindahkan</b>. Kemungkinan file sedang dipakai program lain atau akses ditolak. Cek kembali
@@ -602,7 +602,7 @@ export default function OrganizeView() {
           )}
 
           {result.postMoveEmptyFolders.length > 0 && (
-            <div className="mt-6 rounded-xl border border-indigo-500/25 bg-indigo-500/10 px-4 py-3 text-sm text-indigo-200 max-w-lg flex gap-2.5 text-left">
+            <div className="mt-6 rounded-xl border border-[var(--accent-border)] bg-[var(--accent-soft)] px-4 py-3 text-sm text-[var(--accent-strong)] max-w-lg flex gap-2.5 text-left">
               <Icon name="emptyBox" className="w-4 h-4 mt-0.5 shrink-0" />
               <span>
                 <b>{result.postMoveEmptyFolders.length} folder sumber</b> kini kosong. Gunakan <b>Scan Ulang</b> lalu buka tab <b>Folder Kosong</b> untuk menghapusnya dengan aman.
@@ -655,12 +655,12 @@ function shortName(p: string): string {
 function TabBtn({ active, onClick, icon, label, count, sub, tone }: {
   active: boolean; onClick: () => void; icon: IconName; label: string; count: number; sub?: number; tone?: 'amber' | 'indigo';
 }) {
-  const toneCls = tone === 'amber' ? 'bg-amber-500/15 text-amber-300' : tone === 'indigo' ? 'bg-indigo-500/15 text-indigo-300' : 'bg-white/10 text-gray-400';
+  const toneCls = tone === 'amber' ? 'bg-[var(--warn-soft)] text-[var(--warn-strong)]' : tone === 'indigo' ? 'bg-[var(--accent-soft)] text-[var(--accent-strong)]' : 'bg-[var(--overlay-2)] text-[var(--text-2)]';
   return (
     <button
       onClick={onClick}
       className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-        active ? 'bg-white/[0.12] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]' : 'text-gray-400 hover:text-white hover:bg-white/[0.06]'
+        active ? 'bg-[var(--overlay-2)] text-[var(--text)] shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]' : 'text-[var(--text-2)] hover:text-[var(--text)] hover:bg-[var(--overlay)]'
       }`}
     >
       <Icon name={icon} className="w-4 h-4" />
@@ -675,12 +675,12 @@ function TabBtn({ active, onClick, icon, label, count, sub, tone }: {
 function FlashBanner({ flash, onClose }: { flash: Flash; onClose: () => void }) {
   const ok = flash.ok;
   return (
-    <div className={`card p-4 border text-sm flex items-center justify-between gap-3 animate-fade-in ${ok ? 'border-emerald-500/25 bg-emerald-500/10 text-emerald-200' : 'border-amber-500/25 bg-amber-500/10 text-amber-200'}`}>
+    <div className={`card p-4 border text-sm flex items-center justify-between gap-3 animate-fade-in ${ok ? 'border-[var(--ok-border)] bg-[var(--ok-soft)] text-[var(--ok-strong)]' : 'border-[var(--warn-border)] bg-[var(--warn-soft)] text-[var(--warn-strong)]'}`}>
       <span className="flex items-center gap-2.5">
-        <Icon name={ok ? 'check' : 'info'} className={`w-4 h-4 ${ok ? 'text-emerald-300' : 'text-amber-300'}`} />
+        <Icon name={ok ? 'check' : 'info'} className={`w-4 h-4 ${ok ? 'text-[var(--ok-strong)]' : 'text-[var(--warn-strong)]'}`} />
         {flash.text}
       </span>
-      <button className="text-gray-400 hover:text-white shrink-0" onClick={onClose} aria-label="Tutup"><Icon name="x" className="w-4 h-4" /></button>
+      <button className="text-[var(--text-2)] hover:text-[var(--text)] shrink-0" onClick={onClose} aria-label="Tutup"><Icon name="x" className="w-4 h-4" /></button>
     </div>
   );
 }
@@ -702,18 +702,18 @@ function InsightCard({ icon, label, value, sub, accent, highlight, onClick }: {
   return (
     <div
       onClick={onClick}
-      className={`card p-4 relative overflow-hidden transition-all duration-200 ${highlight ? 'border-indigo-400/40 bg-indigo-500/10 cursor-pointer hover:bg-indigo-500/15' : 'card-hover'}`}
+      className={`card p-4 relative overflow-hidden transition-all duration-200 ${highlight ? 'border-[var(--accent-border)] bg-[var(--accent-soft)] cursor-pointer hover:bg-[var(--accent-soft)]' : 'card-hover'}`}
       title={onClick ? 'Buka folder sumber' : undefined}
     >
-      {highlight && <span className="absolute -right-6 -top-6 w-20 h-20 rounded-full bg-indigo-500/15 blur-2xl" />}
+      {highlight && <span className="absolute -right-6 -top-6 w-20 h-20 rounded-full bg-[var(--accent-soft)] blur-2xl" />}
       <div className="flex items-center justify-between">
-        <div className={`w-8 h-8 rounded-lg grid place-items-center ${highlight ? 'bg-indigo-500/20 text-indigo-200' : 'bg-white/[0.06] text-gray-400'}`}>
+        <div className={`w-8 h-8 rounded-lg grid place-items-center ${highlight ? 'bg-[var(--accent-soft)] text-[var(--accent-strong)]' : 'bg-[var(--overlay)] text-[var(--text-2)]'}`}>
           <Icon name={icon} className="w-4 h-4" />
         </div>
       </div>
-      <div className="mt-2 text-xl font-bold tabular-nums text-white" style={{ color: accent ?? undefined }}>{value}</div>
-      <div className="text-xs text-gray-400 font-medium">{label}</div>
-      {sub && <div className="text-[11px] text-gray-500 mt-0.5 truncate">{sub}</div>}
+      <div className="mt-2 text-xl font-bold tabular-nums text-[var(--text)]" style={{ color: accent ?? undefined }}>{value}</div>
+      <div className="text-xs text-[var(--text-2)] font-medium">{label}</div>
+      {sub && <div className="text-[11px] text-[var(--text-3)] mt-0.5 truncate">{sub}</div>}
     </div>
   );
 }
@@ -734,12 +734,12 @@ function CategoryBar({ stats, onPick, selected }: {
   if (list.length === 0) return null;
 
   return (
-    <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3.5 mt-2">
+    <div className="rounded-xl border border-[var(--border)] bg-[var(--overlay)] p-3.5 mt-2">
       <div className="flex items-center justify-between mb-2.5">
         <div className="eyebrow">Komposisi Folder (akan dipindah)</div>
-        <div className="text-[11px] text-gray-500">{totalN.toLocaleString('id-ID')} file</div>
+        <div className="text-[11px] text-[var(--text-3)]">{totalN.toLocaleString('id-ID')} file</div>
       </div>
-      <div className="flex h-2.5 rounded-full overflow-hidden bg-white/[0.04]">
+      <div className="flex h-2.5 rounded-full overflow-hidden bg-[var(--overlay)]">
         {list.map(x => (
           <div key={x.key} title={`${x.meta.label}: ${x.n}`} style={{ width: `${(x.n / totalN) * 100}%`, backgroundColor: x.meta.color }} />
         ))}
@@ -749,11 +749,11 @@ function CategoryBar({ stats, onPick, selected }: {
           <button
             key={x.key}
             onClick={() => onPick(selected === x.key ? null : x.key)}
-            className={`flex items-center gap-1.5 text-xs transition ${selected === x.key ? 'text-white' : 'text-gray-400 hover:text-gray-200'}`}
+            className={`flex items-center gap-1.5 text-xs transition ${selected === x.key ? 'text-[var(--text)]' : 'text-[var(--text-2)] hover:text-[var(--text)]'}`}
           >
             <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: x.meta.color }} />
             {x.meta.icon} {x.meta.label}
-            <span className="tabular-nums text-gray-500">{x.n}</span>
+            <span className="tabular-nums text-[var(--text-3)]">{x.n}</span>
           </button>
         ))}
       </div>
@@ -774,7 +774,7 @@ function PlanTab({ result, fileByPath, filteredMoves, search, setSearch, selecte
     <div>
       <div className="flex items-center gap-2 mb-4">
         <div className="relative flex-1">
-          <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+          <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-3)]" />
           <input
             className="input pl-9"
             placeholder="Cari file di dalam rencana..."
@@ -789,8 +789,8 @@ function PlanTab({ result, fileByPath, filteredMoves, search, setSearch, selecte
         )}
       </div>
 
-      <div className="border border-white/10 rounded-xl overflow-hidden">
-        <div className="grid grid-cols-12 gap-2 px-4 py-2.5 bg-white/[0.04] text-[11px] uppercase tracking-wider text-gray-500 font-semibold">
+      <div className="border border-[var(--border)] rounded-xl overflow-hidden">
+        <div className="grid grid-cols-12 gap-2 px-4 py-2.5 bg-[var(--overlay)] text-[11px] uppercase tracking-wider text-[var(--text-3)] font-semibold">
           <div className="col-span-5 sm:col-span-4">File</div>
           <div className="col-span-3 sm:col-span-4">Folder Tujuan</div>
           <div className="col-span-2 sm:col-span-2">Ukuran</div>
@@ -798,8 +798,8 @@ function PlanTab({ result, fileByPath, filteredMoves, search, setSearch, selecte
         </div>
         <div style={{ height: 416 }}>
           {filteredMoves.length === 0 ? (
-            <div className="py-10 text-center text-sm text-gray-500 flex flex-col items-center gap-2">
-              <Icon name="search" className="w-5 h-5 text-gray-600" />
+            <div className="py-10 text-center text-sm text-[var(--text-3)] flex flex-col items-center gap-2">
+              <Icon name="search" className="w-5 h-5 text-[var(--text-3)]" />
               Tidak ada file yang cocok dengan filter.
             </div>
           ) : (
@@ -813,11 +813,11 @@ function PlanTab({ result, fileByPath, filteredMoves, search, setSearch, selecte
                   ? { icon: '✨', color: '#a5b4fc' }
                   : (CATEGORY_META[(m.dest.slice(result.organizeFolder.length + 1).split('\\')[0] as FileCategory)] || CATEGORY_META.other);
                 return (
-                  <div className="grid grid-cols-12 gap-2 px-4 items-center border-t border-white/5 text-sm">
-                    <div className="col-span-5 sm:col-span-4 truncate text-gray-300" title={m.path}>
+                  <div className="grid grid-cols-12 gap-2 px-4 items-center border-t border-[var(--border)] text-sm">
+                    <div className="col-span-5 sm:col-span-4 truncate text-[var(--text-2)]" title={m.path}>
                       {file?.name || baseName(m.path)}
                     </div>
-                    <div className="col-span-3 sm:col-span-4 truncate text-gray-400 text-xs">
+                    <div className="col-span-3 sm:col-span-4 truncate text-[var(--text-2)] text-xs">
                       {m.customFolder ? (
                         <span className="chip" style={{ color: '#a5b4fc' }}>✨ {m.customFolder}</span>
                       ) : (
@@ -827,9 +827,9 @@ function PlanTab({ result, fileByPath, filteredMoves, search, setSearch, selecte
                         </>
                       )}
                     </div>
-                    <div className="col-span-2 sm:col-span-2 text-xs text-gray-400 tabular-nums">{formatBytes(file?.size)}</div>
+                    <div className="col-span-2 sm:col-span-2 text-xs text-[var(--text-2)] tabular-nums">{formatBytes(file?.size)}</div>
                     <div className="col-span-2 sm:col-span-2">
-                      {m.customFolder ? <span className="text-[10px] text-indigo-300/80">aturan kustom</span> : <span className="chip bg-white/10 text-gray-300">{file?.sizeBand}</span>}
+                      {m.customFolder ? <span className="text-[10px] text-[var(--accent-strong)]">aturan kustom</span> : <span className="chip bg-[var(--overlay-2)] text-[var(--text-2)]">{file?.sizeBand}</span>}
                     </div>
                   </div>
                 );
@@ -839,7 +839,7 @@ function PlanTab({ result, fileByPath, filteredMoves, search, setSearch, selecte
         </div>
       </div>
       {filteredMoves.length > 0 && (
-        <p className="text-[11px] text-gray-500 mt-2">{filteredMoves.length.toLocaleString('id-ID')} file · daftar dirender secara virtual agar tetap lancar</p>
+        <p className="text-[11px] text-[var(--text-3)] mt-2">{filteredMoves.length.toLocaleString('id-ID')} file · daftar dirender secara virtual agar tetap lancar</p>
       )}
     </div>
   );
@@ -849,7 +849,7 @@ function Stat({ label, value, accent }: { label: string; value: string; accent: 
   return (
     <div className="card p-4">
       <div className="text-2xl font-bold tabular-nums" style={{ color: accent }}>{value}</div>
-      <div className="text-xs text-gray-400 mt-1">{label}</div>
+      <div className="text-xs text-[var(--text-2)] mt-1">{label}</div>
     </div>
   );
 }

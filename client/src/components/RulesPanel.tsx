@@ -118,17 +118,17 @@ export default function RulesPanel({
 
   return createPortal(
     <div className="fixed inset-0 z-50 grid place-items-center p-4" role="dialog" aria-modal="true" aria-label="Aturan Sortir Kustom">
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative card w-full max-w-2xl max-h-[88vh] flex flex-col border-white/15 animate-scale-in" ref={panelRef}>
+      <div className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm" onClick={onClose} />
+      <div className="relative card w-full max-w-2xl max-h-[88vh] flex flex-col border-[var(--border-2)] animate-scale-in" ref={panelRef}>
         {/* Header */}
-        <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-white/10">
+        <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-[var(--border)]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-500/15 border border-indigo-500/25 grid place-items-center text-indigo-300">
+            <div className="w-10 h-10 rounded-xl bg-[var(--accent-soft)] border border-[var(--accent-border)] grid place-items-center text-[var(--accent-strong)]">
               <Icon name="settings" className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-semibold text-white">Aturan Sortir Kustom</h3>
-              <p className="text-xs text-gray-400">
+              <h3 className="text-base font-semibold text-[var(--text)]">Aturan Sortir Kustom</h3>
+              <p className="text-xs text-[var(--text-2)]">
                 {active} aturan aktif · dievaluasi berurutan, yang pertama cocok menang
               </p>
             </div>
@@ -141,13 +141,13 @@ export default function RulesPanel({
         {/* Body */}
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
           {error && (
-            <div className="rounded-xl border border-rose-500/25 bg-rose-500/10 px-3.5 py-2.5 text-sm text-rose-200 flex gap-2">
+            <div className="rounded-xl border border-[var(--danger-border)] bg-[var(--danger-soft)] px-3.5 py-2.5 text-sm text-[var(--danger-strong)] flex gap-2">
               <Icon name="alert" className="w-4 h-4 mt-0.5 shrink-0" /> {error}
             </div>
           )}
 
           {draft.length === 0 && (
-            <div className="text-center text-sm text-gray-500 py-6">
+            <div className="text-center text-sm text-[var(--text-3)] py-6">
               Belum ada aturan. Tambah aturan untuk menempatkan file ke folder sendiri atau melewatkan file tertentu saat scan berikutnya.
             </div>
           )}
@@ -155,18 +155,18 @@ export default function RulesPanel({
           {draft.map((r, i) => {
             const folderPreview = r.action === 'sort' ? sanitizeFolder(r.folder ?? '') : null;
             return (
-              <div key={r.id} className={`rounded-xl border p-3 transition ${r.enabled ? 'border-white/10 bg-white/[0.03]' : 'border-white/5 bg-white/[0.015] opacity-70'}`}>
+              <div key={r.id} className={`rounded-xl border p-3 transition ${r.enabled ? 'border-[var(--border)] bg-[var(--overlay)]' : 'border-[var(--border)] bg-[var(--surface-3)] opacity-70'}`}>
                 {/* Row 1: enable + name + actions */}
                 <div className="flex items-center gap-2 mb-3">
                   <button
                     onClick={() => update(r.id, { enabled: !r.enabled })}
-                    className={`relative w-9 h-5 rounded-full transition-colors shrink-0 ${r.enabled ? 'bg-indigo-500' : 'bg-white/10'}`}
+                    className={`relative w-9 h-5 rounded-full transition-colors shrink-0 ${r.enabled ? 'bg-[var(--accent-deep)]' : 'bg-[var(--overlay-2)]'}`}
                     title={r.enabled ? 'Aktif — nonaktifkan' : 'Nonaktif — aktifkan'}
                     aria-label="Toggle aturan"
                   >
                     <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${r.enabled ? 'left-[18px]' : 'left-0.5'}`} />
                   </button>
-                  <span className={`w-6 h-6 rounded-full grid place-items-center text-[11px] font-semibold tabular-nums shrink-0 border ${i === draft.length - 1 ? 'bg-indigo-500/15 text-indigo-300 border-indigo-500/25' : 'bg-white/[0.04] text-gray-400 border-white/10'}`}>{i + 1}</span>
+                  <span className={`w-6 h-6 rounded-full grid place-items-center text-[11px] font-semibold tabular-nums shrink-0 border ${i === draft.length - 1 ? 'bg-[var(--accent-soft)] text-[var(--accent-strong)] border-[var(--accent-border)]' : 'bg-[var(--overlay)] text-[var(--text-2)] border-[var(--border)]'}`}>{i + 1}</span>
                   <input
                     className="input !py-1.5 !px-2.5 text-xs flex-1 min-w-0"
                     placeholder="Nama label (opsional, untuk kejelasan)"
@@ -175,27 +175,27 @@ export default function RulesPanel({
                   />
                   <button className="btn-ghost !p-1.5" onClick={() => move(i, -1)} disabled={i === 0} aria-label="Naik"><Icon name="arrowRight" className="w-4 h-4 rotate-180" /></button>
                   <button className="btn-ghost !p-1.5" onClick={() => move(i, 1)} disabled={i === draft.length - 1} aria-label="Turun"><Icon name="arrowRight" className="w-4 h-4" /></button>
-                  <button className="btn-ghost !p-1.5 text-rose-400 hover:!bg-rose-500/10" onClick={() => remove(r.id)} aria-label="Hapus"><Icon name="trash" className="w-4 h-4" /></button>
+                  <button className="btn-ghost !p-1.5 text-[var(--danger-strong)] hover:!bg-[var(--danger-soft)]" onClick={() => remove(r.id)} aria-label="Hapus"><Icon name="trash" className="w-4 h-4" /></button>
                 </div>
 
                 {/* Row 2: action + match target */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                   <label>
-                    <span className="text-gray-500 block mb-1">Aksi</span>
+                    <span className="text-[var(--text-3)] block mb-1">Aksi</span>
                     <select className="input !py-1.5 !px-2" value={r.action} onChange={e => update(r.id, { action: e.target.value as SortRule['action'] })}>
                       <option value="sort">✨ Sortir ke folder</option>
                       <option value="skip">⏭ Lewati (biarkan)</option>
                     </select>
                   </label>
                   <label>
-                    <span className="text-gray-500 block mb-1">Cocokkan pada</span>
+                    <span className="text-[var(--text-3)] block mb-1">Cocokkan pada</span>
                     <select className="input !py-1.5 !px-2" value={r.matchOn} onChange={e => update(r.id, { matchOn: e.target.value as SortRule['matchOn'] })}>
                       <option value="name">Nama file</option>
                       <option value="path">Jalur penuh</option>
                     </select>
                   </label>
                   <label>
-                    <span className="text-gray-500 block mb-1">Cara</span>
+                    <span className="text-[var(--text-3)] block mb-1">Cara</span>
                     <select className="input !py-1.5 !px-2" value={r.operation} onChange={e => update(r.id, { operation: e.target.value as SortRule['operation'] })}>
                       {(Object.keys(OPERATIONS) as SortRule['operation'][]).map(op => (
                         <option key={op} value={op}>{OPERATIONS[op]}</option>
@@ -203,13 +203,13 @@ export default function RulesPanel({
                     </select>
                   </label>
                   <label className="sm:col-span-2">
-                    <span className="text-gray-500 block mb-1">
+                    <span className="text-[var(--text-3)] block mb-1">
                       Pola{r.operation === 'regex' ? ' (regex)' : ''}
                       {regexStatus(r) === 'ok' && (
-                        <span className="ml-2 text-[10px] font-medium text-emerald-400">✓ valid</span>
+                        <span className="ml-2 text-[10px] font-medium text-[var(--ok-strong)]">✓ valid</span>
                       )}
                       {regexStatus(r) === 'bad' && (
-                        <span className="ml-2 text-[10px] font-medium text-rose-400">✗ regex tidak valid</span>
+                        <span className="ml-2 text-[10px] font-medium text-[var(--danger-strong)]">✗ regex tidak valid</span>
                       )}
                     </span>
                     <input
@@ -225,7 +225,7 @@ export default function RulesPanel({
                 {r.action === 'sort' && (
                   <div className="mt-2 text-xs">
                     <label>
-                      <span className="text-gray-500 block mb-1">Folder tujuan (di dalam _TerSortir)</span>
+                      <span className="text-[var(--text-3)] block mb-1">Folder tujuan (di dalam _TerSortir)</span>
                       <div className="flex items-center gap-2">
                         <input
                           className="input !py-1.5 !px-2.5 flex-1"
@@ -234,12 +234,12 @@ export default function RulesPanel({
                           onChange={e => update(r.id, { folder: e.target.value })}
                         />
                         {folderPreview && (
-                          <span className="text-gray-400 shrink-0">
-                            → _TerSortir/<b className="text-indigo-300">{folderPreview}</b>
+                          <span className="text-[var(--text-2)] shrink-0">
+                            → _TerSortir/<b className="text-[var(--accent-strong)]">{folderPreview}</b>
                           </span>
                         )}
                         {r.folder && !folderPreview && (
-                          <span className="text-rose-400 shrink-0">nama tidak valid</span>
+                          <span className="text-[var(--danger-strong)] shrink-0">nama tidak valid</span>
                         )}
                       </div>
                     </label>
@@ -249,14 +249,14 @@ export default function RulesPanel({
             );
           })}
 
-          <button className="btn-secondary w-full !py-2.5 text-sm !border-dashed !bg-transparent hover:!bg-white/[0.04]" onClick={() => setDraft(prev => [...prev, newRule()])}>
+          <button className="btn-secondary w-full !py-2.5 text-sm !border-dashed !bg-transparent hover:!bg-[var(--overlay)]" onClick={() => setDraft(prev => [...prev, newRule()])}>
             <Icon name="settings" className="w-4 h-4" /> Tambah Aturan
           </button>
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
-          <p className="text-[11px] text-gray-500 flex items-center gap-1.5">
+        <div className="px-5 py-4 border-t border-[var(--border)] flex flex-wrap items-center justify-between gap-3">
+          <p className="text-[11px] text-[var(--text-3)] flex items-center gap-1.5">
             <Icon name="info" className="w-3.5 h-3.5 shrink-0" />
             Berlaku untuk scan berikutnya. Folder nama dibersihkan otomatis di sisi server.
           </p>

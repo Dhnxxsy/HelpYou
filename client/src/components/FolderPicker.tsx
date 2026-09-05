@@ -49,7 +49,7 @@ export default function FolderPicker({ value, onChange }: { value: string; onCha
       {/* Manual path input */}
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-3)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/>
           </svg>
           <input
@@ -66,14 +66,14 @@ export default function FolderPicker({ value, onChange }: { value: string; onCha
         {isDesktop && (
           <button
             onClick={pickNative}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] text-gray-300 whitespace-nowrap transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-[var(--border)] bg-[var(--overlay)] hover:bg-[var(--overlay-2)] text-[var(--text-2)] whitespace-nowrap transition-colors"
           >
-            <Icon name="folderOpen" className="w-3.5 h-3.5 text-indigo-400" />
+            <Icon name="folderOpen" className="w-3.5 h-3.5 text-[var(--accent-strong)]" />
             Pilih Folder
           </button>
         )}
       </div>
-      {error && <p className="text-xs text-rose-400">{error}</p>}
+      {error && <p className="text-xs text-[var(--danger-strong)]">{error}</p>}
 
       {/* Breadcrumb */}
       {current && (
@@ -84,11 +84,11 @@ export default function FolderPicker({ value, onChange }: { value: string; onCha
 
       {/* Drive selector */}
       <div>
-        <div className="text-[11px] uppercase tracking-wider text-gray-500 mb-2 font-semibold">Pilih Drive / Disk</div>
+        <div className="text-[11px] uppercase tracking-wider text-[var(--text-3)] mb-2 font-semibold">Pilih Drive / Disk</div>
         {driveError ? (
-          <div className="rounded-xl border border-rose-500/25 bg-rose-500/10 px-4 py-3 flex items-center justify-between gap-3 text-sm text-rose-200">
+          <div className="rounded-xl border border-[var(--danger-border)] bg-[var(--danger-soft)] px-4 py-3 flex items-center justify-between gap-3 text-sm text-[var(--danger-strong)]">
             <span className="flex items-center gap-2">
-              <Icon name="alert" className="w-4 h-4 text-rose-300 shrink-0" />
+              <Icon name="alert" className="w-4 h-4 text-[var(--danger-strong)] shrink-0" />
               {driveError}
             </span>
             <button className="btn-secondary !py-1.5 !px-3 text-xs shrink-0" onClick={reload}>
@@ -106,23 +106,23 @@ export default function FolderPicker({ value, onChange }: { value: string; onCha
                 key={d.path}
                 onClick={() => { onChange(d.path); setManual(d.path); openFolder(d.path); }}
                 className={`text-left p-3 rounded-xl border transition-all ${
-                  active ? 'border-indigo-400/60 bg-indigo-500/10' : 'border-white/10 bg-white/[0.04] hover:bg-white/[0.08]'
+                  active ? 'border-[var(--accent-border)] bg-[var(--accent-soft)]' : 'border-[var(--border)] bg-[var(--overlay)] hover:bg-[var(--overlay-2)]'
                 }`}
               >
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="w-7 h-7 rounded-lg grid place-items-center bg-white/10 text-gray-300">
+                  <span className="w-7 h-7 rounded-lg grid place-items-center bg-[var(--overlay-2)] text-[var(--text-2)]">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/>
                     </svg>
                   </span>
-                  <div className="font-semibold text-sm text-white">{d.name}</div>
+                  <div className="font-semibold text-sm text-[var(--text)]">{d.name}</div>
                 </div>
-                <div className="text-[10px] text-gray-400 flex justify-between mb-1">
+                <div className="text-[10px] text-[var(--text-2)] flex justify-between mb-1">
                   <span>{formatBytes(d.used)} dipakai</span>
                   <span>{pct}%</span>
                 </div>
-                <div className="h-1 rounded-full bg-white/10 overflow-hidden">
-                  <div className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-fuchsia-500" style={{ width: `${pct}%` }} />
+                <div className="h-1 rounded-full bg-[var(--overlay-2)] overflow-hidden">
+                  <div className="h-full rounded-full bg-gradient-to-r from-[var(--accent-deep)] to-[var(--accent-2)]" style={{ width: `${pct}%` }} />
                 </div>
               </button>
             );
@@ -134,23 +134,23 @@ export default function FolderPicker({ value, onChange }: { value: string; onCha
       {/* Current folder contents */}
       {current && (
         <div>
-          <div className="text-[11px] uppercase tracking-wider text-gray-500 mb-2 font-semibold">Isi Folder</div>
+          <div className="text-[11px] uppercase tracking-wider text-[var(--text-3)] mb-2 font-semibold">Isi Folder</div>
           <div className="card max-h-72 overflow-y-auto p-2">
-            <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/5 text-sm text-gray-300" onClick={() => openFolder(parentPath(current))}>
+            <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[var(--overlay)] text-sm text-[var(--text-2)]" onClick={() => openFolder(parentPath(current))}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M19 12H5M11 19l-7-7 7-7"/></svg>
               ..
             </button>
             {entries.filter(e => e.isEmpty !== undefined).map(e => (
               <button
                 key={e.path}
-                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-white/5 text-sm text-left"
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-[var(--overlay)] text-sm text-left"
                 onClick={() => { onChange(e.path); setManual(e.path); openFolder(e.path); }}
               >
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#818cf8" strokeWidth="2"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>
-                <span className="truncate text-gray-200">{e.name}</span>
+                <span className="truncate text-[var(--text)]">{e.name}</span>
               </button>
             ))}
-            {entries.length === 0 && <div className="px-3 py-4 text-xs text-gray-500">Folder kosong / tidak ada subfolder.</div>}
+            {entries.length === 0 && <div className="px-3 py-4 text-xs text-[var(--text-3)]">Folder kosong / tidak ada subfolder.</div>}
           </div>
         </div>
       )}
@@ -175,7 +175,7 @@ function Breadcrumb({ path, onNavigate }: { path: string; onNavigate: (p: string
         return (
           <span key={i} className="flex items-center">
             <button
-              className={`hover:text-indigo-300 px-1.5 py-0.5 rounded ${isLast ? 'text-gray-200' : 'text-gray-500'}`}
+              className={`hover:text-[var(--accent-strong)] px-1.5 py-0.5 rounded ${isLast ? 'text-[var(--text)]' : 'text-[var(--text-3)]'}`}
               onClick={() => onNavigate(acc)}
             >
               {part} {!isLast && '\\'}

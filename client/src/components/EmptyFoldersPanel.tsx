@@ -46,8 +46,8 @@ export default function EmptyFoldersPanel({
     <div>
       <div className="mb-5">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-2.5">
-          <div className="text-sm text-gray-300">
-            <span className="chip bg-white/10 text-gray-300">Sudah kosong sekarang</span>{' '}
+          <div className="text-sm text-[var(--text-2)]">
+            <span className="chip bg-[var(--overlay-2)] text-[var(--text-2)]">Sudah kosong sekarang</span>{' '}
             <b className="ml-1 tabular-nums">{current.length}</b> folder
           </div>
           <button
@@ -60,12 +60,12 @@ export default function EmptyFoldersPanel({
           </button>
         </div>
         {current.length === 0 ? (
-          <p className="text-xs text-gray-500">Tidak ada folder kosong saat ini.</p>
+          <p className="text-xs text-[var(--text-3)]">Tidak ada folder kosong saat ini.</p>
         ) : (
-          <div className="max-h-56 overflow-y-auto border border-white/10 rounded-xl divide-y divide-white/5">
+          <div className="max-h-56 overflow-y-auto border border-[var(--border)] rounded-xl divide-y divide-white/5">
             {current.map(p => (
-              <div key={p} className="row px-3.5 py-2 text-xs text-gray-300 flex items-center gap-2">
-                <Icon name="alert" className="w-3.5 h-3.5 text-amber-300/80 shrink-0" />
+              <div key={p} className="row px-3.5 py-2 text-xs text-[var(--text-2)] flex items-center gap-2">
+                <Icon name="alert" className="w-3.5 h-3.5 text-[var(--warn-strong)] shrink-0" />
                 <span className="truncate font-mono">{relPath(root, p)}</span>
               </div>
             ))}
@@ -73,23 +73,23 @@ export default function EmptyFoldersPanel({
         )}
       </div>
 
-      <div className="border-t border-white/10 pt-5">
-        <div className="text-sm text-gray-300 mb-2">
-          <span className="chip bg-indigo-500/15 text-indigo-300 border border-indigo-500/20">Akan kosong setelah sortir</span>{' '}
+      <div className="border-t border-[var(--border)] pt-5">
+        <div className="text-sm text-[var(--text-2)] mb-2">
+          <span className="chip bg-[var(--accent-soft)] text-[var(--accent-strong)] border border-[var(--accent-border)]">Akan kosong setelah sortir</span>{' '}
           <b className="ml-1 tabular-nums">{postMove.length}</b> folder
         </div>
         {postMove.length === 0 ? (
-          <p className="text-xs text-gray-500">Tidak ada.</p>
+          <p className="text-xs text-[var(--text-3)]">Tidak ada.</p>
         ) : (
           <div className="space-y-2.5">
-            <p className="text-xs text-gray-500 flex items-start gap-1.5">
+            <p className="text-xs text-[var(--text-3)] flex items-start gap-1.5">
               <Icon name="info" className="w-3.5 h-3.5 mt-0.5 shrink-0" />
               Folder berikut berisi file yang semuanya akan dipindah ke <code>_TerSortir</code>. Setelah sortir nyata diterapkan, folder-folder ini menjadi kosong dan bisa dihapus.
             </p>
-            <div className="max-h-56 overflow-y-auto border border-white/10 rounded-xl divide-y divide-white/5">
+            <div className="max-h-56 overflow-y-auto border border-[var(--border)] rounded-xl divide-y divide-white/5">
               {postMove.map(p => (
-                <div key={p} className="row px-3.5 py-2 text-xs text-gray-300 flex items-center gap-2">
-                  <Icon name="folder" className="w-3.5 h-3.5 text-indigo-300/80 shrink-0" />
+                <div key={p} className="row px-3.5 py-2 text-xs text-[var(--text-2)] flex items-center gap-2">
+                  <Icon name="folder" className="w-3.5 h-3.5 text-[var(--accent-strong)] shrink-0" />
                   <span className="truncate font-mono">{relPath(root, p)}</span>
                 </div>
               ))}
@@ -98,8 +98,8 @@ export default function EmptyFoldersPanel({
         )}
       </div>
 
-      <div className="mt-5 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 flex gap-2.5 text-xs text-gray-400">
-        <Icon name="shield" className="w-4 h-4 text-emerald-300/80 shrink-0 mt-0.5" />
+      <div className="mt-5 rounded-xl border border-[var(--border)] bg-[var(--overlay)] px-4 py-3 flex gap-2.5 text-xs text-[var(--text-2)]">
+        <Icon name="shield" className="w-4 h-4 text-[var(--ok-strong)]/80 shrink-0 mt-0.5" />
         <span>
           Aman: server memeriksa ulang setiap folder sebelum dihapus. Folder <b>root</b> dan <b>_TerSortir</b> selalu dilindungi.
           Folder kosong yang dihapus <b>tidak bisa di-Undo</b> (memang sudah kosong).

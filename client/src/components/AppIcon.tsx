@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 const GRADIENTS = [
-  'from-indigo-500 to-fuchsia-500',
+  'from-[var(--accent-deep)] to-[var(--accent-2)]',
   'from-violet-500 to-rose-500',
   'from-sky-500 to-indigo-500',
   'from-emerald-500 to-teal-500',
@@ -18,7 +18,7 @@ export default function AppIcon({ name, index, iconUrl, className = 'w-10 h-10' 
   const [iconFailed, setIconFailed] = useState(false);
   if (iconUrl && !iconFailed) {
     return (
-      <div className={`${className} rounded-xl bg-white/[0.07] border border-white/10 grid place-items-center overflow-hidden shrink-0 select-none`}>
+      <div className={`${className} rounded-xl bg-[var(--overlay)] border border-[var(--border)] grid place-items-center overflow-hidden shrink-0 select-none`}>
         <img
           src={iconUrl}
           alt=""
