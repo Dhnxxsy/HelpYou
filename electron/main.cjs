@@ -10,7 +10,6 @@ let server = null;
 
 const appId = 'com.fileorganizer.app';
 app.setAppUserModelId(appId);
-app.disableHardwareAcceleration();
 
 function logLine(...args) {
   try {

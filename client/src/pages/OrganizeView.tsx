@@ -204,7 +204,7 @@ export default function OrganizeView() {
           setStage('pick');
         }
       }
-    }, 300);
+    }, 500);
   }
 
   async function cancelScan() {

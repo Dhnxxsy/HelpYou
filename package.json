@@ -1,6 +1,6 @@
 {
   "name": "file-organizer",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "File Organizer — pengorganisir file lokal dengan pemindahan otomatis, deteksi duplikat, dan aturan sortir kustom.",
   "author": {
     "name": "File Organizer"
