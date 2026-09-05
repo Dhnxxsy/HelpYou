@@ -14,6 +14,19 @@ contextBridge.exposeInMainWorld('electron', {
   },
   updates: {
     check: () => ipcRenderer.invoke('update:check'),
+    install: () => ipcRenderer.invoke('update:install'),
     open: (url) => ipcRenderer.invoke('update:open', url),
+    on: (channel, callback) => {
+      const map = {
+        available: 'app-update-available',
+        downloaded: 'app-update-downloaded',
+        progress: 'app-update-progress',
+      };
+      const event = map[channel];
+      if (!event) return () => {};
+      const listener = (_event, data) => callback(data);
+      ipcRenderer.on(event, listener);
+      return () => ipcRenderer.removeListener(event, listener);
+    },
   },
 });

@@ -1,9 +1,8 @@
-const { app, BrowserWindow, ipcMain, dialog, Notification, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const path = require('node:path');
 const fs = require('node:fs');
 const { pathToFileURL } = require('node:url');
-const updateConfig = require('./update-config.json');
-const { compareVersions, resolveUpdateSource } = require('./update-utils.cjs');
+const { autoUpdater } = require('electron-updater');
 
 let mainWindow = null;
 let server = null;
@@ -33,114 +32,48 @@ function iconPath() {
   return path.join(appBase(), 'electron', 'assets', app.isPackaged ? 'icon-256.png' : 'icon-256.png');
 }
 
-/* -------------------- Update checker -------------------- */
+/* -------------------- Auto updater (electron-updater) -------------------- */
 
-function updateStatePath() {
-  return path.join(app.getPath('userData'), 'update-check.json');
+autoUpdater.autoDownload = true;
+autoUpdater.autoInstallOnAppQuit = true;
+
+let lastProgressAt = 0;
+
+function sendToWindow(channel, payload) {
+  if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send(channel, payload);
 }
 
-function readUpdateState() {
-  try {
-    return JSON.parse(fs.readFileSync(updateStatePath(), 'utf8'));
-  } catch {
-    return {};
-  }
-}
-
-function writeUpdateState(state) {
-  try {
-    fs.writeFileSync(updateStatePath(), JSON.stringify(state, null, 2));
-  } catch (e) {
-    logLine('update state write error', e?.message || e);
-  }
-}
-
-async function fetchJson(url, timeoutMs = 10000) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const res = await fetch(url, {
-      headers: {
-        'User-Agent': 'file-organizer-updater/1.0',
-        Accept: 'application/vnd.github+json',
-        'X-GitHub-Api-Version': '2022-11-28',
-      },
-      signal: controller.signal,
+function initAutoUpdater() {
+  autoUpdater.on('checking-for-update', () => logLine('updater checking'));
+  autoUpdater.on('update-available', (info) => {
+    logLine('updater available', info?.version);
+    sendToWindow('app-update-available', { version: info?.version });
+  });
+  autoUpdater.on('update-not-available', (info) => {
+    logLine('updater not-available', info?.version);
+  });
+  autoUpdater.on('download-progress', (p) => {
+    const now = Date.now();
+    if (now - lastProgressAt < 150) return;
+    lastProgressAt = now;
+    sendToWindow('app-update-progress', {
+      percent: Math.round(p.percent || 0),
+      transferred: p.transferred,
+      total: p.total,
+      bytesPerSecond: p.bytesPerSecond,
     });
-    clearTimeout(timer);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    return await res.json();
-  } catch (e) {
-    clearTimeout(timer);
-    throw e;
-  }
+  });
+  autoUpdater.on('update-downloaded', (info) => {
+    logLine('updater downloaded', info?.version);
+    sendToWindow('app-update-downloaded', { version: info?.version });
+  });
+  autoUpdater.on('error', (e) => logLine('updater error', e?.message || e));
 }
 
-function showUpdateNotification(info) {
-  try {
-    const n = new Notification({
-      title: 'Pembaruan File Organizer tersedia',
-      body: `Versi ${info.version} sudah rilis. Klik untuk melihat detail.`,
-    });
-    n.on('click', () => {
-      if (info.url) shell.openExternal(info.url);
-    });
-    n.show();
-  } catch (e) {
-    logLine('update notification error', e?.message || e);
-  }
-}
-
-async function checkForUpdates({ force = false } = {}) {
-  let packageJson = {};
-  try {
-    packageJson = JSON.parse(fs.readFileSync(path.join(appBase(), 'package.json'), 'utf8'));
-  } catch {}
-  const src = resolveUpdateSource({ config: updateConfig, packageJson, env: process.env });
-
-  if (!src.owner || !src.repo) {
-    logLine('update check disabled (empty owner/repo)');
-    return { status: 'disabled' };
-  }
-
-  const state = readUpdateState();
-  const intervalMs = (src.intervalHours || 0) * 3600 * 1000;
-  if (!force && state.latest && intervalMs > 0 && Date.now() - (state.lastChecked || 0) < intervalMs) {
-    logLine('update check throttled, returning cached');
-    return state.latest;
-  }
-
-  try {
-    const api =
-      process.env.FO_UPDATE_URL ||
-      `https://api.github.com/repos/${src.owner}/${src.repo}/releases/latest`;
-    const release = await fetchJson(api);
-    const rawTag = release.tag_name || '';
-    const tag = rawTag.replace(/^v/i, '');
-    const current = app.getVersion();
-    const newer = compareVersions(rawTag || tag, current) > 0;
-    const result = {
-      status: newer ? 'update' : 'uptodate',
-      version: tag,
-      url: release.html_url || `https://github.com/${src.owner}/${src.repo}/releases/latest`,
-      notes: (release.body || '').slice(0, 500),
-      publishedAt: release.published_at || null,
-    };
-    state.lastChecked = Date.now();
-    state.latest = result;
-    if (newer && state.notifiedVersion !== result.version) {
-      state.notifiedVersion = result.version;
-      showUpdateNotification(result);
-    }
-    writeUpdateState(state);
-    logLine('update check result', JSON.stringify({ status: result.status, version: result.version }));
-    return result;
-  } catch (e) {
-    logLine('update check error', e?.message || e);
-    return state.latest && state.latest.status === 'update'
-      ? state.latest
-      : { status: 'error', message: 'Gagal memeriksa pembaruan.' };
-  }
+function startUpdateCheck() {
+  autoUpdater
+    .checkForUpdates()
+    .catch((e) => logLine('updater check error', e?.message || e));
 }
 
 async function startServer() {
@@ -208,8 +141,19 @@ function registerIpc() {
   });
   ipcMain.handle('win:isMaximized', () => mainWindow?.isMaximized() ?? false);
   ipcMain.handle('win:close', () => mainWindow?.close());
-  ipcMain.handle('update:check', async () => checkForUpdates({ force: false }));
-  ipcMain.handle('update:forceCheck', async () => checkForUpdates({ force: true }));
+  ipcMain.handle('update:check', async () => {
+    try {
+      const r = await autoUpdater.checkForUpdates();
+      const version = r?.updateInfo?.version;
+      return { status: version ? (version !== app.getVersion() ? 'available' : 'uptodate') : 'uptodate', version };
+    } catch (e) {
+      logLine('update check error', e?.message || e);
+      return { status: 'error', message: 'Gagal memeriksa pembaruan.' };
+    }
+  });
+  ipcMain.handle('update:install', async () => {
+    autoUpdater.quitAndInstall();
+  });
   ipcMain.handle('update:open', async (_event, url) => {
     if (typeof url === 'string' && /^https?:\/\//.test(url)) await shell.openExternal(url);
   });
@@ -237,11 +181,16 @@ if (!gotLock) {
 
   app.whenReady().then(async () => {
     registerIpc();
+    initAutoUpdater();
     logLine('app ready');
     try {
       const res = await startServer();
       createWindow(res.url);
       logLine('window creating with url', res.url);
+      if (app.isPackaged) {
+        // Auto-check short after the window is up; electron-updater skips in dev.
+        startUpdateCheck();
+      }
     } catch (err) {
       logLine('startup error', err?.stack || err);
       dialog.showErrorBox('File Organizer', `Gagal memulai server lokal.\n\n${err?.message || err}`);

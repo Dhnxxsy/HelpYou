@@ -6,13 +6,21 @@ export interface ElectronWindowControls {
   onMaximizedChange: (cb: (maximized: boolean) => void) => void;
 }
 
-export interface UpdateInfo {
-  status: 'update' | 'uptodate' | 'disabled' | 'error';
+export interface UpdateCheckResult {
+  status: 'available' | 'uptodate' | 'error';
   version?: string;
-  url?: string;
-  notes?: string;
-  publishedAt?: string;
   message?: string;
+}
+
+export interface UpdateProgressData {
+  percent: number;
+  transferred: number;
+  total: number;
+  bytesPerSecond: number;
+}
+
+export interface UpdateReadyData {
+  version?: string;
 }
 
 export interface ElectronAPI {
@@ -20,8 +28,13 @@ export interface ElectronAPI {
   pickFolder: () => Promise<string | null>;
   windowControls: ElectronWindowControls;
   updates: {
-    check: () => Promise<UpdateInfo>;
+    check: () => Promise<UpdateCheckResult>;
+    install: () => Promise<void>;
     open: (url: string) => Promise<void>;
+    on: (
+      channel: 'available' | 'downloaded' | 'progress',
+      cb: (data: UpdateProgressData | UpdateReadyData) => void
+    ) => () => void;
   };
 }
 
@@ -38,9 +51,14 @@ export async function pickFolder(): Promise<string | null> {
   return window.electron.pickFolder();
 }
 
-export async function checkForUpdate(): Promise<UpdateInfo | null> {
+export async function checkForUpdate(): Promise<UpdateCheckResult | null> {
   if (!isDesktop || !window.electron) return null;
   return window.electron.updates.check();
+}
+
+export async function installUpdate(): Promise<void> {
+  if (!isDesktop || !window.electron) return;
+  return window.electron.updates.install();
 }
 
 export async function openUrl(url: string): Promise<void> {

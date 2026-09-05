@@ -1,6 +1,6 @@
 {
   "name": "file-organizer",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "File Organizer — pengorganisir file lokal dengan pemindahan otomatis, deteksi duplikat, dan aturan sortir kustom.",
   "author": {
     "name": "File Organizer"
@@ -23,9 +23,10 @@
     "dist:win": "npm run build && npm run icons && electron-builder --win"
   },
   "dependencies": {
-    "express": "^4.21.2",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.7"
+    "dotenv": "^16.4.7",
+    "electron-updater": "^6.8.9",
+    "express": "^4.21.2"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
@@ -75,7 +76,14 @@
       "createStartMenuShortcut": true,
       "shortcutName": "File Organizer",
       "artifactName": "File-Organizer-Setup-${version}.${ext}"
-    }
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "Dhnxxsy",
+        "repo": "HelpYou"
+      }
+    ]
   },
   "allowScripts": {
     "electron@33.4.11": true,
