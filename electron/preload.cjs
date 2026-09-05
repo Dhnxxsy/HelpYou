@@ -6,11 +6,14 @@ contextBridge.exposeInMainWorld('electron', {
   openExternal: (url) => ipcRenderer.invoke('shell:openExternal', url),
   windowControls: {
     minimize: () => ipcRenderer.invoke('win:minimize'),
+    maxState: () => ipcRenderer.invoke('win:maxState'),
     toggleMaximize: () => ipcRenderer.invoke('win:toggleMaximize'),
+    toggleFullscreen: () => ipcRenderer.invoke('win:toggleFullscreen'),
     close: () => ipcRenderer.invoke('win:close'),
-    isMaximized: () => ipcRenderer.invoke('win:isMaximized'),
-    onMaximizedChange: (callback) => {
-      ipcRenderer.on('window:maximized', (_event, value) => callback(value));
+    onMaxStateChange: (callback) => {
+      const listener = (_event, state) => callback(state);
+      ipcRenderer.on('window:maxstate', listener);
+      return () => ipcRenderer.removeListener('window:maxstate', listener);
     },
   },
   updates: {

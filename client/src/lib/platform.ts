@@ -1,9 +1,15 @@
+export interface WindowMaxState {
+  maximized: boolean;
+  fullscreen: boolean;
+}
+
 export interface ElectronWindowControls {
   minimize: () => Promise<void>;
-  toggleMaximize: () => Promise<boolean>;
+  maxState: () => Promise<WindowMaxState>;
+  toggleMaximize: () => Promise<WindowMaxState>;
+  toggleFullscreen: () => Promise<{ fullscreen: boolean }>;
   close: () => Promise<void>;
-  isMaximized: () => Promise<boolean>;
-  onMaximizedChange: (cb: (maximized: boolean) => void) => void;
+  onMaxStateChange: (cb: (state: WindowMaxState) => void) => () => void;
 }
 
 export interface UpdateCheckResult {

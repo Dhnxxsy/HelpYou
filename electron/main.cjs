@@ -112,10 +112,24 @@ function createWindow(url) {
 
   mainWindow.once('ready-to-show', () => mainWindow.show());
   mainWindow.webContents.on('did-finish-load', () => logLine('window did-finish-load'));
-  mainWindow.on('maximize', () => mainWindow.webContents.send('window:maximized', true));
-  mainWindow.on('unmaximize', () => mainWindow.webContents.send('window:maximized', false));
+
+  const pushMaxState = () => {
+    mainWindow?.webContents.send('window:maxstate', maxState());
+  };
+  mainWindow.on('maximize', pushMaxState);
+  mainWindow.on('unmaximize', pushMaxState);
+  mainWindow.on('enter-full-screen', pushMaxState);
+  mainWindow.on('leave-full-screen', pushMaxState);
   mainWindow.on('closed', () => {
     mainWindow = null;
+  });
+
+  // F11 toggles fullscreen (mirrors native window behavior).
+  mainWindow.webContents.on('before-input-event', (_event, input) => {
+    if (input.type === 'keyDown' && input.key === 'F11') {
+      _event.preventDefault();
+      mainWindow?.setFullScreen(!mainWindow?.isFullScreen());
+    }
   });
 
   mainWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
@@ -131,15 +145,29 @@ function createWindow(url) {
   mainWindow.loadURL(url);
 }
 
+function maxState() {
+  return {
+    maximized: mainWindow?.isMaximized() ?? false,
+    fullscreen: mainWindow?.isFullScreen() ?? false,
+  };
+}
+
 function registerIpc() {
   ipcMain.handle('win:minimize', () => mainWindow?.minimize());
+  ipcMain.handle('win:maxState', () => maxState());
   ipcMain.handle('win:toggleMaximize', () => {
-    if (!mainWindow) return false;
-    if (mainWindow.isMaximized()) mainWindow.unmaximize();
+    if (!mainWindow) return maxState();
+    if (mainWindow.isFullScreen()) mainWindow.setFullScreen(false);
+    else if (mainWindow.isMaximized()) mainWindow.unmaximize();
     else mainWindow.maximize();
-    return mainWindow.isMaximized();
+    return maxState();
   });
-  ipcMain.handle('win:isMaximized', () => mainWindow?.isMaximized() ?? false);
+  ipcMain.handle('win:toggleFullscreen', () => {
+    if (!mainWindow) return { fullscreen: false };
+    const next = !mainWindow.isFullScreen();
+    mainWindow.setFullScreen(next);
+    return { fullscreen: next };
+  });
   ipcMain.handle('win:close', () => mainWindow?.close());
   ipcMain.handle('update:check', async () => {
     try {
