@@ -10,26 +10,12 @@ import RenameToolView from './pages/RenameToolView';
 import RecycleBinView from './pages/RecycleBinView';
 import ProcessManagerView from './pages/ProcessManagerView';
 import NetworkToolsView from './pages/NetworkToolsView';
-import Icon, { type IconName } from './components/Icon';
+import Icon from './components/Icon';
 import TitleBar from './components/TitleBar';
 import UpdateNotifier from './components/UpdateNotifier';
 import { isDesktop } from './lib/platform';
 
 type Tool = 'home' | ToolId;
-
-const TOOLS: { id: Tool; icon: IconName; label: string }[] = [
-  { id: 'home', icon: 'home', label: 'Beranda' },
-  { id: 'organizer', icon: 'organize', label: 'Organizer' },
-  { id: 'uninstaller', icon: 'trash', label: 'Uninstaller' },
-  { id: 'junk', icon: 'broom', label: 'Sampah' },
-  { id: 'disk', icon: 'disc', label: 'Ruang Disk' },
-  { id: 'startup', icon: 'gauge', label: 'Startup' },
-  { id: 'system', icon: 'cpu', label: 'Info Sistem' },
-  { id: 'rename', icon: 'rename', label: 'Rename' },
-  { id: 'recycle', icon: 'recycle', label: 'Tempat Sampah' },
-  { id: 'process', icon: 'activity', label: 'Proses' },
-  { id: 'network', icon: 'network', label: 'Jaringan' },
-];
 
 export default function App() {
   const [tool, setTool] = useState<Tool>('home');
@@ -38,7 +24,7 @@ export default function App() {
     <div className={`min-h-screen flex flex-col ${isDesktop ? 'pt-10' : ''}`}>
       <TitleBar />
       <UpdateNotifier />
-      <Header tool={tool} onTool={setTool} />
+      <Header onTool={setTool} />
       <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-8">
         {tool === 'home' && <HomeView onOpen={setTool} />}
         {tool === 'organizer' && <OrganizerTool />}
@@ -57,7 +43,7 @@ export default function App() {
   );
 }
 
-function Header({ tool, onTool }: { tool: Tool; onTool: (t: Tool) => void }) {
+function Header({ onTool }: { onTool: (t: Tool) => void }) {
   return (
     <header className="sticky z-30 border-b border-white/10 bg-[#07070e]/75 backdrop-blur-xl" style={{ top: isDesktop ? 40 : 0 }}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center gap-3">
@@ -75,24 +61,6 @@ function Header({ tool, onTool }: { tool: Tool; onTool: (t: Tool) => void }) {
             <div className="text-[11px] text-gray-500">Suite Tools Lokal</div>
           </div>
         </button>
-
-        {/* Tool nav */}
-        <nav className="ml-2 sm:ml-6 flex items-center gap-1 min-w-0 flex-1 overflow-x-auto bg-white/[0.05] border border-white/10 rounded-xl p-1 scrollbar-none">
-          {TOOLS.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => onTool(t.id)}
-              className={`flex items-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                tool === t.id
-                  ? 'bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white shadow-md shadow-indigo-500/25'
-                  : 'text-gray-400 hover:text-white hover:bg-white/[0.06]'
-              }`}
-            >
-              <Icon name={t.icon} className="w-4 h-4" />
-              <span className="hidden md:inline">{t.label}</span>
-            </button>
-          ))}
-        </nav>
 
         <div className="ml-auto flex items-center gap-2 text-xs text-gray-400">
           <span className="chip bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 hidden sm:inline-flex">
@@ -116,7 +84,7 @@ function Footer() {
           <Icon name="shield" className="w-3.5 h-3.5" />
           HelpYou ??? berjalan 100% lokal. Data tidak pernah meninggalkan perangkat Anda.
         </span>
-        <span className="hidden sm:block">Versi 1.0.15</span>
+        <span className="hidden sm:block">Versi 1.0.16</span>
       </div>
     </footer>
   );
