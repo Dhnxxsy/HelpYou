@@ -25,7 +25,16 @@ export type IconName =
   | 'settings'
   | 'stop'
   | 'arrowRight'
-  | 'home';
+  | 'home'
+  | 'package'
+  | 'link'
+  | 'broom'
+  | 'disc'
+  | 'gauge'
+  | 'grid'
+  | 'chevronRight'
+  | 'play'
+  | 'box';
 
 const P: Record<IconName, ReactNode> = {
   folder: (
@@ -71,6 +80,32 @@ const P: Record<IconName, ReactNode> = {
   stop: <rect x="6" y="6" width="12" height="12" rx="2" />,
   arrowRight: <><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></>,
   home: <><path d="M3 11 12 4l9 7" /><path d="M5 10v10h14V10" /></>,
+  package: <>
+    <path d="M21 8l-9-5-9 5v8l9 5 9-5V8z" />
+    <path d="M3 8l9 5 9-5M12 13v8" />
+  </>,
+  link: <><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1.5 1.5" /><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7L12.5 19" /></>,
+  broom: <>
+    <path d="M19 3l-9 9" />
+    <path d="M15 3l2 2" />
+    <path d="M19 7l2 2" />
+    <path d="M13 21l8-8" />
+    <path d="M5 13l-2 2a5 5 0 0 0 7 7l2-2" />
+  </>,
+  disc: <><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="3" /></>,
+  gauge: <><path d="M12 14l3.5-3.5" /><path d="M5 19a9 9 0 1 1 14 0" /><path d="M12 14v2" /></>,
+  grid: <>
+    <rect x="3.5" y="3.5" width="7" height="7" rx="1.5" />
+    <rect x="13.5" y="3.5" width="7" height="7" rx="1.5" />
+    <rect x="3.5" y="13.5" width="7" height="7" rx="1.5" />
+    <rect x="13.5" y="13.5" width="7" height="7" rx="1.5" />
+  </>,
+  chevronRight: <path d="M9 6l6 6-6 6" />,
+  play: <><circle cx="12" cy="12" r="9" /><path d="M10 8.5l5 3.5-5 3.5z" /></>,
+  box: <>
+    <path d="M21 8l-9-5-9 5v8l9 5 9-5V8z" />
+    <path d="M3 8l9 5 9-5" />
+  </>,
 };
 
 export default function Icon({ name, className = 'w-4 h-4' }: { name: IconName; className?: string }) {

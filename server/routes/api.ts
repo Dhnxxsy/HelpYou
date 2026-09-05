@@ -10,6 +10,16 @@ import type { ScanJob } from '../jobs/scanJobs.js';
 import { appendMoveHistory, getMoveHistory, removeMoveHistory, listMoveHistory } from '../organizer/history.js';
 import { readSettings, saveSettings, parseIgnoreList } from '../organizer/settings.js';
 import { sanitizeRules } from '../organizer/rules.js';
+import {
+  listInstalledApps,
+  createUninstallRun,
+  getUninstallRun,
+  launchUninstall,
+  launchUninstallAsAdmin,
+  scanResidue,
+  deleteResidue,
+} from '../organizer/uninstaller.js';
+import type { InstalledApp } from '../../shared/types.js';
 
 export const api = Router();
 
@@ -324,3 +334,98 @@ function getFileSize(p: string): number {
     return 0;
   }
 }
+
+/* ---------------- Uninstaller tool ---------------- */
+
+function toApp(body: any): InstalledApp | null {
+  if (!body || typeof body !== 'object') return null;
+  const name = String(body.name || '');
+  if (!name) return null;
+  return {
+    key: String(body.key || ''),
+    name,
+    displayVersion: body.displayVersion ? String(body.displayVersion) : undefined,
+    publisher: body.publisher ? String(body.publisher) : undefined,
+    installDate: body.installDate ? String(body.installDate) : undefined,
+    installLocation: body.installLocation ? String(body.installLocation) : undefined,
+    uninstallString: body.uninstallString ? String(body.uninstallString) : undefined,
+    quietUninstallString: body.quietUninstallString ? String(body.quietUninstallString) : undefined,
+    estimatedSizeKb: typeof body.estimatedSizeKb === 'number' ? body.estimatedSizeKb : undefined,
+    displayIcon: body.displayIcon ? String(body.displayIcon) : undefined,
+    arch: body.arch ? String(body.arch) : undefined,
+    hkcu: !!body.hkcu,
+  };
+}
+
+// GET /api/uninstaller/apps?force=1
+api.get('/uninstaller/apps', async (_req: Request, res: Response) => {
+  try {
+    const force = _req.query.force === '1';
+    const apps = await listInstalledApps(force);
+    res.json({ apps, count: apps.length });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /api/uninstaller/run  body: { app, silent }
+api.post('/uninstaller/run', async (req: Request, res: Response) => {
+  const app = toApp(req.body?.app);
+  if (!app) return res.status(400).json({ error: 'aplikasi tidak valid' });
+  const run = createUninstallRun(app);
+  const silent = req.body?.silent !== false;
+  await launchUninstall(run, app, silent);
+  res.json({ runId: run.id, launched: run.launched, error: run.error || null });
+});
+
+// POST /api/uninstaller/run/admin  body: { app, silent }
+api.post('/uninstaller/run/admin', async (req: Request, res: Response) => {
+  const app = toApp(req.body?.app);
+  if (!app) return res.status(400).json({ error: 'aplikasi tidak valid' });
+  const run = createUninstallRun(app);
+  const silent = req.body?.silent !== false;
+  await launchUninstallAsAdmin(run, app, silent);
+  res.json({ runId: run.id, launched: run.launched, error: run.error || null });
+});
+
+// GET /api/uninstaller/runs/:id
+api.get('/uninstaller/runs/:id', (req: Request, res: Response) => {
+  const run = getUninstallRun(req.params.id);
+  if (!run) return res.status(404).json({ error: 'not found' });
+  res.json({
+    id: run.id,
+    name: run.name,
+    startedAt: run.startedAt,
+    launched: run.launched,
+    finished: run.finished,
+    exitCode: run.exitCode,
+    error: run.error || null,
+    asAdmin: !!run.asAdmin,
+  });
+});
+
+// POST /api/uninstaller/residue  body: { app }
+api.post('/uninstaller/residue', async (req: Request, res: Response) => {
+  const app = toApp(req.body?.app);
+  if (!app) return res.status(400).json({ error: 'aplikasi tidak valid' });
+  try {
+    const entries = await scanResidue(app);
+    res.json({ entries, count: entries.length });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /api/uninstaller/residue/delete  body: { app, paths }
+api.post('/uninstaller/residue/delete', async (req: Request, res: Response) => {
+  const app = toApp(req.body?.app);
+  if (!app || !Array.isArray(req.body?.paths)) {
+    return res.status(400).json({ error: 'parameter tidak valid' });
+  }
+  try {
+    const results = await deleteResidue(app, req.body.paths.map((p: any) => String(p)));
+    res.json({ results });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});

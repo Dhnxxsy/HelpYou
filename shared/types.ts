@@ -157,3 +157,40 @@ export interface JobProgress {
   total: number;
   percent: number;
 }
+
+/* ------------- Uninstaller tool ------------- */
+
+export interface InstalledApp {
+  /** last segment of the registry uninstall key (product code or name) */
+  key: string;
+  name: string;
+  displayVersion?: string;
+  publisher?: string;
+  installDate?: string;
+  installLocation?: string;
+  uninstallString?: string;
+  quietUninstallString?: string;
+  /** registry EstimatedSize, in KB */
+  estimatedSizeKb?: number;
+  displayIcon?: string;
+  arch?: string;
+  /** true when registered under HKCU (per-user install) */
+  hkcu?: boolean;
+}
+
+export interface AppUninstallRun {
+  id: string;
+  startedAt: number;
+  name: string;
+  launched: boolean;
+  finished: boolean;
+  exitCode: number | null;
+  error?: string;
+  asAdmin?: boolean;
+}
+
+export interface ResidueEntry {
+  path: string;
+  kind: 'folder' | 'file' | 'shortcut';
+  sizeBytes: number;
+}

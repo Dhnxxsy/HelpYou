@@ -26,6 +26,7 @@ export interface UpdateReadyData {
 export interface ElectronAPI {
   platform: string;
   pickFolder: () => Promise<string | null>;
+  openExternal: (url: string) => Promise<void>;
   windowControls: ElectronWindowControls;
   updates: {
     check: () => Promise<UpdateCheckResult>;
@@ -64,4 +65,9 @@ export async function installUpdate(): Promise<void> {
 export async function openUrl(url: string): Promise<void> {
   if (!isDesktop || !window.electron) return;
   return window.electron.updates.open(url);
+}
+
+export async function openExternal(url: string): Promise<void> {
+  if (!isDesktop || !window.electron) return;
+  if (/^https?:\/\//.test(url)) return window.electron.openExternal(url);
 }

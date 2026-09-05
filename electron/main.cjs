@@ -166,6 +166,9 @@ function registerIpc() {
     if (res.canceled || res.filePaths.length === 0) return null;
     return res.filePaths[0];
   });
+  ipcMain.handle('shell:openExternal', async (_event, url) => {
+    if (typeof url === 'string' && /^https?:\/\//.test(url)) await shell.openExternal(url);
+  });
 }
 
 const gotLock = app.requestSingleInstanceLock();
