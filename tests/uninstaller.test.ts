@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import { parseCommandLine, toUninstallCommand, expandEnv, residueRoots } from '../server/organizer/uninstaller.js';
+import { parseCommandLine, toUninstallCommand, expandEnv, residueRoots, residueKind, isSelfPath } from '../server/organizer/uninstaller.js';
 import type { InstalledApp } from '../shared/types.js';
 
 describe('parseCommandLine', () => {
@@ -99,5 +99,39 @@ describe('residueRoots', () => {
     expect(roots).toContain(loc);
     expect(roots).toContain(path.join(appData, 'Contoh Aplikasi'));
     expect(roots).toContain(path.join(programData, 'Contoh Aplikasi'));
+  });
+});
+
+describe('residueKind', () => {
+  it('classifies executables', () => {
+    expect(residueKind('C:\\X\\app.exe', false)).toBe('executable');
+    expect(residueKind('C:\\X\\lib.dll', false)).toBe('executable');
+    expect(residueKind('C:\\X\\setup.msi', false)).toBe('executable');
+    expect(residueKind('C:\\X\\run.bat', false)).toBe('executable');
+  });
+
+  it('classifies shortcuts, folders and plain files', () => {
+    expect(residueKind('C:\\X\\Start File Organizer.lnk', false)).toBe('shortcut');
+    expect(residueKind('C:\\X\\data.url', false)).toBe('shortcut');
+    expect(residueKind('C:\\X', true)).toBe('folder');
+    expect(residueKind('C:\\X\\notes.txt', false)).toBe('file');
+  });
+});
+
+describe('isSelfPath', () => {
+  it('protects the running executable and its folder', () => {
+    expect(isSelfPath(process.execPath)).toBe(true);
+    expect(isSelfPath(path.dirname(process.execPath))).toBe(true);
+    expect(isSelfPath(path.join(path.dirname(process.execPath), 'resources'))).toBe(true);
+  });
+
+  it('is case-insensitive on Windows', () => {
+    expect(isSelfPath(process.execPath.toUpperCase())).toBe(true);
+  });
+
+  it('leaves unrelated paths untouched', () => {
+    const fake = path.join(os.tmpdir(), 'fo-elsewhere-file.exe');
+    expect(isSelfPath(fake)).toBe(false);
+    expect(isSelfPath(path.join(os.tmpdir(), 'whatever'))).toBe(false);
   });
 });

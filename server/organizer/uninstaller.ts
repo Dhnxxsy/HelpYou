@@ -332,19 +332,55 @@ export function residueRoots(app: InstalledApp): string[] {
   return [...roots];
 }
 
+/* ------------------------------------------------------------------ */
+/* Residue classification & self-protection                             */
+/* ------------------------------------------------------------------ */
+
+const EXECUTABLE_EXTS = new Set(['.exe', '.dll', '.msi', '.bat', '.cmd', '.com', '.scr']);
+
+/** Classify a leftover path for the UI (folder / shortcut / executable / file). */
+export function residueKind(p: string, isDir: boolean): ResidueEntry['kind'] {
+  if (isDir) return 'folder';
+  const ext = path.extname(p).toLowerCase();
+  if (ext === '.lnk' || ext === '.url') return 'shortcut';
+  if (EXECUTABLE_EXTS.has(ext)) return 'executable';
+  return 'file';
+}
+
+/**
+ * True when the path belongs to the currently running application itself
+ * (its own exe / resources / install folder). Such paths are never shown
+ * as residue and never deleted — the app must not corrupt itself.
+ */
+export function isSelfPath(p: string): boolean {
+  const exe = process.execPath;
+  if (!exe) return false;
+  const target = path.resolve(p).toLowerCase();
+  const appDir = path.dirname(exe).toLowerCase();
+  if (target === exe.toLowerCase()) return true;
+  if (target === appDir || target.startsWith(appDir + path.sep)) return true;
+  const resources = (process as any).resourcesPath as string | undefined;
+  if (resources) {
+    const r = path.resolve(resources).toLowerCase();
+    if (target === r || target.startsWith(r + path.sep)) return true;
+  }
+  return false;
+}
+
 export async function scanResidue(app: InstalledApp): Promise<ResidueEntry[]> {
   const entries: ResidueEntry[] = [];
   const seen = new Set<string>();
-  const roots = residueRoots(app);
+  const roots = residueRoots(app).filter((root) => !isSelfPath(root));
 
   for (const root of roots) {
     try {
       if (!fs.existsSync(root)) continue;
       const st = fs.statSync(root);
-      const kind = st.isDirectory() ? 'folder' : 'file';
-      if (seen.has(root)) continue;
-      seen.add(root);
-      entries.push({ path: root, kind, sizeBytes: kind === 'folder' ? folderSize(root) : st.size });
+      const key = path.resolve(root).toLowerCase();
+      if (path.resolve(root) === path.dirname(process.execPath)) continue;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      entries.push({ path: root, kind: residueKind(root, st.isDirectory()), sizeBytes: st.isDirectory() ? folderSize(root) : st.size });
     } catch { /* ignore */ }
   }
 
@@ -362,10 +398,11 @@ export async function scanResidue(app: InstalledApp): Promise<ResidueEntry[]> {
         const st = fs.statSync(full);
         const lower = String(e).toLowerCase();
         const hit = tokens.some((t) => lower.includes(t) || String(t).toLowerCase().includes(/^[a-z0-9 ]+$/.test(t) ? lower.slice(0, Math.max(12, e.length)) : t));
-        if (hit) {
-          if (seen.has(full)) continue;
-          seen.add(full);
-          entries.push({ path: full, kind: st.isDirectory() ? 'folder' : 'shortcut', sizeBytes: st.isDirectory() ? folderSize(full) : st.size });
+        if (hit && !isSelfPath(full)) {
+          const key = path.resolve(full).toLowerCase();
+          if (seen.has(key)) continue;
+          seen.add(key);
+          entries.push({ path: full, kind: residueKind(full, st.isDirectory()), sizeBytes: st.isDirectory() ? folderSize(full) : st.size });
         }
       }
     } catch { /* ignore */ }
@@ -378,7 +415,8 @@ export async function scanResidue(app: InstalledApp): Promise<ResidueEntry[]> {
 export async function deleteResidue(app: InstalledApp, paths: string[]): Promise<{ path: string; ok: boolean; error?: string }[]> {
   const known = await scanResidue(app);
   const allowed = new Set(known.map((k) => path.resolve(k.path.toLowerCase())));
-  const targets = [...new Set(paths.map((p) => path.resolve(String(p))))].filter((p) => allowed.has(p.toLowerCase()));
+  const targets = [...new Set(paths.map((p) => path.resolve(String(p))))]
+    .filter((p) => allowed.has(p.toLowerCase()) && !isSelfPath(p));
 
   const results: { path: string; ok: boolean; error?: string }[] = [];
   if (targets.length === 0) {

@@ -5,11 +5,20 @@ import type { WindowMaxState } from '@/lib/platform';
 
 function WindowIcon({ d }: { d: string }) {
   return (
-    <svg viewBox="0 0 10 10" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="1.3" aria-hidden="true">
+    <svg viewBox="0 0 12 12" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
       <path d={d} />
     </svg>
   );
 }
+
+const MINIMIZE = 'M2 6h8';
+const MAXIMIZE = 'M2.5 2.5h7v7h-7z';
+const RESTORE = 'M4.5 2.5h5v5h-5z M2.5 4.5h5v5h-5z';
+// Enter fullscreen — corner brackets expanding outward.
+const ENTER_FULLSCREEN = 'M2.5 4V2.5H4 M9.5 4V2.5H8 M2.5 8v1.5H4 M9.5 8v1.5H8';
+// Exit fullscreen — corner brackets collapsing inward.
+const EXIT_FULLSCREEN = 'M4 2.5V4H2.5 M8 2.5V4h1.5 M2.5 8H4v1.5 M9.5 8H8v1.5';
+const CLOSE = 'M3 3l6 6M9 3 3 9';
 
 const INITIAL: WindowMaxState = { maximized: false, fullscreen: false };
 
@@ -42,34 +51,28 @@ export default function TitleBar() {
           onClick={() => controls?.minimize()}
           className="w-11 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-indigo-500/25 transition-colors"
         >
-          <WindowIcon d="M1 5h8" />
+          <WindowIcon d={MINIMIZE} />
         </button>
         <button
           aria-label={restoreable ? 'Pulihkan jendela' : 'Maksimalkan jendela'}
           onClick={() => controls?.toggleMaximize().then((s) => setState((p) => ({ ...p, ...s })))}
-          className="w-11 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-indigo-500/25 transition-colors"
+          className={`w-11 flex items-center justify-center transition-colors ${restoreable ? 'text-indigo-300 hover:bg-indigo-500/25' : 'text-zinc-400 hover:text-white hover:bg-indigo-500/25'}`}
         >
-          {restoreable ? <WindowIcon d="M3 1v6h6M1 3v6M1 1h6" /> : <WindowIcon d="M1 1h8v8H1z" />}
+          <WindowIcon d={restoreable ? RESTORE : MAXIMIZE} />
         </button>
         <button
           aria-label={state.fullscreen ? 'Keluar dari layar penuh' : 'Layar penuh'}
           onClick={() => controls?.toggleFullscreen().then((s) => setState((p) => ({ ...p, ...s })))}
-          className={`w-11 flex items-center justify-center text-zinc-400 transition-colors ${state.fullscreen ? 'text-indigo-300 hover:bg-indigo-500/25' : 'hover:text-white hover:bg-indigo-500/25'}`}
+          className={`w-11 flex items-center justify-center transition-colors ${state.fullscreen ? 'text-indigo-300 hover:bg-indigo-500/25' : 'text-zinc-400 hover:text-white hover:bg-indigo-500/25'}`}
         >
-          {state.fullscreen ? (
-            // Exit fullscreen — arrows collapsing toward the center.
-            <WindowIcon d="M4 4 1.5 1.5M6 4 8.5 1.5M4 6 1.5 8.5M6 6 8.5 8.5" />
-          ) : (
-            // Enter fullscreen — arrows expanding to the corners.
-            <WindowIcon d="M4 1.5 1.5 4M8.5 1.5 6 4M1.5 6 4 8.5M6 8.5 8.5 6" />
-          )}
+          <WindowIcon d={state.fullscreen ? EXIT_FULLSCREEN : ENTER_FULLSCREEN} />
         </button>
         <button
           aria-label="Tutup"
           onClick={() => controls?.close()}
           className="w-11 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-red-500/90 transition-colors"
         >
-          <WindowIcon d="M1 1l8 8M9 1 1 9" />
+          <WindowIcon d={CLOSE} />
         </button>
       </div>
     </div>

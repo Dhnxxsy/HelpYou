@@ -191,6 +191,6 @@ export interface AppUninstallRun {
 
 export interface ResidueEntry {
   path: string;
-  kind: 'folder' | 'file' | 'shortcut';
+  kind: 'folder' | 'file' | 'shortcut' | 'executable';
   sizeBytes: number;
 }

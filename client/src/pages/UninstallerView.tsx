@@ -15,8 +15,18 @@ const GRADIENTS = [
 ];
 
 function kindLabel(kind: ResidueEntry['kind']): string {
-  return kind === 'folder' ? 'Folder' : kind === 'file' ? 'File' : 'Pintasan';
+  if (kind === 'folder') return 'Folder';
+  if (kind === 'executable') return 'Program (EXE)';
+  if (kind === 'shortcut') return 'Pintasan';
+  return 'File';
 }
+
+const KIND_ICON: Record<ResidueEntry['kind'], IconName> = {
+  folder: 'folder',
+  executable: 'play',
+  shortcut: 'link',
+  file: 'external',
+};
 
 function bytesOfApp(app: InstalledApp): number | undefined {
   return app.estimatedSizeKb !== undefined ? app.estimatedSizeKb * 1024 : undefined;
@@ -606,10 +616,15 @@ function ResidueModal({ app, onClose }: { app: InstalledApp; onClose: () => void
             </div>
             <div className="divide-y divide-white/5 max-h-56 overflow-y-auto">
               {list.map((e) => (
-                <div key={e.path} className="grid grid-cols-12 gap-2 px-4 py-2.5 items-center text-sm">
+                <div key={e.path} className={`grid grid-cols-12 gap-2 px-4 py-2.5 items-center text-sm ${e.kind === 'executable' ? 'bg-amber-500/[0.06]' : ''}`}>
                   <div className="col-span-6 truncate text-gray-300 font-mono text-xs" title={e.path}>{e.path}</div>
-                  <div className="col-span-3 text-xs text-gray-500 flex items-center gap-1.5">
-                    <Icon name={e.kind === 'folder' ? 'folder' : 'external'} className="w-3.5 h-3.5" /> {kindLabel(e.kind)}
+                  <div className="col-span-3 text-xs flex items-center gap-1.5">
+                    <Icon name={KIND_ICON[e.kind]} className={`w-3.5 h-3.5 ${e.kind === 'executable' ? 'text-amber-300' : 'text-gray-500'}`} />
+                    {e.kind === 'executable' ? (
+                      <span className="chip bg-amber-500/10 text-amber-300 border border-amber-500/20 text-[10px]" title="Berkas program (EXE) — akan dihapus ke Recycle Bin bila ditekan">Program (EXE)</span>
+                    ) : (
+                      <span className="text-gray-500">{kindLabel(e.kind)}</span>
+                    )}
                   </div>
                   <div className="col-span-3 flex items-center justify-end gap-2">
                     <span className="text-xs text-gray-400 tabular-nums">{e.sizeBytes > 0 ? formatBytes(e.sizeBytes) : '—'}</span>
