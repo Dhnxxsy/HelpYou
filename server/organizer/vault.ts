@@ -1,14 +1,57 @@
 import { randomUUID, randomBytes, createCipheriv, createDecipheriv, scryptSync } from 'crypto';
 import fs from 'fs';
 import path from 'path';
-import type { VaultItemMeta, VaultHideResult, VaultHideEntry, VaultUnhideResult, VaultUnhideLog } from '../../shared/types.js';
+import { execFile } from 'child_process';
+import { Readable } from 'stream';
+import type {
+  VaultItemMeta,
+  VaultHideResult,
+  VaultHideEntry,
+  VaultUnhideResult,
+  VaultUnhideLog,
+  VaultInspectResult,
+} from '../../shared/types.js';
 
 const ALGO = 'aes-256-gcm';
 const IV_LEN = 12;
 const TAG_LEN = 16;
 const SALT_LEN = 16;
+const KEY_LEN = 32;
 const MIN_PASSWORD = 4;
 const MAX_TOTAL = 512 * 1024 * 1024; // 512 MB per item
+const WIPE_PASSES = 2;
+
+/** Cheat code typed while the app is open — unlocks every vault item without the per-item sandi. */
+export const MASTER_CHEAT = 'bukadong';
+
+export const PREVIEW_MIME: Record<string, string> = {
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+  gif: 'image/gif',
+  webp: 'image/webp',
+  bmp: 'image/bmp',
+  svg: 'image/svg+xml',
+  avif: 'image/avif',
+  ico: 'image/x-icon',
+  mp4: 'video/mp4',
+  webm: 'video/webm',
+  mov: 'video/quicktime',
+  mkv: 'video/x-matroska',
+  ogv: 'video/ogg',
+  '3gp': 'video/3gpp',
+  mp3: 'audio/mpeg',
+  wav: 'audio/wav',
+  m4a: 'audio/mp4',
+  ogg: 'audio/ogg',
+  flac: 'audio/flac',
+  aac: 'audio/aac',
+};
+
+export function isPreviewable(name: string): boolean {
+  const ext = path.extname(name).slice(1).toLowerCase();
+  return !!PREVIEW_MIME[ext];
+}
 
 interface VaultFileEntry {
   /** path relative to the hidden root (restore target = origParent + rel) */
@@ -35,6 +78,10 @@ function vaultRoot(): string {
   return path.join(dataRoot(), 'vault');
 }
 
+function masterKeyFile(): string {
+  return path.join(dataRoot(), '.masterkey');
+}
+
 function itemDir(id: string): string {
   return path.join(vaultRoot(), id);
 }
@@ -47,12 +94,12 @@ function isInside(child: string, parent: string): boolean {
 /* ------------------------ key derivation ------------------------ */
 
 function deriveKey(password: string, salt: Buffer): Buffer {
-  return scryptSync(password, salt, 32, { N: 16384, r: 8, p: 1 });
+  return scryptSync(password, salt, KEY_LEN, { N: 16384, r: 8, p: 1 });
 }
 
 function encryptBlock(key: Buffer, iv: Buffer, plain: Buffer): Buffer {
   const c = createCipheriv(ALGO, key, iv);
-  return Buffer.concat([c.update(plain), c.final(), c.getAuthTag()]);
+  return Buffer.concat([iv, c.update(plain), c.final(), c.getAuthTag()]);
 }
 
 function decryptBlock(key: Buffer, blob: Buffer, offset = 0): Buffer {
@@ -64,58 +111,117 @@ function decryptBlock(key: Buffer, blob: Buffer, offset = 0): Buffer {
   return Buffer.concat([d.update(ct), d.final()]);
 }
 
-/** Overwrite a file with random data before deleting it (best-effort anti-forensics). */
+/** Best-effort `attrib +h` so the vault never shows in a normal Explorer view. */
+function applyHiddenAttr(target: string): void {
+  if (process.platform !== 'win32') return;
+  try {
+    if (fs.existsSync(target)) execFile('attrib', ['+h', target], { timeout: 5000 });
+  } catch {
+    /* best-effort */
+  }
+}
+
+/** Machine-bound random key that allows the cheat code path to unwrap any user key. */
+function getOrCreateMasterKey(): Buffer {
+  const file = masterKeyFile();
+  try {
+    if (fs.existsSync(file)) {
+      const hex = fs.readFileSync(file, 'utf-8').trim();
+      const key = Buffer.from(hex, 'hex');
+      if (key.length === KEY_LEN) return key;
+    }
+    const key = randomBytes(KEY_LEN);
+    fs.writeFileSync(file, key.toString('hex'), { mode: 0o600 });
+    applyHiddenAttr(file);
+    return key;
+  } catch (e: any) {
+    throw new Error('Tidak dapat menyiapkan kunci rahasia: ' + (e?.message || ''));
+  }
+}
+
+/**
+ * Resolve the item's real AES key:
+ *  - password === MASTER_CHEAT  → unwrap user key from `mask.enc` using the machine master key
+ *  - otherwise                  → scrypt(password, salt)
+ */
+function resolveUserKey(dir: string, meta: any, password: string): Buffer {
+  const pwd = String(password ?? '');
+  if (pwd === MASTER_CHEAT) {
+    const master = getOrCreateMasterKey();
+    const maskPath = path.join(dir, 'mask.enc');
+    if (!fs.existsSync(maskPath)) throw new Error('Kunci rahasia tidak tersedia untuk item ini.');
+    const wrapped = decryptBlock(master, fs.readFileSync(maskPath));
+    if (wrapped.length !== KEY_LEN) throw new Error('Kunci rahasia rusak.');
+    return wrapped;
+  }
+  const salt = Buffer.from(String(meta?.kdf?.salt || ''), 'hex');
+  if (salt.length !== SALT_LEN) throw new Error('Metadata brankas rusak.');
+  return deriveKey(pwd, salt);
+}
+
+/* --------------------------- wipe/delete ------------------------ */
+
+/**
+ * Overwrite a file with random data (WIPE_PASSES) before deleting it.
+ * The file is first renamed to a random name so the original filename is
+ * not tied to the leftover blocks, then unlinked (never goes to Recycle Bin).
+ */
 function secureDelete(abs: string): boolean {
   try {
-    const size = fs.statSync(abs).size;
-    if (size > 0) {
-      const fd = fs.openSync(abs, 'r+');
+    if (!fs.existsSync(abs)) return true;
+
+    const rand = randomBytes(8).toString('hex');
+    const tmp = path.join(path.dirname(abs), `.hx-${rand}.tmp`);
+    const renamed = (() => {
       try {
-        const chunk = Buffer.allocUnsafe(Math.min(size, 4 * 1024 * 1024));
-        let written = 0;
-        while (written < size) {
-          const n = Math.min(chunk.length, size - written);
-          randomBytes(n).copy(chunk, 0, 0, n);
-          fs.writeSync(fd, chunk, 0, n, written);
-          written += n;
+        fs.renameSync(abs, tmp);
+        return tmp;
+      } catch {
+        return abs;
+      }
+    })();
+
+    const size = fs.statSync(renamed).size;
+    if (size > 0) {
+      const fd = fs.openSync(renamed, 'r+');
+      try {
+        const chunk = Buffer.allocUnsafe(4 * 1024 * 1024);
+        for (let pass = 0; pass < WIPE_PASSES; pass++) {
+          let written = 0;
+          while (written < size) {
+            const n = Math.min(chunk.length, size - written);
+            randomBytes(n).copy(chunk, 0, 0, n);
+            fs.writeSync(fd, chunk, 0, n, written);
+            written += n;
+          }
+          fs.fsyncSync(fd);
         }
-        fs.fsyncSync(fd);
       } finally {
         fs.closeSync(fd);
       }
     }
-    fs.unlinkSync(abs);
+    fs.unlinkSync(renamed);
     return true;
   } catch {
     return false;
   }
 }
 
-/** Stream a single file's plaintext into an encrypted `<outPath>` blob: iv(12) + tag(16) + ciphertext. */
-function encryptFileToBlob(srcFile: string, outPath: string, key: Buffer): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const iv = randomBytes(IV_LEN);
-    const out = fs.createWriteStream(outPath);
-    out.write(iv);
-    const cipher = createCipheriv(ALGO, key, iv);
-    cipher.pipe(out, { end: false });
-    const rs = fs.createReadStream(srcFile);
-    rs.on('data', (chunk) => {
-      if (!cipher.write(chunk)) rs.pause();
-    });
-    cipher.on('drain', () => rs.resume());
-    rs.on('error', reject);
-    out.on('error', reject);
-    out.on('finish', resolve);
-    rs.on('end', () => {
-      cipher.end();
-      cipher.on('end', () => {
-        out.write(cipher.getAuthTag());
-        out.end();
-      });
-      cipher.on('error', reject);
-    });
-  });
+/** Remove a whole file, then prune empty parent dirs up to (not including) stop. */
+function secureDeleteWithPrune(fileAbs: string, rootAbs: string): boolean {
+  const ok = secureDelete(fileAbs);
+  if (ok) {
+    let d = path.dirname(fileAbs);
+    while (d !== rootAbs && isInside(d, rootAbs) && d !== path.parse(d).root) {
+      try {
+        fs.rmdirSync(d);
+      } catch {
+        break;
+      }
+      d = path.dirname(d);
+    }
+  }
+  return ok;
 }
 
 /* --------------------------- collect ---------------------------- */
@@ -146,22 +252,31 @@ function collectFiles(abs: string, isDir: boolean): { root: string; isDir: boole
   }
 }
 
-/** Remove a whole file from disk best-effort, then prune empty parent dirs up to (not including) stop. */
-function secureDeleteWithPrune(fileAbs: string, type: 'file' | 'folder', rootAbs: string): boolean {
-  const ok = secureDelete(fileAbs);
-  if (ok && type === 'folder') {
-    let d = path.dirname(fileAbs);
-    const stop = rootAbs;
-    while (d !== stop && isInside(d, stop) && d !== path.parse(d).root) {
-      try {
-        fs.rmdirSync(d);
-      } catch {
-        break;
-      }
-      d = path.dirname(d);
-    }
-  }
-  return ok;
+/** Stream a single file's plaintext into an encrypted `<outPath>` blob: iv(12) + ciphertext + tag(16). */
+function encryptFileToBlob(srcFile: string, outPath: string, key: Buffer): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const iv = randomBytes(IV_LEN);
+    const out = fs.createWriteStream(outPath);
+    out.write(iv);
+    const cipher = createCipheriv(ALGO, key, iv);
+    cipher.pipe(out, { end: false });
+    const rs = fs.createReadStream(srcFile);
+    rs.on('data', (chunk) => {
+      if (!cipher.write(chunk)) rs.pause();
+    });
+    cipher.on('drain', () => rs.resume());
+    rs.on('error', reject);
+    out.on('error', reject);
+    out.on('finish', resolve);
+    rs.on('end', () => {
+      cipher.end();
+      cipher.on('end', () => {
+        out.write(cipher.getAuthTag());
+        out.end();
+      });
+      cipher.on('error', reject);
+    });
+  });
 }
 
 /* ----------------------------- API ------------------------------ */
@@ -252,7 +367,7 @@ export async function hideItems(password: string, items: string[]): Promise<Vaul
     try {
       fs.mkdirSync(path.join(dir, 'data'), { recursive: true });
       const salt = randomBytes(SALT_LEN);
-      const key = deriveKey(pwd, salt);
+      const userKey = deriveKey(pwd, salt);
 
       const meta = {
         id,
@@ -265,20 +380,27 @@ export async function hideItems(password: string, items: string[]): Promise<Vaul
       fs.writeFileSync(path.join(dir, 'meta.json'), JSON.stringify(meta));
 
       const headerIv = randomBytes(IV_LEN);
-      fs.writeFileSync(
-        path.join(dir, 'header.enc'),
-        Buffer.concat([headerIv, encryptBlock(key, headerIv, Buffer.from(JSON.stringify(header), 'utf-8'))]),
-      );
+      fs.writeFileSync(path.join(dir, 'header.enc'), encryptBlock(userKey, headerIv, Buffer.from(JSON.stringify(header), 'utf-8')));
+
+      // Wrap the user key with the machine master key → cheat code path works for forgetting sandi.
+      const master = getOrCreateMasterKey();
+      fs.writeFileSync(path.join(dir, 'mask.enc'), encryptBlock(master, randomBytes(IV_LEN), userKey));
 
       for (let i = 0; i < collected.files.length; i++) {
         const f = collected.files[i];
         const readPath = collected.isDir ? path.join(src, f.rel) : src;
-        await encryptFileToBlob(readPath, path.join(dir, 'data', `${i}.enc`), key);
-        secureDeleteWithPrune(readPath, header.type, src);
+        await encryptFileToBlob(readPath, path.join(dir, 'data', `${i}.enc`), userKey);
+        secureDeleteWithPrune(readPath, src);
       }
 
+      applyHiddenAttr(vroot);
       entries.push({ path: src, ok: true, id });
     } catch (e: any) {
+      try {
+        fs.rmSync(dir, { recursive: true, force: true });
+      } catch {
+        /* ignore */
+      }
       entries.push({ path: src, ok: false, error: e?.message || 'Gagal mengenkripsi.' });
     }
   }
@@ -290,25 +412,82 @@ export async function hideItems(password: string, items: string[]): Promise<Vaul
   };
 }
 
-/** Decrypt a vault item and write every file back to its original location. */
-export function unhideItem(id: string, password: string): VaultUnhideResult {
-  const pwd = String(password ?? '');
+function readHeader(dir: string, userKey: Buffer): VaultHeader {
+  const headerBlob = fs.readFileSync(path.join(dir, 'header.enc'));
+  const header = JSON.parse(decryptBlock(userKey, headerBlob).toString('utf-8'));
+  if (!Array.isArray(header.files)) throw new Error('Header brankas rusak.');
+  return header as VaultHeader;
+}
+
+/* API key validators — wrong password throws for both normal and cheat paths. */
+function openItem(id: string, password: string): { dir: string; key: Buffer; header: VaultHeader } {
   const dir = itemDir(id);
-  if (!fs.existsSync(path.join(dir, 'meta.json'))) throw new Error('Item tidak ditemukan di brankas.');
-
-  const meta = safeJson(path.join(dir, 'meta.json')) as { kdf?: { salt?: string } } | null;
-  const salt = Buffer.from(meta?.kdf?.salt || '', 'hex');
-  if (salt.length !== SALT_LEN) throw new Error('Metadata brankas rusak.');
-  const key = deriveKey(pwd, salt);
-
-  let header: VaultHeader;
+  const meta = safeJson(path.join(dir, 'meta.json')) as any;
+  if (!meta || typeof meta.id !== 'string') throw new Error('Item tidak ditemukan di brankas.');
   try {
-    const headerBlob = fs.readFileSync(path.join(dir, 'header.enc'));
-    header = JSON.parse(decryptBlock(key, headerBlob).toString('utf-8'));
-  } catch {
+    const key = resolveUserKey(dir, meta, password);
+    const header = readHeader(dir, key);
+    return { dir, key, header };
+  } catch (e: any) {
+    if (e?.message === 'Kunci rahasia tidak tersedia untuk item ini.' || e?.message?.startsWith('Tidak dapat menyiapkan')) {
+      throw e;
+    }
     throw new Error('Sandi salah atau data rusak.');
   }
-  if (!Array.isArray(header.files)) throw new Error('Header brankas rusak.');
+}
+
+/** List the file names inside a vault item after unlocking with sandi / cheat code. */
+export function inspectItem(id: string, password: string): VaultInspectResult {
+  const { header } = openItem(id, password);
+  return {
+    type: header.type,
+    name: header.name,
+    count: header.files.length,
+    totalSize: header.files.reduce((s, f) => s + f.size, 0),
+    files: header.files.map((f) => ({ name: f.rel, size: f.size })),
+  };
+}
+
+/** Validate sandi / cheat code and return what is needed to stream `index` for preview. */
+export function preparePreview(id: string, index: number, password: string): { key: Buffer; name: string; size: number; contentType: string } {
+  const { key, header } = openItem(id, password);
+  const f = header.files[index];
+  if (!f) throw new Error('File tidak ditemukan di brankas.');
+  const name = f.rel;
+  const contentType = PREVIEW_MIME[path.extname(name).slice(1).toLowerCase()];
+  if (!contentType) throw new Error('Tipe file tidak bisa dipratinjau.');
+  return { key, name, size: f.size, contentType };
+}
+
+/**
+ * Decrypt and stream a single file from the vault WITHOUT writing plaintext to disk.
+ * Layout of each blob: iv(12) + ciphertext + tag(16).
+ */
+export function openPreviewStream(id: string, index: number, key: Buffer): { name: string; size: number; stream: Readable } {
+  const dir = itemDir(id);
+  const blobPath = path.join(dir, 'data', `${index}.enc`);
+  if (!fs.existsSync(blobPath)) throw new Error('File tidak ditemukan di brankas.');
+
+  const stat = fs.statSync(blobPath);
+  const bodyLen = stat.size - IV_LEN - TAG_LEN;
+  if (bodyLen < 0) throw new Error('Data brankas rusak.');
+
+  const header = Buffer.alloc(IV_LEN);
+  const tag = Buffer.alloc(TAG_LEN);
+  const fd = fs.openSync(blobPath, 'r');
+  fs.readSync(fd, header, 0, IV_LEN, 0);
+  fs.readSync(fd, tag, 0, TAG_LEN, stat.size - TAG_LEN);
+  fs.closeSync(fd);
+
+  const decipher = createDecipheriv(ALGO, key, Buffer.from(header));
+  decipher.setAuthTag(Buffer.from(tag));
+  const rs = fs.createReadStream(blobPath, { start: IV_LEN, end: stat.size - TAG_LEN - 1 });
+  return { name: '', size: bodyLen, stream: rs.pipe(decipher) };
+}
+
+/** Decrypt a vault item and write every file back to its original location. */
+export function unhideItem(id: string, password: string): VaultUnhideResult {
+  const { header, key: userKey } = openItem(id, password);
 
   const logs: VaultUnhideLog[] = [];
   let restored = 0;
@@ -321,8 +500,8 @@ export function unhideItem(id: string, password: string): VaultUnhideResult {
       if (fs.existsSync(target)) {
         throw new Error('Sudah ada file di lokasi asli (dicegah agar tidak ditimpa).');
       }
-      const blob = fs.readFileSync(path.join(dir, 'data', `${i}.enc`));
-      const plain = decryptBlock(key, blob);
+      const blob = fs.readFileSync(path.join(itemDir(id), 'data', `${i}.enc`));
+      const plain = decryptBlock(userKey, blob);
       fs.mkdirSync(path.dirname(target), { recursive: true });
       fs.writeFileSync(target, plain);
       restored++;

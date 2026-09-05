@@ -31,7 +31,7 @@ import { listProcesses, killProcess } from '../organizer/process-manager.js';
 import { pingHost, traceHost, dnsLookup, scanPorts } from '../organizer/network-tools.js';
 import type { DiskScanResult, StartupItem } from '../../shared/types.js';
 import { listNotes, getNote, createNote, updateNote, deleteNote } from '../organizer/notepad.js';
-import { listVaultItems, hideItems, unhideItem, deleteVaultItem } from '../organizer/vault.js';
+import { listVaultItems, hideItems, unhideItem, deleteVaultItem, inspectItem, preparePreview, openPreviewStream } from '../organizer/vault.js';
 
 export const api = Router();
 
@@ -915,6 +915,72 @@ api.post('/vault/unhide', (req: Request, res: Response) => {
     if (!id) return res.status(400).json({ error: 'id diperlukan' });
     const result = unhideItem(id, password);
     res.json(result);
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+// POST /api/vault/inspect  body: { id, password }  → list file names inside an unlocked item
+api.post('/vault/inspect', (req: Request, res: Response) => {
+  try {
+    const id = String(req.body?.id || '');
+    const password = String(req.body?.password || '');
+    if (!id) return res.status(400).json({ error: 'id diperlukan' });
+    res.json({ item: inspectItem(id, password) });
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+// In-memory one-time preview tokens (never written to disk; expire quickly).
+const previewTokens = new Map<string, { id: string; index: number; key: Buffer; name: string; size: number; contentType: string; expires: number }>();
+
+// POST /api/vault/preview  body: { id, index, password }  → short-lived streaming token
+api.post('/vault/preview', (req: Request, res: Response) => {
+  try {
+    const id = String(req.body?.id || '');
+    const index = Number(req.body?.index);
+    const password = String(req.body?.password || '');
+    if (!id || !Number.isInteger(index) || index < 0) return res.status(400).json({ error: 'parameter tidak valid' });
+    const meta = preparePreview(id, index, password);
+    const ttl = 120_000;
+    const token = randomUUID();
+    previewTokens.set(token, {
+      id,
+      index,
+      key: meta.key,
+      name: meta.name,
+      size: meta.size,
+      contentType: meta.contentType,
+      expires: Date.now() + ttl,
+    });
+    setTimeout(() => previewTokens.delete(token), ttl).unref();
+    res.json({ token, name: meta.name, size: meta.size, contentType: meta.contentType });
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+// GET /api/vault/preview/:token  → stream decrypted content (AES stream, never written to disk)
+api.get('/vault/preview/:token', (req: Request, res: Response) => {
+  const t = previewTokens.get(req.params.token);
+  if (!t || t.expires < Date.now()) {
+    previewTokens.delete(req.params.token);
+    return res.status(410).json({ error: 'Token pratinjau kedaluwarsa.' });
+  }
+  try {
+    const { stream, size } = openPreviewStream(t.id, t.index, t.key);
+    res.set('Content-Type', t.contentType);
+    res.set('Content-Length', String(t.size || size));
+    res.set('Cache-Control', 'no-store');
+    stream.on('error', () => {
+      try {
+        res.end();
+      } catch {
+        /* ignore */
+      }
+    });
+    stream.pipe(res);
   } catch (e: any) {
     res.status(400).json({ error: e.message });
   }

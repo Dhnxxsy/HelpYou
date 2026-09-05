@@ -1,6 +1,6 @@
 {
   "name": "file-organizer",
-  "version": "1.0.21",
+  "version": "1.0.22",
   "description": "HelpYou ??? suite tools lokal: pengorganisir file, uninstaller program, dan banyak lagi.",
   "author": {
     "name": "HelpYou"
@@ -69,14 +69,14 @@
       ],
       "icon": "electron/assets/icon.ico"
     },
-"nsis": {
-        "oneClick": true,
-        "perMachine": false,
-        "runAfterFinish": false,
-        "createDesktopShortcut": "always",
-        "createStartMenuShortcut": true,
-        "shortcutName": "HelpYou",
-        "artifactName": "HelpYou-Setup-${version}.${ext}"
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "runAfterFinish": false,
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "shortcutName": "HelpYou",
+      "artifactName": "HelpYou-Setup-${version}.${ext}"
     },
     "publish": [
       {

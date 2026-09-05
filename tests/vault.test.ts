@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import { hideItems, unhideItem, deleteVaultItem, listVaultItems } from '../server/organizer/vault.js';
+import { hideItems, unhideItem, deleteVaultItem, listVaultItems, inspectItem, preparePreview, openPreviewStream, isPreviewable } from '../server/organizer/vault.js';
 
 describe('secret vault (encrypted locker)', () => {
   let base: string;
@@ -134,4 +134,87 @@ describe('secret vault (encrypted locker)', () => {
     expect(listVaultItems().length).toBe(before.length - 1);
     expect(deleteVaultItem('nonexistent')).toBe(false);
   });
+
+  describe('v1.0.22: cheat code, inspection, and protected preview', () => {
+    let itemId: string;
+    let sDir: string;
+    const payload = 'data-pribadi-untuk-pratinjau';
+
+    beforeAll(async () => {
+      sDir = path.join(base, 'secret22');
+      fs.mkdirSync(sDir, { recursive: true });
+      fs.writeFileSync(path.join(sDir, 'moment.jpg'), payload);
+      const res = await hideItems('sandi-lupa-sekali', [path.join(sDir, 'moment.jpg')]);
+      expect(res.done).toBe(1);
+      itemId = res.entries[0].id!;
+    });
+
+    it('original filename/name never leaks into any vault file on disk', () => {
+      const ids = listVaultItems();
+      expect(ids.some((i) => i.id === itemId)).toBe(true);
+      const walk = (d: string) => {
+        for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+          const p = path.join(d, e.name);
+          if (e.isDirectory()) walk(p);
+          else {
+            const buf = fs.readFileSync(p);
+            const s = buf.toString('latin1');
+            expect(s.includes('moment')).toBe(false);
+            expect(s.includes('foto-ktp')).toBe(false);
+            expect(s.includes('sandi')).toBe(false);
+          }
+        }
+      };
+      walk(path.dirname(itemDirHelper(itemId)));
+      // meta.json (plaintext) must not carry the item name either
+      expect(fs.readFileSync(path.join(dirOf(itemId), 'meta.json'), 'utf-8')).not.toContain('moment');
+      expect(fs.readFileSync(path.join(dirOf(itemId), 'meta.json'), 'utf-8').includes('secret-bytes')).toBe(false);
+    });
+
+    it('inspect needs a valid sandi', () => {
+      expect(() => inspectItem(itemId, 'salah')).toThrow('Sandi salah');
+      const out = inspectItem(itemId, 'sandi-lupa-sekali');
+      expect(out.name).toBe('moment.jpg');
+      expect(out.files).toEqual([{ name: 'moment.jpg', size: Buffer.byteLength(payload) }]);
+    });
+
+    it('cheat code "bukadong" unlocks the item even after forgetting the sandi', () => {
+      const out = inspectItem(itemId, 'bukadong');
+      expect(out.name).toBe('moment.jpg');
+      expect(out.files[0].name).toBe('moment.jpg');
+      // it also works for unhide
+      const dir = sDir;
+      fs.writeFileSync(path.join(dir, 'moment.jpg'), payload); // restore guard needs target absent, so keep a copy elsewhere
+      const out2 = unhideItem(itemId, 'bukadong');
+      expect(out2.ok).toBe(false); // target exists again → refused to overwrite (still proves key resolved)
+      fs.unlinkSync(path.join(dir, 'moment.jpg'));
+      const out3 = unhideItem(itemId, 'bukadong');
+      expect(out3.ok).toBe(true);
+      expect(fs.readFileSync(path.join(dir, 'moment.jpg'), 'utf-8')).toBe(payload);
+    });
+
+    it('preview streams decrypted bytes after password validation (no disk write)', async () => {
+      const meta = preparePreview(itemId, 0, 'sandi-lupa-sekali');
+      expect(meta.name).toBe('moment.jpg');
+      expect(meta.contentType).toBe('image/jpeg');
+      expect(meta.size).toBe(Buffer.byteLength(payload));
+      const { stream } = openPreviewStream(itemId, 0, meta.key);
+      const chunks: Buffer[] = [];
+      for await (const c of stream) chunks.push(c as Buffer);
+      expect(Buffer.concat(chunks).toString('utf-8')).toBe(payload);
+    });
+
+    it('preview refuses non-media files and rejects a wrong sandi', () => {
+      expect(isPreviewable('catatan.txt')).toBe(false);
+      expect(() => preparePreview(itemId, 0, 'palsu')).toThrow('Sandi salah');
+    });
+  });
 });
+
+// helpers to resolve vault paths in test scope
+function itemDirHelper(id: string): string {
+  return path.join(process.env.FO_DATA!, '.file-organizer', 'vault', id);
+}
+function dirOf(id: string): string {
+  return itemDirHelper(id);
+}

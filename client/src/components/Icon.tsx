@@ -52,6 +52,7 @@ export type IconName =
   | 'minus'
   | 'save'
   | 'upload'
+  | 'eye'
   | 'eyeOff'
   | 'unlock';
 
@@ -185,6 +186,10 @@ const P: Record<IconName, ReactNode> = {
     <path d="M17 21v-8H7v8M7 3v5h8" />
   </>,
   upload: <><path d="M12 15V3" /><path d="M7 8l5-5 5 5" /><path d="M4 21h16" /></>,
+  eye: <>
+    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+    <circle cx="12" cy="12" r="3" />
+  </>,
   eyeOff: <>
     <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-10-8-10-8a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 10 8 10 8a18.5 18.5 0 0 1-2.16 3.19" />
     <path d="M6.61 6.61A13.53 13.53 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61M13.3 13.3a3 3 0 1 1-4.6-4.6" />

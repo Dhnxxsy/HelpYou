@@ -1,9 +1,10 @@
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import HomeView, { type ToolId } from './pages/HomeView';
 import Icon from './components/Icon';
 import TitleBar from './components/TitleBar';
 import UpdateNotifier from './components/UpdateNotifier';
 import { isDesktop } from './lib/platform';
+import { VaultMasterProvider, useVaultMaster, MASTER_CHEAT } from './lib/vaultMaster';
 
 const OrganizerTool = lazy(() => import('./pages/OrganizerTool'));
 const UninstallerView = lazy(() => import('./pages/UninstallerView'));
@@ -22,31 +23,59 @@ export default function App() {
   const [tool, setTool] = useState<Tool>('home');
 
   return (
-    <div className={`min-h-screen flex flex-col ${isDesktop ? 'pt-10' : ''}`}>
-      <TitleBar />
-      <UpdateNotifier />
-      <Header onTool={setTool} />
-      <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-8">
-        {tool === 'home' ? (
-          <HomeView onOpen={setTool} />
-        ) : (
-          <Suspense fallback={<ToolFallback />}>
-            {tool === 'organizer' && <OrganizerTool />}
-            {tool === 'uninstaller' && <UninstallerView onBack={() => setTool('home')} />}
-            {tool === 'junk' && <JunkCleanerView onBack={() => setTool('home')} />}
-            {tool === 'disk' && <DiskAnalyzerView onBack={() => setTool('home')} />}
-            {tool === 'startup' && <StartupToolView onBack={() => setTool('home')} />}
-            {tool === 'system' && <SystemInfoView onBack={() => setTool('home')} />}
-            {tool === 'rename' && <RenameToolView onBack={() => setTool('home')} />}
-            {tool === 'recycle' && <RecycleBinView onBack={() => setTool('home')} />}
-            {tool === 'notepad' && <NotepadView onBack={() => setTool('home')} />}
-            {tool === 'vault' && <VaultView onBack={() => setTool('home')} />}
-          </Suspense>
-        )}
-      </main>
-      <Footer />
-    </div>
+    <VaultMasterProvider>
+      <GlobalCheatListener />
+      <div className={`min-h-screen flex flex-col ${isDesktop ? 'pt-10' : ''}`}>
+        <TitleBar />
+        <UpdateNotifier />
+        <Header onTool={setTool} />
+        <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-8">
+          {tool === 'home' ? (
+            <HomeView onOpen={setTool} />
+          ) : (
+            <Suspense fallback={<ToolFallback />}>
+              {tool === 'organizer' && <OrganizerTool />}
+              {tool === 'uninstaller' && <UninstallerView onBack={() => setTool('home')} />}
+              {tool === 'junk' && <JunkCleanerView onBack={() => setTool('home')} />}
+              {tool === 'disk' && <DiskAnalyzerView onBack={() => setTool('home')} />}
+              {tool === 'startup' && <StartupToolView onBack={() => setTool('home')} />}
+              {tool === 'system' && <SystemInfoView onBack={() => setTool('home')} />}
+              {tool === 'rename' && <RenameToolView onBack={() => setTool('home')} />}
+              {tool === 'recycle' && <RecycleBinView onBack={() => setTool('home')} />}
+              {tool === 'notepad' && <NotepadView onBack={() => setTool('home')} />}
+              {tool === 'vault' && <VaultView onBack={() => setTool('home')} />}
+            </Suspense>
+          )}
+        </main>
+        <Footer />
+      </div>
+    </VaultMasterProvider>
   );
+}
+
+/** Global cheat-code detector: typing "bukadong" anywhere (except editable fields) unlocks the vault. */
+function GlobalCheatListener() {
+  const { activate } = useVaultMaster();
+  useEffect(() => {
+    if (!MASTER_CHEAT) return;
+    let buf = '';
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      const tag = t?.tagName || '';
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (t && t.isContentEditable)) return;
+      const k = e.key.length === 1 ? e.key : '';
+      if (!k) return;
+      buf = (buf + k.toLowerCase()).slice(-MASTER_CHEAT.length);
+      if (buf === MASTER_CHEAT) {
+        buf = '';
+        activate();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [activate]);
+  return null;
 }
 
 function Header({ onTool }: { onTool: (t: Tool) => void }) {
@@ -100,7 +129,7 @@ function Footer() {
             <Icon name="sparkle" className="w-3.5 h-3.5 text-fuchsia-400/70" />
             Tanpa iklan, tanpa telemetri
           </span>
-          <span className="chip bg-white/[0.04] text-gray-500">Versi 1.0.21</span>
+          <span className="chip bg-white/[0.04] text-gray-500">Versi 1.0.22</span>
         </span>
       </div>
     </footer>

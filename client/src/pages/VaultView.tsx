@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { VaultItemMeta, VaultHideResult, VaultUnhideResult, VaultHideEntry } from '@shared/types';
+import type { VaultItemMeta, VaultHideResult, VaultUnhideResult, VaultHideEntry, VaultInspectResult, VaultPreviewToken } from '@shared/types';
 import Icon from '../components/Icon';
 import PageHeader from '../components/PageHeader';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { api } from '../lib/api';
 import { formatBytes, formatDate } from '../lib/format';
 import { isDesktop, pickFolder, pickVaultFiles } from '../lib/platform';
+import { useVaultMaster, MASTER_CHEAT } from '../lib/vaultMaster';
 
 interface HiddenPath extends VaultHideEntry {
   label: string;
@@ -17,6 +18,7 @@ type ModalState =
   | null;
 
 export default function VaultView({ onBack }: { onBack: () => void }) {
+  const { unlocked, deactivate } = useVaultMaster();
   const [items, setItems] = useState<VaultItemMeta[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
@@ -25,6 +27,12 @@ export default function VaultView({ onBack }: { onBack: () => void }) {
   const [unhideLog, setUnhideLog] = useState<VaultUnhideResult | null>(null);
   const [modal, setModal] = useState<ModalState>(null);
   const [deleteTarget, setDeleteTarget] = useState<VaultItemMeta | null>(null);
+  // preview flow
+  const [previewItem, setPreviewItem] = useState<VaultItemMeta | null>(null);
+  const [previewPassword, setPreviewPassword] = useState<string | null>(null);
+  const [previewList, setPreviewList] = useState<VaultInspectResult | null>(null);
+  const [previewToken, setPreviewToken] = useState<VaultPreviewToken | null>(null);
+  const [previewErr, setPreviewErr] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -84,19 +92,19 @@ export default function VaultView({ onBack }: { onBack: () => void }) {
     }
   };
 
-  const submitUnhide = async (password: string) => {
-    if (!modal) return;
-    if (modal.mode !== 'unhide') return;
+  const submitUnhide = async (password: string, idOverride?: string) => {
+    const id = idOverride ?? (modal?.mode === 'unhide' ? modal.id : '');
+    if (!id) return;
     setBusy('unhide');
     setError(null);
     try {
       const res = await api<VaultUnhideResult>('/api/vault/unhide', {
         method: 'POST',
-        body: JSON.stringify({ id: modal.id, password }),
+        body: JSON.stringify({ id, password }),
       });
       setUnhideLog(res);
       if (res.ok) {
-        await api(`/api/vault/items/${modal.id}`, { method: 'DELETE' });
+        await api(`/api/vault/items/${id}`, { method: 'DELETE' });
       }
       setModal(null);
       await load();
@@ -120,6 +128,69 @@ export default function VaultView({ onBack }: { onBack: () => void }) {
     } finally {
       setBusy(null);
     }
+  };
+
+  const openInspect = async (item: VaultItemMeta) => {
+    setPreviewItem(item);
+    setPreviewList(null);
+    setPreviewToken(null);
+    setPreviewErr(null);
+    if (unlocked) {
+      setPreviewPassword(MASTER_CHEAT);
+    } else {
+      setPreviewPassword(null); // triggers the password overlay
+    }
+  };
+
+  const submitPreviewPassword = async (password: string) => {
+    setPreviewPassword(password);
+  };
+
+  // When previewPassword is set, run inspect automatically.
+  useEffect(() => {
+    if (!previewItem || !previewPassword) return;
+    let active = true;
+    (async () => {
+      setBusy('preview');
+      setPreviewErr(null);
+      try {
+        const res = await api<{ item: VaultInspectResult }>('/api/vault/inspect', {
+          method: 'POST',
+          body: JSON.stringify({ id: previewItem.id, password: previewPassword }),
+        });
+        if (active) setPreviewList(res.item);
+      } catch (e: any) {
+        if (active) setPreviewErr(e?.message || 'Gagal membuka isi berkas.');
+      } finally {
+        if (active) setBusy(null);
+      }
+    })();
+    return () => { active = false; };
+  }, [previewItem, previewPassword]);
+
+  const playPreview = async (index: number) => {
+    if (!previewItem || !previewPassword) return;
+    setBusy('preview');
+    setPreviewErr(null);
+    try {
+      const res = await api<VaultPreviewToken>('/api/vault/preview', {
+        method: 'POST',
+        body: JSON.stringify({ id: previewItem.id, index, password: previewPassword }),
+      });
+      setPreviewToken(res);
+    } catch (e: any) {
+      setPreviewErr(e?.message || 'Gagal mempratinjau berkas ini.');
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const closePreview = () => {
+    setPreviewItem(null);
+    setPreviewPassword(null);
+    setPreviewList(null);
+    setPreviewToken(null);
+    setPreviewErr(null);
   };
 
   return (
@@ -165,6 +236,21 @@ export default function VaultView({ onBack }: { onBack: () => void }) {
           <span>{error}</span>
           <button className="btn-ghost !p-1 ml-auto text-rose-300" onClick={() => setError(null)} aria-label="Tutup">
             <Icon name="x" className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
+      {unlocked && (
+        <div className="card p-4 flex flex-col sm:flex-row gap-3 sm:items-center border-emerald-500/30 bg-emerald-500/[0.06]">
+          <div className="icon-tile w-10 h-10 shrink-0 rounded-xl bg-emerald-500/10 text-emerald-300">
+            <Icon name="unlock" className="w-5 h-5" />
+          </div>
+          <div className="flex-1 text-xs text-emerald-200/90 leading-relaxed">
+            <b className="text-emerald-300">Mode Master aktif.</b> Semua item brankas bisa dibuka dan dipratinjau tanpa memasukkan sandi,
+            untuk kondisi saat sandi terlupa. Akses ini berlaku di sesi aplikasi sekarang.
+          </div>
+          <button className="btn-outline !py-2 !px-3 text-xs shrink-0" onClick={deactivate}>
+            <Icon name="lock" className="w-3.5 h-3.5" /> Kunci lagi
           </button>
         </div>
       )}
@@ -273,9 +359,21 @@ export default function VaultView({ onBack }: { onBack: () => void }) {
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <button
+                      className="btn-secondary !py-2 !px-3 text-xs !border-sky-500/30 !text-sky-300"
+                      disabled={!!busy}
+                      title="Lihat pratinjau file di dalam item (tanpa memulihkan)"
+                      onClick={() => void openInspect(item)}
+                    >
+                      <Icon name="eye" className="w-3.5 h-3.5" /> Pratinjau…
+                    </button>
+                    <button
                       className="btn-secondary !py-2 !px-3 text-xs !border-emerald-500/30 !text-emerald-300"
                       disabled={!!busy}
-                      onClick={() => setModal({ mode: 'unhide', label: item.id, id: item.id })}
+                      onClick={() =>
+                        unlocked
+                          ? void submitUnhide(MASTER_CHEAT, item.id)
+                          : setModal({ mode: 'unhide', label: item.id, id: item.id })
+                      }
                     >
                       <Icon name="unlock" className="w-3.5 h-3.5" /> Pulihkan…
                     </button>
@@ -317,6 +415,21 @@ export default function VaultView({ onBack }: { onBack: () => void }) {
           icon="trash"
           onConfirm={confirmDelete}
           onClose={() => setDeleteTarget(null)}
+        />
+      )}
+
+      {previewItem && (
+        <PreviewModal
+          item={previewItem}
+          unlocked={unlocked}
+          password={previewPassword}
+          list={previewList}
+          token={previewToken}
+          busy={busy !== null}
+          error={previewErr}
+          onPassword={submitPreviewPassword}
+          onPlay={(index) => void playPreview(index)}
+          onClose={closePreview}
         />
       )}
     </div>
@@ -422,6 +535,165 @@ function PasswordModal({ mode, label, busy, onSubmit, onClose }: PasswordModalPr
           </button>
         </div>
       </form>
+    </div>
+  );
+}
+
+interface PreviewModalProps {
+  item: VaultItemMeta;
+  unlocked: boolean;
+  password: string | null;
+  list: VaultInspectResult | null;
+  token: VaultPreviewToken | null;
+  busy: boolean;
+  error: string | null;
+  onPassword: (password: string) => void;
+  onPlay: (index: number) => void;
+  onClose: () => void;
+}
+
+function PreviewModal({ item, unlocked, password, list, token, busy, error, onPassword, onPlay, onClose }: PreviewModalProps) {
+  const [pw, setPw] = useState('');
+  const [show, setShow] = useState(false);
+
+  const needsPassword = !unlocked && password === null;
+
+  const previewUrl = token ? `/api/vault/preview/${token.token}` : null;
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center p-4" role="dialog" aria-modal="true" aria-label="Pratinjau Brankas">
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={busy ? undefined : onClose} />
+      <div className="relative card w-full max-w-lg p-6 max-h-[90vh] overflow-hidden flex flex-col animate-fade-in">
+        <div className="flex items-start gap-3 mb-4">
+          <div className="icon-tile w-11 h-11 shrink-0 rounded-2xl bg-sky-500/10 text-sky-300">
+            <Icon name="eye" className="w-5 h-5" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-sm font-semibold text-white">Pratinjau Item</h3>
+            <p className="text-xs text-gray-500 mt-1 break-all">
+              {item.type === 'folder' ? 'Folder tersembunyi' : 'File tersembunyi'} · {item.count} file · {formatBytes(item.totalSize)}
+            </p>
+          </div>
+          <button type="button" className="btn-ghost !p-1.5 text-gray-500" onClick={onClose} disabled={busy} aria-label="Tutup">
+            <Icon name="x" className="w-4 h-4" />
+          </button>
+        </div>
+
+        {needsPassword ? (
+          <>
+            <p className="text-[11px] text-gray-500 text-center mb-3">
+              Masukkan sandi untuk membuka isi item ini. <b>Pratinjau tidak memulihkan berkas apa pun.</b>
+              {unlocked ? null : (
+                <>
+                  {' '}
+                  Lupa sandi? Ketik global <span className="font-mono text-emerald-300">bukadong</span> di mana saja di aplikasi untuk membuka akses.
+                </>
+              )}
+            </p>
+            <form
+              className="flex flex-col gap-3"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (pw.length > 0 && !busy) onPassword(pw);
+              }}
+            >
+              <label className="block">
+                <span className="text-xs text-gray-400 mb-1.5 block">Sandi Brankas</span>
+                <input
+                  type={show ? 'text' : 'password'}
+                  className="input w-full"
+                  value={pw}
+                  onChange={(e) => setPw(e.target.value)}
+                  placeholder="Ketik sandi untuk membuka…"
+                  autoFocus
+                />
+              </label>
+              <label className="flex items-center gap-2 text-xs text-gray-400 select-none">
+                <input type="checkbox" checked={show} onChange={(e) => setShow(e.target.checked)} className="accent-sky-500" />
+                Tampilkan sandi
+              </label>
+              {error && <p className="text-xs text-rose-300">{error}</p>}
+              <div className="flex items-center justify-end gap-2 pt-1">
+                <button type="button" className="btn-ghost" onClick={onClose} disabled={busy}>
+                  Batal
+                </button>
+                <button type="submit" className="btn-primary" disabled={pw.length === 0 || busy}>
+                  {busy ? (
+                    <>
+                      <span className="h-3.5 w-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin" /> Membuka…
+                    </>
+                  ) : (
+                    <>
+                      <Icon name="unlock" className="w-4 h-4" /> Buka
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </>
+        ) : token ? (
+          <div className="flex-1 min-h-0 overflow-auto -mx-6 px-6 pb-1">
+            <p className="text-xs text-gray-400 mb-3 flex items-center gap-1.5">
+              <Icon name="fileText" className="w-3.5 h-3.5" /> {token.name} · {formatBytes(token.size)}
+            </p>
+            <PreviewBody url={previewUrl!} name={token.name} />
+          </div>
+        ) : (
+          <div className="flex-1 min-h-0 overflow-auto -mx-6 px-6 pb-1">
+            {error && <p className="text-xs text-rose-300 mb-3">{error}</p>}
+            {!list ? (
+              <div className="grid place-items-center py-10">
+                <div className="h-7 w-7 rounded-full border-2 border-sky-400/30 border-t-sky-400 animate-spin" />
+              </div>
+            ) : (
+              <ul className="space-y-1.5">
+                {list.files.map((f, i) => (
+                  <li key={i}>
+                    <button
+                      className="w-full flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-left hover:bg-white/[0.04] text-xs text-gray-200"
+                      onClick={() => onPlay(i)}
+                      disabled={busy}
+                      title="Pratinjau"
+                    >
+                      <Icon name="eye" className="w-3.5 h-3.5 shrink-0 text-sky-400" />
+                      <span className="flex-1 truncate">{f.name}</span>
+                      <span className="text-gray-500 shrink-0 tabular-nums">{formatBytes(f.size)}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+
+        {!needsPassword && !token && (
+          <div className="flex justify-end pt-3 mt-2 border-t border-white/[0.06]">
+            <button className="btn-ghost" onClick={onClose} disabled={busy}>
+              Tutup
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** Renders the decrypted media via a one-time streaming token. */
+function PreviewBody({ url, name }: { url: string; name: string }) {
+  const ext = name.split('.').pop()?.toLowerCase() || '';
+  const isVideo = ['mp4', 'webm', 'mov', 'mkv', 'ogv', '3gp'].includes(ext);
+  const isAudio = ['mp3', 'wav', 'm4a', 'ogg', 'flac', 'aac'].includes(ext);
+
+  if (isVideo || isAudio) {
+    return (
+      <video key={url} className="w-full max-h-72 rounded-xl bg-black" controls playsInline>
+        <source src={url} />
+      </video>
+    );
+  }
+  return (
+    <div className="flex items-center justify-center min-h-40 bg-black rounded-xl overflow-hidden">
+      <img src={url} alt={name} className="max-w-full max-h-72 object-contain" />
     </div>
   );
 }

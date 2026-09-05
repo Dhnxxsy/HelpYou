@@ -448,3 +448,19 @@ export interface VaultUnhideResult {
   failed: number;
   logs: VaultUnhideLog[];
 }
+
+/** Content listing of a vault item, exposed only after the correct sandi / cheat code. */
+export interface VaultInspectResult {
+  type: 'file' | 'folder';
+  name: string;
+  count: number;
+  totalSize: number;
+  files: { name: string; size: number }[];
+}
+
+export interface VaultPreviewToken {
+  token: string;
+  name: string;
+  size: number;
+  contentType: string;
+}
