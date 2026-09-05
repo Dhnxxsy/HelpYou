@@ -33,6 +33,30 @@ import type { DiskScanResult, StartupItem } from '../../shared/types.js';
 
 export const api = Router();
 
+/* -------------------- tiny in-memory response cache -------------------- */
+
+const routeCache = new Map<string, { expires: number; value: unknown }>();
+
+/** Run `fn`, serve cached result for `ttlMs` unless already fresh. */
+function cached<T>(key: string, ttlMs: number, fn: () => Promise<T>): Promise<T> {
+  const now = Date.now();
+  const hit = routeCache.get(key);
+  if (hit && hit.expires > now) return Promise.resolve(hit.value as T);
+  return Promise.resolve()
+    .then(fn)
+    .then((value) => {
+      routeCache.set(key, { expires: now + ttlMs, value });
+      return value;
+    });
+}
+
+/** Drop all cache keys sharing the given prefix (called after mutations). */
+function invalidateCache(prefix: string) {
+  for (const key of [...routeCache.keys()]) {
+    if (key.startsWith(prefix)) routeCache.delete(key);
+  }
+}
+
 // GET /api/system/info
 api.get('/system/info', (_req, res) => {
   res.json({
@@ -647,7 +671,7 @@ api.post('/startup/delete', async (req: Request, res: Response) => {
 // GET /api/system/report
 api.get('/system/report', async (_req: Request, res: Response) => {
   try {
-    res.json({ report: await getSystemInfo() });
+    res.json({ report: await cached('system/report', 60_000, getSystemInfo) });
   } catch (e: any) {
     res.status(500).json({ error: e.message });
   }
@@ -684,7 +708,7 @@ api.post('/rename/apply', (req: Request, res: Response) => {
 // GET /api/recycle/list
 api.get('/recycle/list', async (_req: Request, res: Response) => {
   try {
-    res.json(await listRecycleBin());
+    res.json(await cached('recycle/list', 5_000, listRecycleBin));
   } catch (e: any) {
     res.status(500).json({ error: e.message });
   }
@@ -697,7 +721,9 @@ api.post('/recycle/restore', async (req: Request, res: Response) => {
     const from = String(req.body?.from || '').trim();
     const name = String(req.body?.name || '').trim();
     if (!p) return res.status(400).json({ error: 'path required' });
-    res.json(await restoreRecycleItem(p, from, name));
+    const out = await restoreRecycleItem(p, from, name);
+    if (out.ok) invalidateCache('recycle/list');
+    res.json(out);
   } catch (e: any) {
     res.status(500).json({ error: e.message });
   }
@@ -707,7 +733,9 @@ api.post('/recycle/restore', async (req: Request, res: Response) => {
 api.post('/recycle/empty', async (req: Request, res: Response) => {
   try {
     const drive = req.body?.drive ? String(req.body.drive) : undefined;
-    res.json(await emptyRecycleBin(drive));
+    const out = await emptyRecycleBin(drive);
+    if (out.ok) invalidateCache('recycle/list');
+    res.json(out);
   } catch (e: any) {
     res.status(500).json({ error: e.message });
   }
@@ -718,7 +746,7 @@ api.post('/recycle/empty', async (req: Request, res: Response) => {
 // GET /api/process/list
 api.get('/process/list', async (_req: Request, res: Response) => {
   try {
-    res.json({ processes: await listProcesses() });
+    res.json({ processes: await cached('process/list', 3_000, listProcesses) });
   } catch (e: any) {
     res.status(500).json({ error: e.message });
   }
@@ -729,7 +757,9 @@ api.post('/process/kill', async (req: Request, res: Response) => {
   try {
     const pid = Number(req.body?.pid);
     if (!Number.isInteger(pid) || pid <= 0) return res.status(400).json({ error: 'pid tidak valid' });
-    res.json(await killProcess(pid));
+    const out = await killProcess(pid);
+    if (out.ok) invalidateCache('process/list');
+    res.json(out);
   } catch (e: any) {
     res.status(500).json({ error: e.message });
   }
@@ -743,7 +773,8 @@ api.post('/network/ping', async (req: Request, res: Response) => {
     const host = String(req.body?.host || '').trim();
     if (!host) return res.status(400).json({ error: 'host diperlukan' });
     const count = Math.max(1, Math.min(10, Math.floor(Number(req.body?.count) || 4)));
-    res.json({ host, rows: await pingHost(host, count) });
+    const rows = await cached(`net:ping:${host.toLowerCase()}`, 10_000, () => pingHost(host, count));
+    res.json({ host, rows });
   } catch (e: any) {
     res.status(500).json({ error: e.message });
   }
@@ -754,7 +785,8 @@ api.post('/network/trace', async (req: Request, res: Response) => {
   try {
     const host = String(req.body?.host || '').trim();
     if (!host) return res.status(400).json({ error: 'host diperlukan' });
-    res.json({ host, hops: await traceHost(host) });
+    const hops = await cached(`net:trace:${host.toLowerCase()}`, 60_000, () => traceHost(host));
+    res.json({ host, hops });
   } catch (e: any) {
     res.status(500).json({ error: e.message });
   }
@@ -765,7 +797,8 @@ api.post('/network/dns', async (req: Request, res: Response) => {
   try {
     const host = String(req.body?.host || '').trim();
     if (!host) return res.status(400).json({ error: 'host diperlukan' });
-    res.json({ host, rows: await dnsLookup(host) });
+    const rows = await cached(`net:dns:${host.toLowerCase()}`, 30_000, () => dnsLookup(host));
+    res.json({ host, rows });
   } catch (e: any) {
     res.status(500).json({ error: e.message });
   }
@@ -776,7 +809,9 @@ api.post('/network/ports', async (req: Request, res: Response) => {
   try {
     const host = String(req.body?.host || '').trim();
     if (!host) return res.status(400).json({ error: 'host diperlukan' });
-    const rows = await scanPorts(host, [21, 22, 23, 25, 53, 80, 110, 135, 139, 143, 443, 445, 993, 995, 1433, 3306, 3389, 5432, 8080, 8443]);
+    const rows = await cached(`net:ports:${host.toLowerCase()}`, 30_000, () =>
+      scanPorts(host, [21, 22, 23, 25, 53, 80, 110, 135, 139, 143, 443, 445, 993, 995, 1433, 3306, 3389, 5432, 8080, 8443])
+    );
     res.json({ host, rows });
   } catch (e: any) {
     res.status(500).json({ error: e.message });

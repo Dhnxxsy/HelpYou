@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Icon from '../components/Icon';
 import { api } from '../lib/api';
 import { formatBytes } from '../lib/format';
@@ -7,13 +7,15 @@ import type { ProcessInfo } from '@shared/types';
 export default function ProcessManagerView({ onBack }: { onBack: () => void }) {
   const [processes, setProcesses] = useState<ProcessInfo[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
   const [query, setQuery] = useState('');
   const [confirmPid, setConfirmPid] = useState<number | null>(null);
   const [selected, setSelected] = useState<ProcessInfo | null>(null);
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async (initial = false) => {
+    if (initial) setLoading(true);
+    else setRefreshing(true);
     setError('');
     try {
       const res = await api<{ processes: ProcessInfo[] }>('/api/process/list');
@@ -22,13 +24,13 @@ export default function ProcessManagerView({ onBack }: { onBack: () => void }) {
       setError(e.message || 'Gagal membaca daftar proses.');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { load(true); }, [load]);
 
   const kill = async (pid: number) => {
-    setLoading(true);
     setError('');
     try {
       const res = await api<{ ok: boolean; error?: string }>('/api/process/kill', {
@@ -38,18 +40,19 @@ export default function ProcessManagerView({ onBack }: { onBack: () => void }) {
       if (!res.ok) throw new Error(res.error || 'Gagal menghentikan proses.');
       setConfirmPid(null);
       setSelected(null);
-      await load();
+      await load(false);
     } catch (e: any) {
       setError(e.message || 'Gagal menghentikan proses.');
-      setLoading(false);
     }
   };
 
-  const filtered = processes.filter((p) => {
+  const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return true;
-    return p.name.toLowerCase().includes(q) || String(p.pid).includes(q) || p.windowTitle.toLowerCase().includes(q);
-  });
+    if (!q) return processes;
+    return processes.filter(
+      (p) => p.name.toLowerCase().includes(q) || String(p.pid).includes(q) || p.windowTitle.toLowerCase().includes(q)
+    );
+  }, [processes, query]);
 
   const memTotal = filtered.reduce((s, p) => s + p.memMB, 0);
 
@@ -67,8 +70,8 @@ export default function ProcessManagerView({ onBack }: { onBack: () => void }) {
             Lihat program yang sedang berjalan dan pemakaian memorinya, lalu hentikan proses yang macet.
           </p>
         </div>
-        <button className="btn-ghost !py-2 !px-3 text-xs" onClick={load} disabled={loading}>
-          <Icon name="replay" className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /> Muat Ulang
+        <button className="btn-ghost !py-2 !px-3 text-xs" onClick={() => load(false)} disabled={loading || refreshing}>
+          <Icon name="replay" className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} /> {refreshing ? 'Menyegarkan…' : 'Muat Ulang'}
         </button>
       </div>
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Icon from '../components/Icon';
 import { api } from '../lib/api';
 import { formatBytes } from '../lib/format';
@@ -7,12 +7,14 @@ import type { RecycleItem, RecycleListResult } from '@shared/types';
 export default function RecycleBinView({ onBack }: { onBack: () => void }) {
   const [data, setData] = useState<RecycleListResult | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState<string | null>(null);
   const [query, setQuery] = useState('');
 
-  const load = async () => {
-    setLoading(true);
+  const load = useCallback(async (initial = false) => {
+    if (initial) setLoading(true);
+    else setRefreshing(true);
     setError('');
     try {
       setData(await api<RecycleListResult>('/api/recycle/list'));
@@ -20,16 +22,17 @@ export default function RecycleBinView({ onBack }: { onBack: () => void }) {
       setError(e.message || 'Gagal membaca Tempat Sampah.');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
-  };
+  }, []);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(true); }, [load]);
 
   const restore = async (item: RecycleItem) => {
     setBusy(item.origPath || item.name);
     try {
       await api('/api/recycle/restore', { method: 'POST', body: JSON.stringify({ path: item.origPath || item.name, from: item.deletedFrom || '', name: item.name }) });
-      await load();
+      await load(false);
     } catch (e: any) {
       setError(e.message || 'Gagal memulihkan.');
     } finally {
@@ -42,7 +45,7 @@ export default function RecycleBinView({ onBack }: { onBack: () => void }) {
     setBusy('__empty__');
     try {
       await api('/api/recycle/empty', { method: 'POST', body: JSON.stringify({}) });
-      await load();
+      await load(false);
     } catch (e: any) {
       setError(e.message || 'Gagal mengosongkan Tempat Sampah.');
     } finally {
@@ -67,9 +70,9 @@ export default function RecycleBinView({ onBack }: { onBack: () => void }) {
           </p>
         </div>
         <div className="flex gap-2">
-          <button className="btn-ghost !py-2 !px-3 text-xs" onClick={load} disabled={loading || !!busy}>
-            <Icon name="replay" className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /> Muat Ulang
-          </button>
+<button className="btn-ghost !py-2 !px-3 text-xs" onClick={() => load(false)} disabled={loading || refreshing || !!busy}>
+          <Icon name="replay" className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} /> {refreshing ? 'Menyegarkan…' : 'Muat Ulang'}
+        </button>
           <button className="btn-danger !py-2 !px-3 text-xs" onClick={empty} disabled={!data?.count || !!busy}>
             <Icon name="trash" className="w-4 h-4" /> Kosongkan
           </button>

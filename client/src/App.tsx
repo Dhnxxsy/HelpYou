@@ -1,19 +1,20 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import HomeView, { type ToolId } from './pages/HomeView';
-import OrganizerTool from './pages/OrganizerTool';
-import UninstallerView from './pages/UninstallerView';
-import JunkCleanerView from './pages/JunkCleanerView';
-import DiskAnalyzerView from './pages/DiskAnalyzerView';
-import StartupToolView from './pages/StartupToolView';
-import SystemInfoView from './pages/SystemInfoView';
-import RenameToolView from './pages/RenameToolView';
-import RecycleBinView from './pages/RecycleBinView';
-import ProcessManagerView from './pages/ProcessManagerView';
-import NetworkToolsView from './pages/NetworkToolsView';
 import Icon from './components/Icon';
 import TitleBar from './components/TitleBar';
 import UpdateNotifier from './components/UpdateNotifier';
 import { isDesktop } from './lib/platform';
+
+const OrganizerTool = lazy(() => import('./pages/OrganizerTool'));
+const UninstallerView = lazy(() => import('./pages/UninstallerView'));
+const JunkCleanerView = lazy(() => import('./pages/JunkCleanerView'));
+const DiskAnalyzerView = lazy(() => import('./pages/DiskAnalyzerView'));
+const StartupToolView = lazy(() => import('./pages/StartupToolView'));
+const SystemInfoView = lazy(() => import('./pages/SystemInfoView'));
+const RenameToolView = lazy(() => import('./pages/RenameToolView'));
+const RecycleBinView = lazy(() => import('./pages/RecycleBinView'));
+const ProcessManagerView = lazy(() => import('./pages/ProcessManagerView'));
+const NetworkToolsView = lazy(() => import('./pages/NetworkToolsView'));
 
 type Tool = 'home' | ToolId;
 
@@ -26,17 +27,22 @@ export default function App() {
       <UpdateNotifier />
       <Header onTool={setTool} />
       <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-8">
-        {tool === 'home' && <HomeView onOpen={setTool} />}
-        {tool === 'organizer' && <OrganizerTool />}
-        {tool === 'uninstaller' && <UninstallerView onBack={() => setTool('home')} />}
-        {tool === 'junk' && <JunkCleanerView onBack={() => setTool('home')} />}
-        {tool === 'disk' && <DiskAnalyzerView onBack={() => setTool('home')} />}
-        {tool === 'startup' && <StartupToolView onBack={() => setTool('home')} />}
-        {tool === 'system' && <SystemInfoView onBack={() => setTool('home')} />}
-        {tool === 'rename' && <RenameToolView onBack={() => setTool('home')} />}
-        {tool === 'recycle' && <RecycleBinView onBack={() => setTool('home')} />}
-        {tool === 'process' && <ProcessManagerView onBack={() => setTool('home')} />}
-        {tool === 'network' && <NetworkToolsView onBack={() => setTool('home')} />}
+        {tool === 'home' ? (
+          <HomeView onOpen={setTool} />
+        ) : (
+          <Suspense fallback={<ToolFallback />}>
+            {tool === 'organizer' && <OrganizerTool />}
+            {tool === 'uninstaller' && <UninstallerView onBack={() => setTool('home')} />}
+            {tool === 'junk' && <JunkCleanerView onBack={() => setTool('home')} />}
+            {tool === 'disk' && <DiskAnalyzerView onBack={() => setTool('home')} />}
+            {tool === 'startup' && <StartupToolView onBack={() => setTool('home')} />}
+            {tool === 'system' && <SystemInfoView onBack={() => setTool('home')} />}
+            {tool === 'rename' && <RenameToolView onBack={() => setTool('home')} />}
+            {tool === 'recycle' && <RecycleBinView onBack={() => setTool('home')} />}
+            {tool === 'process' && <ProcessManagerView onBack={() => setTool('home')} />}
+            {tool === 'network' && <NetworkToolsView onBack={() => setTool('home')} />}
+          </Suspense>
+        )}
       </main>
       <Footer />
     </div>
@@ -76,6 +82,17 @@ function Header({ onTool }: { onTool: (t: Tool) => void }) {
   );
 }
 
+function ToolFallback() {
+  return (
+    <div className="w-full py-20 grid place-items-center">
+      <div className="flex flex-col items-center gap-3">
+        <div className="h-8 w-8 rounded-full border-2 border-indigo-400/30 border-t-indigo-400 animate-spin" />
+        <p className="text-sm text-gray-500">Menyiapkan tools…</p>
+      </div>
+    </div>
+  );
+}
+
 function Footer() {
   return (
     <footer className="border-t border-white/10 py-5">
@@ -84,7 +101,7 @@ function Footer() {
           <Icon name="shield" className="w-3.5 h-3.5" />
           HelpYou ??? berjalan 100% lokal. Data tidak pernah meninggalkan perangkat Anda.
         </span>
-        <span className="hidden sm:block">Versi 1.0.16</span>
+        <span className="hidden sm:block">Versi 1.0.17</span>
       </div>
     </footer>
   );
