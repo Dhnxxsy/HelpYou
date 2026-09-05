@@ -582,7 +582,7 @@ function toStartupItem(body: any): StartupItem | null {
     const valueName = String(body.valueName || '');
     if (!registryPath || !valueName || !hive) return null;
     const lower = registryPath.toLowerCase();
-    if (!RUN_KEY_PREFIXES.some((p) => lower === p || lower.startsWith(p + '\\'))) return null;
+    if (!RUN_KEY_PREFIXES.some((p) => lower === p.toLowerCase() || lower.startsWith(p.toLowerCase() + '\\'))) return null;
   }
   return {
     id: String(body.id || ''),

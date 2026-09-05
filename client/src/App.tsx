@@ -99,9 +99,9 @@ function Footer() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-3 text-xs text-gray-600">
         <span className="flex items-center gap-1.5">
           <Icon name="shield" className="w-3.5 h-3.5" />
-          HelpYou — berjalan 100% lokal. Data tidak pernah meninggalkan perangkat Anda.
+          HelpYou ??? berjalan 100% lokal. Data tidak pernah meninggalkan perangkat Anda.
         </span>
-        <span className="hidden sm:block">Versi 1.0.13</span>
+        <span className="hidden sm:block">Versi 1.0.14</span>
       </div>
     </footer>
   );
