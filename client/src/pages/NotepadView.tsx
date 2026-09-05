@@ -968,7 +968,7 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
               {/* content */}
               <textarea
                 ref={textareaRef}
-                className={`flex-1 w-full min-h-[360px] resize-none bg-transparent px-4 py-3 text-sm leading-relaxed text-[#e7e7ee] placeholder-gray-600 focus:outline-none ${
+                className={`flex-1 w-full min-h-[360px] resize-none bg-transparent px-4 py-3 text-sm leading-relaxed text-[var(--text)] placeholder-gray-600 focus:outline-none ${
                   mono ? 'font-mono' : 'font-sans'
                 }`}
                 placeholder="Tulis catatan di sini…"
