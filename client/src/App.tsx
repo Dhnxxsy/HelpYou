@@ -71,13 +71,6 @@ function Header({ onTool }: { onTool: (t: Tool) => void }) {
             <div className="text-[11px] text-gray-500">Suite Tools Lokal</div>
           </div>
         </button>
-
-        <div className="ml-auto flex items-center gap-2 text-xs text-gray-400">
-          <span className="chip bg-emerald-500/10 text-emerald-300 border-emerald-500/20 hidden sm:inline-flex">
-            <Icon name="lock" className="w-3 h-3" />
-            100% Lokal
-          </span>
-        </div>
       </div>
     </header>
   );
@@ -107,7 +100,7 @@ function Footer() {
             <Icon name="sparkle" className="w-3.5 h-3.5 text-fuchsia-400/70" />
             Tanpa iklan, tanpa telemetri
           </span>
-          <span className="chip bg-white/[0.04] text-gray-500">Versi 1.0.18</span>
+          <span className="chip bg-white/[0.04] text-gray-500">Versi 1.0.19</span>
         </span>
       </div>
     </footer>
