@@ -5,6 +5,11 @@ import UninstallerView from './pages/UninstallerView';
 import JunkCleanerView from './pages/JunkCleanerView';
 import DiskAnalyzerView from './pages/DiskAnalyzerView';
 import StartupToolView from './pages/StartupToolView';
+import SystemInfoView from './pages/SystemInfoView';
+import RenameToolView from './pages/RenameToolView';
+import RecycleBinView from './pages/RecycleBinView';
+import ProcessManagerView from './pages/ProcessManagerView';
+import NetworkToolsView from './pages/NetworkToolsView';
 import Icon, { type IconName } from './components/Icon';
 import TitleBar from './components/TitleBar';
 import UpdateNotifier from './components/UpdateNotifier';
@@ -19,6 +24,11 @@ const TOOLS: { id: Tool; icon: IconName; label: string }[] = [
   { id: 'junk', icon: 'broom', label: 'Sampah' },
   { id: 'disk', icon: 'disc', label: 'Ruang Disk' },
   { id: 'startup', icon: 'gauge', label: 'Startup' },
+  { id: 'system', icon: 'cpu', label: 'Info Sistem' },
+  { id: 'rename', icon: 'rename', label: 'Rename' },
+  { id: 'recycle', icon: 'recycle', label: 'Tempat Sampah' },
+  { id: 'process', icon: 'activity', label: 'Proses' },
+  { id: 'network', icon: 'network', label: 'Jaringan' },
 ];
 
 export default function App() {
@@ -36,6 +46,11 @@ export default function App() {
         {tool === 'junk' && <JunkCleanerView onBack={() => setTool('home')} />}
         {tool === 'disk' && <DiskAnalyzerView onBack={() => setTool('home')} />}
         {tool === 'startup' && <StartupToolView onBack={() => setTool('home')} />}
+        {tool === 'system' && <SystemInfoView onBack={() => setTool('home')} />}
+        {tool === 'rename' && <RenameToolView onBack={() => setTool('home')} />}
+        {tool === 'recycle' && <RecycleBinView onBack={() => setTool('home')} />}
+        {tool === 'process' && <ProcessManagerView onBack={() => setTool('home')} />}
+        {tool === 'network' && <NetworkToolsView onBack={() => setTool('home')} />}
       </main>
       <Footer />
     </div>
@@ -62,7 +77,7 @@ function Header({ tool, onTool }: { tool: Tool; onTool: (t: Tool) => void }) {
         </button>
 
         {/* Tool nav */}
-        <nav className="ml-2 sm:ml-6 flex items-center gap-1 bg-white/[0.05] border border-white/10 rounded-xl p-1">
+        <nav className="ml-2 sm:ml-6 flex items-center gap-1 min-w-0 flex-1 overflow-x-auto bg-white/[0.05] border border-white/10 rounded-xl p-1 scrollbar-none">
           {TOOLS.map((t) => (
             <button
               key={t.id}
@@ -101,7 +116,7 @@ function Footer() {
           <Icon name="shield" className="w-3.5 h-3.5" />
           HelpYou ??? berjalan 100% lokal. Data tidak pernah meninggalkan perangkat Anda.
         </span>
-        <span className="hidden sm:block">Versi 1.0.14</span>
+        <span className="hidden sm:block">Versi 1.0.15</span>
       </div>
     </footer>
   );

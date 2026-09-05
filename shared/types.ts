@@ -295,3 +295,105 @@ export interface StartupItem {
   /** parent folder to open for the "buka lokasi" action */
   folderPath?: string;
 }
+
+/* ------------- System info tool ------------- */
+
+export interface SystemInfoReport {
+  os: {
+    caption: string;
+    version: string;
+    build: string;
+    arch: string;
+    hostname: string;
+    user: string;
+    installDate?: string;
+    uptimeDays: number;
+  };
+  pc: { manufacturer: string; model: string; serial: string; bios: string };
+  cpu: { name: string; cores: number; logical: number; clockGhz: number };
+  ram: { total: number; free: number };
+  gpu: { name: string; memMB: number }[];
+  battery: { capacityPercent: number; status: string } | null;
+  disks: { drive: string; label: string; fileSystem: string; total: number; free: number }[];
+}
+
+/* ------------- Batch rename tool ------------- */
+
+export interface RenameEntry {
+  /** absolute path */
+  path: string;
+  name: string;
+  /** lowercase extension including the dot, '' for folders/extensionless */
+  ext: string;
+  isDir: boolean;
+  size: number;
+  modifiedAt: number;
+}
+
+export interface RenameApplyResult {
+  ok: boolean;
+  done: number;
+  failed: number;
+  logs: { ok: boolean; from: string; to: string; error?: string }[];
+}
+
+/* ------------- Recycle bin tool ------------- */
+
+export interface RecycleItem {
+  name: string;
+  /** internal recycle-bin path (use for restore) */
+  origPath: string;
+  /** original location where the item was deleted from */
+  deletedFrom: string;
+  size: number;
+  deletedAt: string;
+}
+
+export interface RecycleListResult {
+  items: RecycleItem[];
+  totalBytes: number;
+  count: number;
+}
+
+/* ------------- Process manager tool ------------- */
+
+export interface ProcessInfo {
+  pid: number;
+  name: string;
+  /** CPU time in seconds */
+  cpuSeconds: number;
+  memMB: number;
+  windowTitle: string;
+  sessionId: number;
+  startedAt: string;
+  path?: string;
+}
+
+/* ------------- Network tools ------------- */
+
+export interface PingRow {
+  seq: number;
+  ms: number;
+  ttl?: number;
+  timedOut: boolean;
+  reply: string;
+}
+
+export interface TraceHop {
+  hop: number;
+  times: string[];
+  address: string;
+}
+
+export interface DnsRow {
+  name: string;
+  type: string;
+  value: string;
+}
+
+export interface PortRow {
+  port: number;
+  open: boolean;
+  service: string;
+  ms: number;
+}

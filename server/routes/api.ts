@@ -24,6 +24,11 @@ import { extractIconRaw, warmIcons } from '../organizer/icons.js';
 import { scanJunk, cleanJunk, cleanJunkElevated } from '../organizer/disk-cleaner.js';
 import { analyzeDirectory } from '../organizer/space-analyzer.js';
 import { listStartupItems, setStartupItemEnabled, deleteStartupItem } from '../organizer/startup-manager.js';
+import { getSystemInfo } from '../organizer/system-info.js';
+import { listFolderEntries, applyRenames } from '../organizer/rename-tool.js';
+import { listRecycleBin, restoreRecycleItem, emptyRecycleBin } from '../organizer/recycle-bin.js';
+import { listProcesses, killProcess } from '../organizer/process-manager.js';
+import { pingHost, traceHost, dnsLookup, scanPorts } from '../organizer/network-tools.js';
 import type { DiskScanResult, StartupItem } from '../../shared/types.js';
 
 export const api = Router();
@@ -632,6 +637,147 @@ api.post('/startup/delete', async (req: Request, res: Response) => {
   try {
     const out = await deleteStartupItem(item);
     res.json(out);
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+/* ---------------- System info tool ---------------- */
+
+// GET /api/system/report
+api.get('/system/report', async (_req: Request, res: Response) => {
+  try {
+    res.json({ report: await getSystemInfo() });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+/* ---------------- Batch rename tool ---------------- */
+
+// POST /api/rename/list  body: { dir }
+api.post('/rename/list', (req: Request, res: Response) => {
+  try {
+    const dir = String(req.body?.dir || '').trim();
+    if (!dir) return res.status(400).json({ error: 'path required' });
+    const out = listFolderEntries(dir);
+    res.json(out);
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /api/rename/apply  body: { renames: {from,to}[] }
+api.post('/rename/apply', (req: Request, res: Response) => {
+  try {
+    const renames = Array.isArray(req.body?.renames) ? req.body.renames : [];
+    if (!renames.length) return res.status(400).json({ error: 'tidak ada nama yang diubah' });
+    const result = applyRenames(renames.map((r: any) => ({ from: String(r?.from || ''), to: String(r?.to || '') })));
+    res.json(result);
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+/* ---------------- Recycle bin tool ---------------- */
+
+// GET /api/recycle/list
+api.get('/recycle/list', async (_req: Request, res: Response) => {
+  try {
+    res.json(await listRecycleBin());
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /api/recycle/restore  body: { path, from, name }
+api.post('/recycle/restore', async (req: Request, res: Response) => {
+  try {
+    const p = String(req.body?.path || '').trim();
+    const from = String(req.body?.from || '').trim();
+    const name = String(req.body?.name || '').trim();
+    if (!p) return res.status(400).json({ error: 'path required' });
+    res.json(await restoreRecycleItem(p, from, name));
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /api/recycle/empty  body: { drive? }
+api.post('/recycle/empty', async (req: Request, res: Response) => {
+  try {
+    const drive = req.body?.drive ? String(req.body.drive) : undefined;
+    res.json(await emptyRecycleBin(drive));
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+/* ---------------- Process manager tool ---------------- */
+
+// GET /api/process/list
+api.get('/process/list', async (_req: Request, res: Response) => {
+  try {
+    res.json({ processes: await listProcesses() });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /api/process/kill  body: { pid }
+api.post('/process/kill', async (req: Request, res: Response) => {
+  try {
+    const pid = Number(req.body?.pid);
+    if (!Number.isInteger(pid) || pid <= 0) return res.status(400).json({ error: 'pid tidak valid' });
+    res.json(await killProcess(pid));
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+/* ---------------- Network tools ---------------- */
+
+// POST /api/network/ping  body: { host, count? }
+api.post('/network/ping', async (req: Request, res: Response) => {
+  try {
+    const host = String(req.body?.host || '').trim();
+    if (!host) return res.status(400).json({ error: 'host diperlukan' });
+    const count = Math.max(1, Math.min(10, Math.floor(Number(req.body?.count) || 4)));
+    res.json({ host, rows: await pingHost(host, count) });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /api/network/trace  body: { host }
+api.post('/network/trace', async (req: Request, res: Response) => {
+  try {
+    const host = String(req.body?.host || '').trim();
+    if (!host) return res.status(400).json({ error: 'host diperlukan' });
+    res.json({ host, hops: await traceHost(host) });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /api/network/dns  body: { host }
+api.post('/network/dns', async (req: Request, res: Response) => {
+  try {
+    const host = String(req.body?.host || '').trim();
+    if (!host) return res.status(400).json({ error: 'host diperlukan' });
+    res.json({ host, rows: await dnsLookup(host) });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /api/network/ports  body: { host }
+api.post('/network/ports', async (req: Request, res: Response) => {
+  try {
+    const host = String(req.body?.host || '').trim();
+    if (!host) return res.status(400).json({ error: 'host diperlukan' });
+    const rows = await scanPorts(host, [21, 22, 23, 25, 53, 80, 110, 135, 139, 143, 443, 445, 993, 995, 1433, 3306, 3389, 5432, 8080, 8443]);
+    res.json({ host, rows });
   } catch (e: any) {
     res.status(500).json({ error: e.message });
   }

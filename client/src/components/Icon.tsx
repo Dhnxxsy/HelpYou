@@ -35,7 +35,12 @@ export type IconName =
   | 'chevronRight'
   | 'play'
   | 'box'
-  | 'lock';
+  | 'lock'
+  | 'cpu'
+  | 'network'
+  | 'rename'
+  | 'recycle'
+  | 'activity';
 
 const FILLED: IconName[] = ['trash'];
 
@@ -111,6 +116,26 @@ const P: Record<IconName, ReactNode> = {
     <rect x="3" y="11" width="18" height="10" rx="2" />
     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
   </>,
+  cpu: <>
+    <rect x="6" y="6" width="12" height="12" rx="2" />
+    <path d="M9 2.5v3.5M15 2.5v3.5M9 18v3.5M15 18v3.5M2.5 9H6M2.5 15H6M18 9h3.5M18 15h3.5" />
+  </>,
+  network: <>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M3 12h18" />
+    <path d="M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18" />
+  </>,
+  rename: <>
+    <path d="M12 20h9" />
+    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+  </>,
+  recycle: <>
+    <path d="M17 2l4 4-4 4" />
+    <path d="M3 11v-1a4 4 0 0 1 4-4h14" />
+    <path d="M7 22l-4-4 4-4" />
+    <path d="M21 13v1a4 4 0 0 1-4 4H3" />
+  </>,
+  activity: <path d="M22 12h-4l-3 9L9 3l-3 9H2" />,
 };
 
 export default function Icon({ name, className = 'w-4 h-4' }: { name: IconName; className?: string }) {

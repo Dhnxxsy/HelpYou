@@ -1,6 +1,6 @@
 import Icon, { type IconName } from '../components/Icon';
 
-export type ToolId = 'organizer' | 'uninstaller' | 'junk' | 'disk' | 'startup';
+export type ToolId = 'organizer' | 'uninstaller' | 'junk' | 'disk' | 'startup' | 'system' | 'rename' | 'recycle' | 'process' | 'network';
 
 interface ActiveTool {
   icon: IconName;
@@ -56,6 +56,51 @@ const ACTIVE_TOOLS: ActiveTool[] = [
     tool: 'startup',
     accent: 'from-cyan-500 to-blue-600',
     glow: 'shadow-cyan-500/20',
+    chip: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
+  },
+  {
+    icon: 'cpu',
+    title: 'Info & Laporan Sistem',
+    desc: 'Ringkasan lengkap PC-mu: OS, prosesor, RAM, kartu grafis, baterai, dan pemakaian setiap drive.',
+    tool: 'system',
+    accent: 'from-amber-500 to-orange-600',
+    glow: 'shadow-amber-500/20',
+    chip: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
+  },
+  {
+    icon: 'rename',
+    title: 'Ganti Nama Massal',
+    desc: 'Rename banyak file sekaligus: cari & ganti teks, awalan/akhiran, atau penomoran otomatis. Aman tanpa menimpa.',
+    tool: 'rename',
+    accent: 'from-fuchsia-500 to-indigo-600',
+    glow: 'shadow-fuchsia-500/20',
+    chip: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
+  },
+  {
+    icon: 'recycle',
+    title: 'Tempat Sampah',
+    desc: 'Pulihkan file yang terhapus ke lokasi asalnya, atau kosongkan isi Tempat Sampah sekaligus.',
+    tool: 'recycle',
+    accent: 'from-emerald-500 to-teal-600',
+    glow: 'shadow-emerald-500/20',
+    chip: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
+  },
+  {
+    icon: 'activity',
+    title: 'Pengelola Proses',
+    desc: 'Pantau program yang berjalan dan pemakaian memorinya, lalu hentikan proses yang macet atau berat.',
+    tool: 'process',
+    accent: 'from-cyan-500 to-blue-600',
+    glow: 'shadow-cyan-500/20',
+    chip: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
+  },
+  {
+    icon: 'network',
+    title: 'Alat Jaringan',
+    desc: 'Ping, traceroute, cek DNS, dan pindai port untuk mendiagnosis koneksi internetmu dengan cepat.',
+    tool: 'network',
+    accent: 'from-sky-500 to-indigo-600',
+    glow: 'shadow-sky-500/20',
     chip: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
   },
 ];
