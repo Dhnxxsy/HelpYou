@@ -440,7 +440,12 @@ body::after {
   }
 
   /* ---------- Buttons ---------- */
-.btn {
+  .btn,
+  .btn-primary,
+  .btn-secondary,
+  .btn-ghost,
+  .btn-outline,
+  .btn-danger {
     @apply inline-flex items-center justify-center gap-2 h-9 px-4 rounded-full font-medium text-[13px] whitespace-nowrap select-none transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)] disabled:opacity-45 disabled:cursor-not-allowed disabled:pointer-events-none active:translate-y-px;
   }
   .btn-primary {

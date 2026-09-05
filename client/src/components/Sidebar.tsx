@@ -4,7 +4,7 @@ import Logo from './Logo';
 import { ACTIVE_TOOLS, type ToolId } from '../lib/tools';
 import ThemePicker from './ThemePicker';
 
-const VERSION = '1.0.25';
+const VERSION = '1.0.26';
 
 interface SidebarProps {
   current: string;
