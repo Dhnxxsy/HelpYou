@@ -30,6 +30,7 @@ import { listRecycleBin, restoreRecycleItem, emptyRecycleBin } from '../organize
 import { listProcesses, killProcess } from '../organizer/process-manager.js';
 import { pingHost, traceHost, dnsLookup, scanPorts } from '../organizer/network-tools.js';
 import type { DiskScanResult, StartupItem } from '../../shared/types.js';
+import { listNotes, getNote, createNote, updateNote, deleteNote } from '../organizer/notepad.js';
 
 export const api = Router();
 
@@ -813,6 +814,70 @@ api.post('/network/ports', async (req: Request, res: Response) => {
       scanPorts(host, [21, 22, 23, 25, 53, 80, 110, 135, 139, 143, 443, 445, 993, 995, 1433, 3306, 3389, 5432, 8080, 8443])
     );
     res.json({ host, rows });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+/* ---------------- Notepad tool ---------------- */
+
+// GET /api/notes
+api.get('/notes', (_req: Request, res: Response) => {
+  try {
+    res.json({ notes: listNotes() });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// GET /api/notes/:id
+api.get('/notes/:id', (req: Request, res: Response) => {
+  try {
+    const note = getNote(req.params.id);
+    if (!note) return res.status(404).json({ error: 'Catatan tidak ditemukan' });
+    res.json({ note });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /api/notes  body: { title?, content?, pinned? }
+api.post('/notes', (req: Request, res: Response) => {
+  try {
+    const b = req.body || {};
+    const note = createNote({
+      title: typeof b.title === 'string' ? b.title : undefined,
+      content: typeof b.content === 'string' ? b.content : undefined,
+      pinned: !!b.pinned,
+    });
+    res.status(201).json({ note });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// PUT /api/notes/:id  body: partial note
+api.put('/notes/:id', (req: Request, res: Response) => {
+  try {
+    const b = req.body || {};
+    const note = updateNote(req.params.id, {
+      title: typeof b.title === 'string' ? b.title : undefined,
+      content: typeof b.content === 'string' ? b.content : undefined,
+      pinned: typeof b.pinned === 'boolean' ? b.pinned : undefined,
+    });
+    if (!note) return res.status(404).json({ error: 'Catatan tidak ditemukan' });
+    res.json({ note });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// DELETE /api/notes/:id
+api.delete('/notes/:id', (req: Request, res: Response) => {
+  try {
+    const ok = deleteNote(req.params.id);
+    if (!ok) return res.status(404).json({ error: 'Catatan tidak ditemukan' });
+    res.json({ ok: true });
   } catch (e: any) {
     res.status(500).json({ error: e.message });
   }

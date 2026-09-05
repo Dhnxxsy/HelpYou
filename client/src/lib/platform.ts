@@ -29,10 +29,26 @@ export interface UpdateReadyData {
   version?: string;
 }
 
+export interface NotesOpenResult {
+  path: string;
+  name?: string;
+  content?: string;
+  error?: string;
+}
+
+export interface NotesSaveResult {
+  path?: string;
+  error?: string;
+}
+
 export interface ElectronAPI {
   platform: string;
   pickFolder: () => Promise<string | null>;
   openExternal: (url: string) => Promise<void>;
+  notes: {
+    openFile: () => Promise<NotesOpenResult | null>;
+    saveFile: (name: string, content: string) => Promise<NotesSaveResult | null>;
+  };
   windowControls: ElectronWindowControls;
   updates: {
     check: () => Promise<UpdateCheckResult>;

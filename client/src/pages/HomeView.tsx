@@ -1,6 +1,6 @@
 import Icon, { type IconName } from '../components/Icon';
 
-export type ToolId = 'organizer' | 'uninstaller' | 'junk' | 'disk' | 'startup' | 'system' | 'rename' | 'recycle' | 'process' | 'network';
+export type ToolId = 'organizer' | 'uninstaller' | 'junk' | 'disk' | 'startup' | 'system' | 'rename' | 'recycle' | 'process' | 'network' | 'notepad';
 
 interface ActiveTool {
   icon: IconName;
@@ -101,6 +101,15 @@ const ACTIVE_TOOLS: ActiveTool[] = [
     tool: 'network',
     accent: 'from-sky-500 to-indigo-600',
     glow: 'shadow-sky-500/20',
+    chip: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
+  },
+  {
+    icon: 'fileText',
+    title: 'Notepad',
+    desc: 'Catat ide dan catatan penting dengan editor nyaman: auto-save, format teks, cari & ganti, dan ekspor ke file.',
+    tool: 'notepad',
+    accent: 'from-amber-400 to-orange-600',
+    glow: 'shadow-amber-500/20',
     chip: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
   },
 ];

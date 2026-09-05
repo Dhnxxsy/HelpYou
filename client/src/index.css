@@ -141,6 +141,11 @@ body::after {
     opacity: 0.45;
     z-index: -1;
   }
+  /* Small square button used by compact toolbars (notepad etc.) */
+  .tool-btn {
+    @apply inline-flex items-center justify-center gap-1.5 h-8 min-w-8 px-2 rounded-lg text-gray-400 text-xs transition-colors select-none hover:bg-white/[0.08] hover:text-white disabled:opacity-40 disabled:pointer-events-none focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60;
+  }
+  .tool-btn:not(:disabled):active { transform: translateY(1px); }
 }
 
 /* Gradient text helper */

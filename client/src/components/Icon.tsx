@@ -41,7 +41,17 @@ export type IconName =
   | 'rename'
   | 'recycle'
   | 'activity'
-  | 'arrowLeft';
+  | 'arrowLeft'
+  | 'fileText'
+  | 'pin'
+  | 'pinOff'
+  | 'quote'
+  | 'code'
+  | 'listOrdered'
+  | 'checkSquare'
+  | 'minus'
+  | 'save'
+  | 'upload';
 
 const FILLED: IconName[] = ['trash'];
 
@@ -138,6 +148,41 @@ const P: Record<IconName, ReactNode> = {
   </>,
   activity: <path d="M22 12h-4l-3 9L9 3l-3 9H2" />,
   arrowLeft: <><path d="M19 12H5" /><path d="M11 18l-6-6 6-6" /></>,
+  fileText: <>
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+    <path d="M14 2v6h6" />
+    <path d="M8 13h8M8 17h8" />
+  </>,
+  pin: <>
+    <path d="M12 17v5" />
+    <path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1z" />
+  </>,
+  pinOff: <>
+    <path d="m3 3 18 18" />
+    <path d="M12 17v5" />
+    <path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H9" />
+  </>,
+  quote: <>
+    <path d="M10 11H6a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v4a5 5 0 0 1-5 5" />
+    <path d="M20 11h-4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v4a5 5 0 0 1-5 5" />
+  </>,
+  code: <><path d="m16 18 6-6-6-6" /><path d="M8 6l-6 6 6 6" /></>,
+  listOrdered: <>
+    <path d="M9 6.5h11M9 12.5h11M9 18.5h11" />
+    <circle cx="4.5" cy="6.5" r="1" />
+    <circle cx="4.5" cy="12.5" r="1" />
+    <circle cx="4.5" cy="18.5" r="1" />
+  </>,
+  checkSquare: <>
+    <rect x="3" y="3" width="18" height="18" rx="2" />
+    <path d="m8 12 3 3 6-6" />
+  </>,
+  minus: <path d="M5 12h14" />,
+  save: <>
+    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+    <path d="M17 21v-8H7v8M7 3v5h8" />
+  </>,
+  upload: <><path d="M12 15V3" /><path d="M7 8l5-5 5 5" /><path d="M4 21h16" /></>,
 };
 
 export default function Icon({ name, className = 'w-4 h-4' }: { name: IconName; className?: string }) {

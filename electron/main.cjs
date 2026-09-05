@@ -197,6 +197,48 @@ function registerIpc() {
   ipcMain.handle('shell:openExternal', async (_event, url) => {
     if (typeof url === 'string' && /^https?:\/\//.test(url)) await shell.openExternal(url);
   });
+  ipcMain.handle('notes:openFile', async () => {
+    if (!mainWindow) return null;
+    const res = await dialog.showOpenDialog(mainWindow, {
+      title: 'Buka File Teks',
+      properties: ['openFile'],
+      filters: [
+        {
+          name: 'Teks',
+          extensions: ['txt', 'md', 'markdown', 'log', 'json', 'csv', 'ini', 'xml', 'html', 'css', 'js', 'ts', 'tsx', 'py', 'yml', 'yaml'],
+        },
+        { name: 'Semua File', extensions: ['*'] },
+      ],
+    });
+    if (res.canceled || res.filePaths.length === 0) return null;
+    const p = res.filePaths[0];
+    try {
+      const content = fs.readFileSync(p, 'utf-8');
+      return { path: p, name: path.basename(p), content };
+    } catch (e) {
+      return { path: p, error: e?.message || 'Gagal membaca file' };
+    }
+  });
+  ipcMain.handle('notes:saveFile', async (_event, name, content) => {
+    if (!mainWindow) return null;
+    const suggested = (typeof name === 'string' && name.trim() ? name.trim() : 'catatan');
+    const res = await dialog.showSaveDialog(mainWindow, {
+      title: 'Simpan Catatan',
+      defaultPath: /\.\w{1,10}$/.test(suggested) ? suggested : `${suggested}.txt`,
+      filters: [
+        { name: 'File Teks', extensions: ['txt'] },
+        { name: 'Markdown', extensions: ['md'] },
+        { name: 'Semua File', extensions: ['*'] },
+      ],
+    });
+    if (res.canceled || !res.filePath) return null;
+    try {
+      await fs.promises.writeFile(res.filePath, typeof content === 'string' ? content : '', 'utf-8');
+      return { path: res.filePath };
+    } catch (e) {
+      return { error: e?.message || 'Gagal menyimpan file' };
+    }
+  });
 }
 
 const gotLock = app.requestSingleInstanceLock();
