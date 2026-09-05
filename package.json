@@ -1,6 +1,6 @@
 {
   "name": "file-organizer",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "File Organizer — pengorganisir file lokal dengan pemindahan otomatis, deteksi duplikat, dan aturan sortir kustom.",
   "author": {
     "name": "File Organizer"
@@ -69,13 +69,14 @@
       ],
       "icon": "electron/assets/icon.ico"
     },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": "always",
-      "createStartMenuShortcut": true,
-      "shortcutName": "File Organizer",
-      "artifactName": "File-Organizer-Setup-${version}.${ext}"
+"nsis": {
+        "oneClick": true,
+        "perMachine": false,
+        "runAfterFinish": false,
+        "createDesktopShortcut": "always",
+        "createStartMenuShortcut": true,
+        "shortcutName": "File Organizer",
+        "artifactName": "File-Organizer-Setup-${version}.${ext}"
     },
     "publish": [
       {
