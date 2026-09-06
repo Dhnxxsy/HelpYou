@@ -14,6 +14,15 @@ contextBridge.exposeInMainWorld('electron', {
     savePng: (dataUrl) => ipcRenderer.invoke('paint:savePng', dataUrl),
     saveJpg: (dataUrl) => ipcRenderer.invoke('paint:saveJpg', dataUrl),
   },
+  mirror: {
+    list: () => ipcRenderer.invoke('mirror:list'),
+    connect: (addr) => ipcRenderer.invoke('mirror:connect', addr),
+    pair: (addr, code) => ipcRenderer.invoke('mirror:pair', addr, code),
+    disconnect: (addr) => ipcRenderer.invoke('mirror:disconnect', addr),
+    screencap: (serial) => ipcRenderer.invoke('mirror:screencap', serial),
+    input: (serial, kind, payload) => ipcRenderer.invoke('mirror:input', serial, kind, payload),
+    launch: (serial) => ipcRenderer.invoke('mirror:launch', serial),
+  },
   openExternal: (url) => ipcRenderer.invoke('shell:openExternal', url),
   windowControls: {
     minimize: () => ipcRenderer.invoke('win:minimize'),

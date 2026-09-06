@@ -60,6 +60,40 @@ export interface PaintSaveResult {
   error?: string;
 }
 
+export interface MirDevice {
+  serial: string;
+  state: string;
+  model?: string;
+  product?: string;
+  usb?: boolean;
+  wireless?: boolean;
+}
+
+export interface MirListResult {
+  ok: boolean;
+  devices?: MirDevice[];
+  error?: string;
+}
+
+export interface MirCommandResult {
+  ok: boolean;
+  message?: string;
+  error?: string;
+}
+
+export interface MirScreencapResult {
+  ok: boolean;
+  base64?: string;
+  busy?: boolean;
+  error?: string;
+}
+
+export interface MirLaunchResult {
+  ok: boolean;
+  pid?: number;
+  error?: string;
+}
+
 export interface ElectronAPI {
   platform: string;
   pickFolder: () => Promise<string | null>;
@@ -74,6 +108,15 @@ export interface ElectronAPI {
   paint: {
     savePng: (dataUrl: string) => Promise<PaintSaveResult>;
     saveJpg: (dataUrl: string) => Promise<PaintSaveResult>;
+  };
+  mirror: {
+    list: () => Promise<MirListResult>;
+    connect: (addr: string) => Promise<MirCommandResult>;
+    pair: (addr: string, code: string) => Promise<MirCommandResult>;
+    disconnect: (addr?: string) => Promise<MirCommandResult>;
+    screencap: (serial: string) => Promise<MirScreencapResult>;
+    input: (serial: string, kind: string, payload: Record<string, unknown>) => Promise<MirCommandResult>;
+    launch: (serial: string) => Promise<MirLaunchResult>;
   };
   windowControls: ElectronWindowControls;
   updates: {
@@ -139,4 +182,43 @@ export async function savePngAs(dataUrl: string): Promise<PaintSaveResult> {
 export async function saveJpgAs(dataUrl: string): Promise<PaintSaveResult> {
   if (!isDesktop || !window.electron) return { ok: false, error: 'Perangkat tidak mendukung.' };
   return window.electron.paint.saveJpg(dataUrl);
+}
+
+export async function mirrorList(): Promise<MirListResult> {
+  if (!isDesktop || !window.electron) return { ok: false, error: tGlobal('Perangkat tidak mendukung.') };
+  return window.electron.mirror.list();
+}
+
+export async function mirrorConnect(addr: string): Promise<MirCommandResult> {
+  if (!isDesktop || !window.electron) return { ok: false, error: tGlobal('Perangkat tidak mendukung.') };
+  return window.electron.mirror.connect(addr);
+}
+
+export async function mirrorPair(addr: string, code: string): Promise<MirCommandResult> {
+  if (!isDesktop || !window.electron) return { ok: false, error: tGlobal('Perangkat tidak mendukung.') };
+  return window.electron.mirror.pair(addr, code);
+}
+
+export async function mirrorDisconnect(addr?: string): Promise<MirCommandResult> {
+  if (!isDesktop || !window.electron) return { ok: false, error: tGlobal('Perangkat tidak mendukung.') };
+  return window.electron.mirror.disconnect(addr);
+}
+
+export async function mirrorScreencap(serial: string): Promise<MirScreencapResult> {
+  if (!isDesktop || !window.electron) return { ok: false, error: tGlobal('Perangkat tidak mendukung.') };
+  return window.electron.mirror.screencap(serial);
+}
+
+export async function mirrorInput(
+  serial: string,
+  kind: 'tap' | 'swipe' | 'text' | 'key',
+  payload: Record<string, unknown>
+): Promise<MirCommandResult> {
+  if (!isDesktop || !window.electron) return { ok: false, error: tGlobal('Perangkat tidak mendukung.') };
+  return window.electron.mirror.input(serial, kind, payload);
+}
+
+export async function mirrorLaunch(serial: string): Promise<MirLaunchResult> {
+  if (!isDesktop || !window.electron) return { ok: false, error: tGlobal('Perangkat tidak mendukung.') };
+  return window.electron.mirror.launch(serial);
 }

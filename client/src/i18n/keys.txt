@@ -42,6 +42,7 @@ Analisis Fragmentasi
 Analisis Ruang Disk
 Analisis dibatasi pada 200.000 file & kedalaman 48 lapis — ukuran ditampilkan bisa lebih kecil dari sebenarnya.
 Analisis dulu (drive mungkin tidak didukung)
+Android 11+ (Nirkabel): Setting › Opsi pengembang › Wireless debugging › Pair device dengan kode. Isi IP:port utama di kolom pertama dan kode di kolom kedua. Android lama: colok USB sekali lalu adb tcpip di komputer.
 Aplikasi akan di-uninstall {mode}. Anda bisa membersihkan sisa file setelahnya.
 Aplikasi akan ditutup, diperbarui, dan dibuka kembali otomatis.
 Aplikasi ini tidak menyediakan uninstaller (mis. aplikasi portable).
@@ -71,6 +72,8 @@ Belum tersimpan
 Beranda
 Beranda Browser
 Berhasil dirapikan! 🎉
+Berhasil terhubung.
+Berhenti
 Berikutnya (Enter)
 Berjalan lokal
 Berjalan…
@@ -99,6 +102,7 @@ Buat catatan baru untuk mulai menulis, atau buka file teks yang sudah ada.
 Buka
 Buka File
 Buka Folder Hasil
+Buka Mode Lancar (scrcpy)
 Buka di browser eksternal
 Buka file teks (Ctrl+O)
 Buka folder sumber
@@ -132,6 +136,7 @@ Catatan baru (Ctrl+N)
 Catatan digandakan.
 Catatan tidak ditemukan
 Cek catatan DNS untuk host ini.
+Cerminkan layar HP Android ke PC, kendalikan dari jauh, nirkabel atau via USB.
 Checklist
 Coba Lagi
 Coba dengan Administrator (UAC)
@@ -250,6 +255,7 @@ Gagal mengunduh pembaruan.
 Gagal menyembunyikan.
 Gagal menyimpan catatan.
 Gagal menyimpan gambar.
+Gagal menyimpan tangkapan.
 Gagal mulai pemindaian.
 Gagal scan
 Gagal terhubung ke server selama scan. Coba mulai analisis dari awal.
@@ -292,6 +298,8 @@ Horisontal
 Host / Alamat
 Host: {hostname} ({user})
 Hostname
+Hubungkan
+IP:port HP (mis. 192.168.1.5:5555)
 Image Disk
 Info & Laporan Sistem
 Info Sistem
@@ -347,11 +355,15 @@ Kemungkinan file sedang dipakai program lain atau akses ditolak. Cek kembali lew
 Kesalahan tidak diketahui.
 Ketik / tempel path folder, mis. C:\Users\Anda\Downloads
 Ketik sandi untuk membuka…
+Ketik teks ke HP…
 Ketik teks…
 Ketik ulang sandi yang sama
+Kirim
 Klik di bawah untuk memeriksa sisa file dan membersihkannya sampai akar.
 Klik kanvas untuk menulis teks.
+Klik perangkat untuk mulai cermin.
 Kode
+Kode Pairing (Android 11+, opsional)
 Komposisi Folder (akan dipindah)
 Konfirmasi
 Kosongkan
@@ -411,12 +423,14 @@ Memproses…
 Memuat gambar tersimpan…
 Menerapkan sortir...
 Menerapkan…
+Mengambil layar…
 Menganalisis folder...
 Menganalisis fragmentasi…
 Menganalisis lokasi sampah…
 Mengandung teks
 Mengembalikan...
 Menghapus...
+Menghubungkan…
 Mengoptimalkan drive…
 Mengunduh pembaruan {version}…
 Menjalankan optimizer bawaan Windows (Optimize-Volume / defrag.exe). HDD di-defrag, SSD/NVMe di-retrim. Butuh izin administrator (UAC).
@@ -430,6 +444,8 @@ Min. ukuran file (KB)
 Minimal 4 karakter
 Minimalkan
 Miring (Ctrl+I)
+Mirror HP
+Mode Lancar
 Mode Master aktif.
 Mode browser tidak bisa membuka dialog file. Jalankan lewat aplikasi desktop.
 Mode browser tidak bisa membuka dialog folder. Jalankan lewat aplikasi desktop.
@@ -469,6 +485,8 @@ Organizer Folder Lokal
 PC / Laptop
 PC: {pc}
 PID {pid} · Sesi {session}
+Pair & Hubungkan
+Pairing berhasil. Sekarang hubungkan IP:port debugging.
 Pemangkas Aktif
 Pembaruan HelpYou {version} tersedia
 Pembaruan {version} siap dipasang
@@ -486,6 +504,8 @@ Pengelola Startup
 Penghapus
 Pengonsumsi Terbesar
 Penyimpanan
+Perangkat
+Perangkat tidak ditemukan.
 Perangkat tidak mendukung.
 Perbesar
 Periksa & Bersihkan Residu
@@ -523,8 +543,10 @@ Pintasan
 Pipet
 Pola
 Pratinjau
+Pratinjau 2-5 fps. Untuk streaming mulus, gunakan Mode Lancar.
 Pratinjau Brankas
 Pratinjau Item
+Pratinjau Langsung
 Pratinjau tidak memulihkan berkas apa pun.
 Pratinjau…
 Privasi penuh
@@ -540,6 +562,7 @@ Pulihkan file/folder yang terhapus, atau kosongkan isi Tempat Sampah semuanya.
 Pulihkan jendela
 Pulihkan: {n} berhasil · {m} gagal
 Pulihkan…
+Putuskan Semua
 RAM: {used} dari {total}
 Radial
 Rapihkan
@@ -603,12 +626,14 @@ Sesi browsing berjalan lokal di aplikasi ini — tidak dikirim ke mana pun.
 Sesuaikan
 Setiap pemindahan tercatat di Riwayat dan bisa dikembalikan.
 Setiap pemindahan tercatat di tab Riwayat dan bisa di-Undo.
+Siap Cermin
 Simetri
 Simpan
 Simpan Aturan
 Simpan JPEG
 Simpan PNG
 Simpan Sebagai
+Simpan Tangkapan
 Sistem Operasi
 Situs Disematkan
 Situs Pilihan
@@ -651,7 +676,9 @@ Terapkan
 Terapkan ({n})
 Terbuka
 Terhubung · {n} ms rata-rata
+Terima koneksi di HP bila diminta.
 Terjadi kesalahan
+Terkini
 Terlalu banyak nama duplikat
 Terlalu besar (maks 512 MB per item).
 Tersimpan di {path}
@@ -676,6 +703,7 @@ Tidak ada item aktif.
 Tidak ada item nonaktif.
 Tidak ada item startup yang terdeteksi.
 Tidak ada item untuk disembunyikan.
+Tidak ada perangkat terdeteksi.
 Tidak ada program yang cocok.
 Tidak ada proses yang cocok.
 Tidak ada target admin yang valid. Pilih kembali lewat hasil pemindaian.
@@ -788,6 +816,7 @@ parameter tidak valid
 path tidak ditemukan
 periksa ulang
 pid tidak valid
+scrcpy dibuka di jendela terpisah.
 sedang menyimpan
 selalu dilindungi.
 setiap item dienkripsi dengan sandimu

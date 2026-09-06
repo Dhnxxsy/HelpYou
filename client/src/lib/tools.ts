@@ -12,7 +12,8 @@ export type ToolId =
   | 'notepad'
   | 'vault'
   | 'browser'
-  | 'paint';
+  | 'paint'
+  | 'mirror';
 
 export interface ActiveTool {
   icon: IconName;
@@ -144,6 +145,16 @@ export const ACTIVE_TOOLS: ActiveTool[] = [
     tool: 'paint',
     accent: 'from-rose-500 to-pink-600',
     glow: 'shadow-rose-500/20',
+    chip: 'bg-[var(--ok-soft)] text-[var(--ok-strong)] border-[var(--ok-border)]',
+  },
+  {
+    icon: 'phone',
+    title: 'Mirror HP',
+    short: 'Mirror HP',
+    desc: 'Cerminkan layar HP Android ke PC, kendalikan dari jauh, nirkabel atau via USB.',
+    tool: 'mirror',
+    accent: 'from-teal-500 to-emerald-600',
+    glow: 'shadow-teal-500/20',
     chip: 'bg-[var(--ok-soft)] text-[var(--ok-strong)] border-[var(--ok-border)]',
   },
 ];

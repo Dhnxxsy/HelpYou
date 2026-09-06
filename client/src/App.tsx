@@ -20,6 +20,7 @@ const NotepadView = lazy(() => import('./pages/NotepadView'));
 const VaultView = lazy(() => import('./pages/VaultView'));
 const BrowserView = lazy(() => import('./pages/BrowserView'));
 const PaintView = lazy(() => import('./pages/PaintView'));
+const MirrorView = lazy(() => import('./pages/MirrorView'));
 
 type Tool = 'home' | ToolId;
 
@@ -52,6 +53,7 @@ export default function App() {
                   {tool === 'vault' && <VaultView onBack={() => setTool('home')} />}
                   {tool === 'browser' && <BrowserView onBack={() => setTool('home')} />}
                   {tool === 'paint' && <PaintView onBack={() => setTool('home')} />}
+                  {tool === 'mirror' && <MirrorView onBack={() => setTool('home')} />}
                 </Suspense>
               )}
             </div>

@@ -78,7 +78,9 @@ export type IconName =
   | 'flipV'
   | 'palette'
   | 'symOff'
-  | 'symBoth';
+  | 'symBoth'
+  | 'phone'
+  | 'cast';
 
 const FILLED: IconName[] = ['trash'];
 
@@ -283,6 +285,8 @@ const P: Record<IconName, ReactNode> = {
     <path d="M3 12h18M12 3v18" />
     <circle cx="12" cy="12" r="2" />
   </>,
+  phone: <><rect x="7" y="2" width="10" height="20" rx="2.5" /><path d="M11 18h2" /></>,
+  cast: <><path d="M2 16.1A5 5 0 0 1 5.9 20H2zM2 12.05A9 9 0 0 1 9.95 20H9.9A8.9 8.9 0 0 0 2 12.05zm0-4.05A13 13 0 0 1 16 20h-2A11 11 0 0 0 2 8z" /><path d="M20 2H8a2 2 0 0 0-2 2v3h2V4h12v13h-3v2h3a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z" /></>,
   palette: (
     <>
       <path d="M12 22a1 1 0 0 1 0-20a10 9 0 0 1 10 9a5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z" />

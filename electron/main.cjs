@@ -2,7 +2,11 @@ const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const path = require('node:path');
 const fs = require('node:fs');
 const { pathToFileURL } = require('node:url');
+const { execFile, spawn } = require('node:child_process');
+const { promisify } = require('node:util');
 const { autoUpdater } = require('electron-updater');
+
+const execFileP = promisify(execFile);
 
 let mainWindow = null;
 let server = null;
@@ -30,6 +34,69 @@ function appBase() {
 
 function iconPath() {
   return path.join(appBase(), 'electron', 'assets', app.isPackaged ? 'icon-256.png' : 'icon-256.png');
+}
+
+/* -------------------- Phone mirror (adb + scrcpy) -------------------- */
+
+function adbPath() {
+  return path.join(appBase(), 'electron', 'bin', 'adb', 'adb.exe');
+}
+
+function scrcpyDir() {
+  return path.join(appBase(), 'electron', 'bin', 'scrcpy');
+}
+
+async function runAdb(args, { timeout = 30000, binary = false } = {}) {
+  try {
+    const opts = {
+      timeout,
+      windowsHide: true,
+      maxBuffer: 48 * 1024 * 1024,
+      encoding: binary ? 'buffer' : 'utf8',
+    };
+    const { stdout, stderr } = await execFileP(adbPath(), args, opts);
+    if (binary) {
+      const buf = Buffer.isBuffer(stdout) ? stdout : Buffer.from(stdout || []);
+      return { ok: true, base64: buf.toString('base64'), bytes: buf.length };
+    }
+    return { ok: true, stdout: String(stdout || ''), stderr: String(stderr || '') };
+  } catch (e) {
+    const msg = String(e?.message || e || '').slice(0, 400);
+    return { ok: false, error: msg, stdout: String(e?.stdout || ''), stderr: String(e?.stderr || '') };
+  }
+}
+
+function parseAdbDevices(stdout) {
+  const devices = [];
+  for (const line of String(stdout || '').split(/\r?\n/)) {
+    const m = /^(\S+)\t([a-z]+)(?:\s+(.*))?$/.exec(line.trim());
+    if (!m) continue;
+    const props = {};
+    for (const p of ((m[3] || '').match(/\S+/g) || [])) {
+      const i = p.indexOf(':');
+      if (i > 0) props[p.slice(0, i)] = p.slice(i + 1);
+    }
+    devices.push({
+      serial: m[1],
+      state: m[2],
+      model: props.model || '',
+      product: props.product || '',
+      usb: !!props.usb,
+      wireless: !!props.wireless,
+    });
+  }
+  return devices;
+}
+
+const scrcpyPids = new Set();
+
+function killScrcpy() {
+  for (const pid of scrcpyPids) {
+    try {
+      process.kill(pid);
+    } catch {}
+  }
+  scrcpyPids.clear();
 }
 
 /* -------------------- Auto updater (electron-updater) -------------------- */
@@ -312,6 +379,75 @@ function registerIpc() {
       return { ok: false, error: e?.message || 'Gagal menyimpan gambar' };
     }
   });
+  ipcMain.handle('mirror:list', async () => {
+    const r = await runAdb(['devices', '-l']);
+    if (!r.ok) return { ok: false, error: r.error || 'adb gagal dijalankan.' };
+    return { ok: true, devices: parseAdbDevices(r.stdout) };
+  });
+  ipcMain.handle('mirror:connect', async (_e, addr) => {
+    if (typeof addr !== 'string' || !/^\S+:\d+$/.test(addr)) return { ok: false, error: 'Alamat tidak valid.' };
+    const r = await runAdb(['connect', addr], { timeout: 25000 });
+    const out = (r.stdout + ' ' + r.stderr).trim();
+    return { ok: r.ok, message: out || r.ok ? 'Berhasil terhubung.' : (r.error || 'Gagal terhubung.') };
+  });
+  ipcMain.handle('mirror:pair', async (_e, addr, code) => {
+    if (typeof addr !== 'string' || !/^\S+:\d+$/.test(addr) || typeof code !== 'string' || !code.trim()) {
+      return { ok: false, error: 'Data pairing tidak valid.' };
+    }
+    const r = await runAdb(['pair', addr, code.trim()], { timeout: 30000 });
+    const out = (r.stdout + ' ' + r.stderr).trim();
+    return { ok: r.ok, message: out || r.error || '' };
+  });
+  ipcMain.handle('mirror:disconnect', async (_e, addr) => {
+    const r = await runAdb(typeof addr === 'string' && addr ? ['disconnect', addr] : ['disconnect']);
+    const out = (r.stdout + ' ' + r.stderr).trim();
+    return { ok: r.ok, message: out || r.error || '' };
+  });
+  const screenLocks = new Map();
+  ipcMain.handle('mirror:screencap', async (_e, serial) => {
+    if (typeof serial !== 'string' || !serial) return { ok: false, error: 'Perangkat tidak dipilih.' };
+    if (screenLocks.get(serial)) return { ok: false, busy: true };
+    screenLocks.set(serial, true);
+    try {
+      const r = await runAdb(['-s', serial, 'exec-out', 'screencap', '-p'], { timeout: 15000, binary: true });
+      if (!r.ok) return { ok: false, error: r.error || 'Gagal mengambil layar.' };
+      if (!r.base64) return { ok: false, error: 'Layar kosong.' };
+      return { ok: true, base64: r.base64 };
+    } finally {
+      screenLocks.delete(serial);
+    }
+  });
+  ipcMain.handle('mirror:input', async (_e, serial, kind, payload) => {
+    if (typeof serial !== 'string' || !serial) return { ok: false, error: 'Perangkat tidak dipilih.' };
+    let command = null;
+    if (kind === 'tap' && payload && Number.isFinite(payload.x) && Number.isFinite(payload.y)) {
+      command = ['tap', String(Math.round(payload.x)), String(Math.round(payload.y))];
+    } else if (kind === 'swipe' && payload) {
+      command = ['swipe', String(Math.round(payload.x1)), String(Math.round(payload.y1)), String(Math.round(payload.x2)), String(Math.round(payload.y2)), String(Math.round(payload.dur ?? 60))];
+    } else if (kind === 'text' && typeof payload?.text === 'string') {
+      command = ['text', payload.text.replace(/(["\\ ])/g, (m) => (m === ' ' ? '%s' : '\\' + m))];
+    } else if (kind === 'key' && payload && Number.isInteger(payload.code)) {
+      command = ['keyevent', String(payload.code)];
+    }
+    if (!command) return { ok: false, error: 'Perintah input tidak dikenal.' };
+    const r = await runAdb(['-s', serial, 'shell', 'input', ...command]);
+    return { ok: r.ok, error: r.ok ? undefined : (r.error || 'Gagal mengirim input.') };
+  });
+  ipcMain.handle('mirror:launch', async (_e, serial) => {
+    if (typeof serial !== 'string' || !serial) return { ok: false, error: 'Pilih perangkat dulu.' };
+    const exe = path.join(scrcpyDir(), 'scrcpy.exe');
+    if (!fs.existsSync(exe)) return { ok: false, error: 'scrcpy tidak ditemukan.' };
+    const args = ['--serial', serial, '--stay-awake', '--window-title', `HelpYou · ${serial}`];
+    const child = spawn(exe, args, { detached: true, stdio: 'ignore', cwd: scrcpyDir() });
+    scrcpyPids.add(child.pid);
+    child.unref();
+    child.on('exit', () => {
+      scrcpyPids.delete(child.pid);
+      logLine('scrcpy exit', child.pid);
+    });
+    logLine('scrcpy launch', serial, child.pid);
+    return { ok: true, pid: child.pid };
+  });
 }
 
 const gotLock = app.requestSingleInstanceLock();
@@ -345,6 +481,7 @@ if (!gotLock) {
   });
 
   app.on('before-quit', () => {
+    killScrcpy();
     try {
       server?.close();
     } catch {}

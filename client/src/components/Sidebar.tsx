@@ -6,7 +6,7 @@ import ThemePicker from './ThemePicker';
 import LanguagePicker from './LanguagePicker';
 import { useI18n } from '../lib/i18n';
 
-const VERSION = '1.0.38';
+const VERSION = '1.0.39';
 
 interface SidebarProps {
   current: string;
@@ -91,10 +91,10 @@ export default function Sidebar({ current, onOpen, onHome }: SidebarProps) {
         </button>
         <div className="hidden lg:flex items-center gap-1.5 text-[11px] text-[var(--text-3)] mt-3">
           <Icon name="shield" className="w-3.5 h-3.5 text-[var(--accent-strong)]" />
-          {t('100% lokal · tanpa telemetri')}
+          {t('100% lokal Â· tanpa telemetri')}
         </div>
         <div className="hidden lg:block mt-1 text-[11px] text-[var(--text-3)]">
-          {t('Brankas terenkripsi · data tidak keluar perangkat')}
+          {t('Brankas terenkripsi Â· data tidak keluar perangkat')}
         </div>
         <div className="mt-2.5 flex lg:hidden justify-center" title={t('Versi {n}', { n: VERSION })}>
           <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" aria-hidden="true" />
