@@ -816,7 +816,7 @@ const d: Record<string, string> = {
   'Perbesar': 'Yakınlaştır',
   'Perkecil': 'Uzaklaştır',
   'Persegi': 'Dikdörtgen',
-  'Petunjuk: B Kuas, E Penghapus, I Pipet, G Isi Warna, L Garis, R Persegi, O Elips, H Tangan. Spasi untuk geser, Ctrl+Z urungkan.': 'Kısayollar: B Fırça, E Silgi, I Damlalık, G Doldur, L Çizgi, R Dikdörtgen, O Elips, H El. Sürüklemek için boşluk, Ctrl+Z geri al.',
+  'Petunjuk: B Kuas, E Penghapus, I Pipet, G Isi Warna, L Garis, R Persegi, O Elips, H Tangan. Spasi geser, Ctrl+Z urungkan, Ctrl+Shift+Z ulangi.': 'Kısayollar: B Fırça, E Silgi, I Damlalık, G Doldurma, L Çizgi, R Kare, O Elips, H El. Taşımak için boşluk, Ctrl+Z geri al, Ctrl+Shift+Z yinele.',
   'Pindah ke Atas': 'Yukarı taşı',
   'Pindah ke Bawah': 'Aşağı taşı',
   'Pipet': 'Damlalık',
@@ -829,5 +829,6 @@ const d: Record<string, string> = {
   'Ulangi': 'Yinele',
   'Urungkan': 'Geri al',
   'Warna': 'Renk',
+  'Gambar disimpan.': 'Görüntü kaydedildi.',
 };
 export default d;

@@ -816,7 +816,7 @@ const d: Record<string, string> = {
   'Perbesar': '확대',
   'Perkecil': '축소',
   'Persegi': '사각형',
-  'Petunjuk: B Kuas, E Penghapus, I Pipet, G Isi Warna, L Garis, R Persegi, O Elips, H Tangan. Spasi untuk geser, Ctrl+Z urungkan.': '단축키: B 브러시, E 지우개, I 스포이드, G 채우기, L 직선, R 사각형, O 타원, H 손. 이동하려면 스페이스, Ctrl+Z 실행 취소.',
+  'Petunjuk: B Kuas, E Penghapus, I Pipet, G Isi Warna, L Garis, R Persegi, O Elips, H Tangan. Spasi geser, Ctrl+Z urungkan, Ctrl+Shift+Z ulangi.': '단축키: B 브러시, E 지우개, I 스포이드, G 채우기, L 직선, R 사각형, O 타원, H 손. 이동은 스페이스, Ctrl+Z 실행 취소, Ctrl+Shift+Z 다시 실행.',
   'Pindah ke Atas': '위로 이동',
   'Pindah ke Bawah': '아래로 이동',
   'Pipet': '스포이드',
@@ -829,5 +829,6 @@ const d: Record<string, string> = {
   'Ulangi': '다시 실행',
   'Urungkan': '실행 취소',
   'Warna': '색상',
+  'Gambar disimpan.': '이미지가 저장되었습니다.',
 };
 export default d;

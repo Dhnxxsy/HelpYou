@@ -816,7 +816,7 @@ const d: Record<string, string> = {
   'Perbesar': 'Aproximar',
   'Perkecil': 'Afastar',
   'Persegi': 'Retângulo',
-  'Petunjuk: B Kuas, E Penghapus, I Pipet, G Isi Warna, L Garis, R Persegi, O Elips, H Tangan. Spasi untuk geser, Ctrl+Z urungkan.': 'Atalhos: B Pincel, E Borracha, I Conta-gotas, G Preencher, L Linha, R Retângulo, O Elipse, H Mão. Espaço para mover, Ctrl+Z desfazer.',
+  'Petunjuk: B Kuas, E Penghapus, I Pipet, G Isi Warna, L Garis, R Persegi, O Elips, H Tangan. Spasi geser, Ctrl+Z urungkan, Ctrl+Shift+Z ulangi.': 'Atalhos: B Pincel, E Borracha, I Conta-gotas, G Preenchimento, L Linha, R Quadrado, O Elipse, H Mão. Espaço para mover, Ctrl+Z desfazer, Ctrl+Shift+Z refazer.',
   'Pindah ke Atas': 'Mover para cima',
   'Pindah ke Bawah': 'Mover para baixo',
   'Pipet': 'Conta-gotas',
@@ -829,5 +829,6 @@ const d: Record<string, string> = {
   'Ulangi': 'Refazer',
   'Urungkan': 'Desfazer',
   'Warna': 'Cor',
+  'Gambar disimpan.': 'Imagem salva.',
 };
 export default d;

@@ -816,7 +816,7 @@ const d: Record<string, string> = {
   'Perbesar': 'Приблизить',
   'Perkecil': 'Отдалить',
   'Persegi': 'Прямоугольник',
-  'Petunjuk: B Kuas, E Penghapus, I Pipet, G Isi Warna, L Garis, R Persegi, O Elips, H Tangan. Spasi untuk geser, Ctrl+Z urungkan.': 'Горячие клавиши: B кисть, E ластик, I пипетка, G заливка, L линия, R прямоугольник, O эллипс, H рука. Пробел — панорамирование, Ctrl+Z — отмена.',
+  'Petunjuk: B Kuas, E Penghapus, I Pipet, G Isi Warna, L Garis, R Persegi, O Elips, H Tangan. Spasi geser, Ctrl+Z urungkan, Ctrl+Shift+Z ulangi.': 'Горячие клавиши: B Кисть, E Ластик, I Пипетка, G Заливка, L Линия, R Квадрат, O Эллипс, H Рука. Пробел — перемещение, Ctrl+Z отменить, Ctrl+Shift+Z повторить.',
   'Pindah ke Atas': 'Переместить вверх',
   'Pindah ke Bawah': 'Переместить вниз',
   'Pipet': 'Пипетка',
@@ -829,5 +829,6 @@ const d: Record<string, string> = {
   'Ulangi': 'Повторить',
   'Urungkan': 'Отменить',
   'Warna': 'Цвет',
+  'Gambar disimpan.': 'Изображение сохранено.',
 };
 export default d;

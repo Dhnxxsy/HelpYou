@@ -816,7 +816,7 @@ const d: Record<string, string> = {
   'Perbesar': 'تكبير',
   'Perkecil': 'تصغير',
   'Persegi': 'مستطيل',
-  'Petunjuk: B Kuas, E Penghapus, I Pipet, G Isi Warna, L Garis, R Persegi, O Elips, H Tangan. Spasi untuk geser, Ctrl+Z urungkan.': 'اختصارات: B فرشاة، E ممحاة، I قطارة، G تعبئة، L خط، R مستطيل، O قطع ناقص، H يد. مسافة للتحريك، Ctrl+Z تراجع.',
+  'Petunjuk: B Kuas, E Penghapus, I Pipet, G Isi Warna, L Garis, R Persegi, O Elips, H Tangan. Spasi geser, Ctrl+Z urungkan, Ctrl+Shift+Z ulangi.': 'الاختصارات: B فرشاة، E ممحاة، I قطارة، G تعبئة، L خط، R مربع، O قطع ناقص، H يد. مسافة للتحريك، Ctrl+Z تراجع، Ctrl+Shift+Z إعادة.',
   'Pindah ke Atas': 'نقل للأعلى',
   'Pindah ke Bawah': 'نقل للأسفل',
   'Pipet': 'قطارة',
@@ -829,5 +829,6 @@ const d: Record<string, string> = {
   'Ulangi': 'إعادة',
   'Urungkan': 'تراجع',
   'Warna': 'اللون',
+  'Gambar disimpan.': 'تم حفظ الصورة.',
 };
 export default d;

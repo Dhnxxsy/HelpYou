@@ -816,7 +816,7 @@ const d: Record<string, string> = {
   'Perbesar': '拡大',
   'Perkecil': '縮小',
   'Persegi': '長方形',
-  'Petunjuk: B Kuas, E Penghapus, I Pipet, G Isi Warna, L Garis, R Persegi, O Elips, H Tangan. Spasi untuk geser, Ctrl+Z urungkan.': 'ショートカット: B ブラシ、E 消しゴム、I スポイト、G 塗りつぶし、L 直線、R 長方形、O 楕円、H 手。スペースで移動、Ctrl+Z で元に戻す。',
+  'Petunjuk: B Kuas, E Penghapus, I Pipet, G Isi Warna, L Garis, R Persegi, O Elips, H Tangan. Spasi geser, Ctrl+Z urungkan, Ctrl+Shift+Z ulangi.': 'ショートカット: B ブラシ、E 消しゴム、I スポイト、G 塗りつぶし、L 直線、R 四角、O 楕円、H 手。移動はスペース、Ctrl+Z 元に戻す、Ctrl+Shift+Z やり直し。',
   'Pindah ke Atas': '上へ移動',
   'Pindah ke Bawah': '下へ移動',
   'Pipet': 'スポイト',
@@ -829,5 +829,6 @@ const d: Record<string, string> = {
   'Ulangi': 'やり直す',
   'Urungkan': '元に戻す',
   'Warna': '色',
+  'Gambar disimpan.': '画像を保存しました。',
 };
 export default d;

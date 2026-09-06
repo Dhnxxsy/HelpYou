@@ -816,7 +816,7 @@ const d: Record<string, string> = {
   'Perbesar': 'Zoom In',
   'Perkecil': 'Zoom Out',
   'Persegi': 'Rectangle',
-  'Petunjuk: B Kuas, E Penghapus, I Pipet, G Isi Warna, L Garis, R Persegi, O Elips, H Tangan. Spasi untuk geser, Ctrl+Z urungkan.': 'Shortcuts: B Brush, E Eraser, I Pipette, G Fill, L Line, R Rectangle, O Ellipse, H Hand. Space to pan, Ctrl+Z undo.',
+  'Petunjuk: B Kuas, E Penghapus, I Pipet, G Isi Warna, L Garis, R Persegi, O Elips, H Tangan. Spasi geser, Ctrl+Z urungkan, Ctrl+Shift+Z ulangi.': 'Shortcuts: B Brush, E Eraser, I Pipette, G Fill, L Line, R Rectangle, O Ellipse, H Hand. Space to pan, Ctrl+Z undo, Ctrl+Shift+Z redo.',
   'Pindah ke Atas': 'Move Up',
   'Pindah ke Bawah': 'Move Down',
   'Pipet': 'Pipette',
@@ -829,5 +829,6 @@ const d: Record<string, string> = {
   'Ulangi': 'Redo',
   'Urungkan': 'Undo',
   'Warna': 'Color',
+  'Gambar disimpan.': 'Image saved.',
 };
 export default d;

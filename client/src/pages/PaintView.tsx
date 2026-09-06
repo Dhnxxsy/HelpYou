@@ -128,7 +128,7 @@ function paintSegment(
   hardness: number,
   color: string
 ) {
-  const step = Math.max(0.5, ((from.s + to.s) / 2) * 0.16);
+  const step = Math.max(0.5, ((from.s + to.s) / 2) * 0.14);
   const dist = Math.hypot(to.x - from.x, to.y - from.y);
   const n = Math.max(1, Math.ceil(dist / step));
   const pad = Math.max(2, (from.s + to.s) / 2);
@@ -406,6 +406,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
   const [loading, setLoading] = useState(true);
   const [savingPng, setSavingPng] = useState(false);
   const [toast, setToast] = useState(false);
+  const [okToast, setOkToast] = useState(false);
   const [confirm, setConfirm] = useState<'none' | 'newcanvas' | 'delete'>('none');
 
   /* Keep refs in sync for imperative handlers. */
@@ -625,6 +626,13 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
     const cur = cursorRef.current;
     if (cur.show && (toolRef.current === 'kuas' || toolRef.current === 'penghapus')) {
       const R = Math.max(3, (sizeRef.current * v.zoom) / 2);
+      g.save();
+      g.globalAlpha = 0.18;
+      g.fillStyle = colorRef.current;
+      g.beginPath();
+      g.arc(cur.x, cur.y, Math.max(1, R - 1), 0, TAU);
+      g.fill();
+      g.restore();
       g.lineWidth = 3;
       g.strokeStyle = 'rgba(0,0,0,0.75)';
       g.beginPath();
@@ -679,7 +687,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
     if (!wrap || wrap.clientWidth < 10 || wrap.clientHeight < 10) return;
     const d = docRef.current;
     const pad = 24;
-    const z = clamp(Math.min((wrap.clientWidth - pad) / d.w, (wrap.clientHeight - pad) / d.h), 0.05, 16);
+    const z = clamp(Math.min((wrap.clientWidth - pad) / d.w, (wrap.clientHeight - pad) / d.h), 0.05, 32);
     const v = viewRef.current;
     v.zoom = z;
     v.x = (wrap.clientWidth - d.w * z) / 2;
@@ -692,7 +700,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
     const wrap = canvasWrapRef.current;
     if (!wrap || wrap.clientWidth < 10 || wrap.clientHeight < 10) return;
     const d = docRef.current;
-    const z = clamp(Math.max(wrap.clientWidth / d.w, wrap.clientHeight / d.h), 0.05, 16);
+    const z = clamp(Math.max(wrap.clientWidth / d.w, wrap.clientHeight / d.h), 0.05, 32);
     const v = viewRef.current;
     v.zoom = z;
     v.x = (wrap.clientWidth - d.w * z) / 2;
@@ -705,7 +713,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
     const wrap = canvasWrapRef.current;
     if (!wrap) return;
     const v = viewRef.current;
-    const z = clamp(nz, 0.05, 16);
+    const z = clamp(nz, 0.05, 32);
     const cx = wrap.clientWidth / 2;
     const cy = wrap.clientHeight / 2;
     v.x = cx - (cx - v.x) * (z / v.zoom);
@@ -1163,7 +1171,9 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
       }
       g.globalAlpha = 1;
       const res = await savePngAs(c.toDataURL('image/png'));
-      if (res && res.error && !res.canceled) {
+      if (res && res.ok && !res.canceled) {
+        setOkToast(true);
+      } else if (res && res.error && !res.canceled) {
         setToast(true);
       }
     } catch {
@@ -1281,7 +1291,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
       const v = viewRef.current;
       if (e.ctrlKey) {
         e.preventDefault();
-        const nz = clamp(v.zoom * Math.exp(-e.deltaY * 0.0015), 0.05, 16);
+        const nz = clamp(v.zoom * Math.exp(-e.deltaY * 0.0015), 0.05, 32);
         const cv = canvasRef.current;
         if (cv) {
           const r = cv.getBoundingClientRect();
@@ -1388,6 +1398,12 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
   }, [toast]);
 
   useEffect(() => {
+    if (!okToast) return;
+    const tm = setTimeout(() => setOkToast(false), 3500);
+    return () => clearTimeout(tm);
+  }, [okToast]);
+
+  useEffect(() => {
     return () => {
       if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
@@ -1413,10 +1429,10 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
         onBack={onBack}
         actions={
           <div className="flex flex-wrap items-center gap-2">
-            <button type="button" className="tool-btn" disabled={!undoCount} onClick={doUndo} title={t('Urungkan')}>
+            <button type="button" className="tool-btn" disabled={!undoCount} onClick={doUndo} title={`${t('Urungkan')} (Ctrl+Z)`}>
               <Icon name="undo" className="w-4 h-4" />
             </button>
-            <button type="button" className="tool-btn" disabled={!redoCount} onClick={doRedo} title={t('Ulangi')}>
+            <button type="button" className="tool-btn" disabled={!redoCount} onClick={doRedo} title={`${t('Ulangi')} (Ctrl+Shift+Z)`}>
               <Icon name="replay" className="w-4 h-4" />
             </button>
             <button type="button" className="btn-secondary" onClick={() => setConfirm('newcanvas')} title={t('Baru')}>
@@ -1482,6 +1498,13 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
                   <div className="h-8 w-8 rounded-full border-2 border-[var(--accent-border)] border-t-[var(--accent-strong)] animate-spin" />
                   <p className="text-sm text-[var(--text-3)]">{t('Memuat gambar tersimpan…')}</p>
                 </div>
+              </div>
+            )}
+
+            {okToast && (
+              <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 rounded-full bg-[var(--ok-soft)] border border-[var(--ok-border)] px-3.5 py-1.5 text-xs font-medium text-[var(--ok-strong)] shadow-lg whitespace-nowrap">
+                <Icon name="check" className="w-3.5 h-3.5" />
+                {t('Gambar disimpan.')}
               </div>
             )}
 

@@ -816,7 +816,7 @@ const d: Record<string, string> = {
   'Perbesar': '放大',
   'Perkecil': '缩小',
   'Persegi': '矩形',
-  'Petunjuk: B Kuas, E Penghapus, I Pipet, G Isi Warna, L Garis, R Persegi, O Elips, H Tangan. Spasi untuk geser, Ctrl+Z urungkan.': '快捷键：B 画笔，E 橡皮擦，I 取色，G 填充，L 直线，R 矩形，O 椭圆，H 抓手。空格平移，Ctrl+Z 撤销。',
+  'Petunjuk: B Kuas, E Penghapus, I Pipet, G Isi Warna, L Garis, R Persegi, O Elips, H Tangan. Spasi geser, Ctrl+Z urungkan, Ctrl+Shift+Z ulangi.': '快捷键：B 画笔、E 橡皮、I 取色、G 填充、L 直线、R 方块、O 椭圆、H 手。空格拖动，Ctrl+Z 撤销，Ctrl+Shift+Z 重做。',
   'Pindah ke Atas': '上移',
   'Pindah ke Bawah': '下移',
   'Pipet': '取色器',
@@ -829,5 +829,6 @@ const d: Record<string, string> = {
   'Ulangi': '重做',
   'Urungkan': '撤销',
   'Warna': '颜色',
+  'Gambar disimpan.': '图片已保存。',
 };
 export default d;
