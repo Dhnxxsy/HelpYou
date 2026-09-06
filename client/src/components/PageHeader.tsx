@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import Icon, { type IconName } from './Icon';
+import { useI18n, tGlobal } from '../lib/i18n';
 
 interface PageHeaderProps {
   icon: IconName;
@@ -10,6 +11,7 @@ interface PageHeaderProps {
 }
 
 export default function PageHeader({ icon, title, desc, onBack, actions }: PageHeaderProps) {
+  const { t } = useI18n();
   return (
     <div className="flex flex-wrap items-start justify-between gap-4 mb-2">
       <div className="flex items-center gap-4">
@@ -21,8 +23,8 @@ export default function PageHeader({ icon, title, desc, onBack, actions }: PageH
             {onBack && (
               <button
                 onClick={onBack}
-                title="Kembali ke Beranda"
-                aria-label="Kembali ke Beranda"
+                title={t('Kembali ke Beranda')}
+                aria-label={t('Kembali ke Beranda')}
                 className="w-8 h-8 grid place-items-center rounded-xl text-[var(--text-3)] hover:text-[var(--text)] hover:bg-[var(--overlay)] hover:scale-105 transition-all"
               >
                 <Icon name="arrowLeft" className="w-4 h-4" />

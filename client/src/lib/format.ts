@@ -1,3 +1,5 @@
+import { getCurrentLocale, tGlobal } from './i18n';
+
 export function formatBytes(bytes: number | undefined | null): string {
   if (bytes === undefined || bytes === null || bytes < 0 || isNaN(bytes)) return '0 B';
   if (bytes === 0) return '0 B';
@@ -9,11 +11,11 @@ export function formatBytes(bytes: number | undefined | null): string {
 }
 
 export function formatDuration(ms: number): string {
-  if (ms < 1000) return `${Math.round(ms)} ms`;
-  return `${(ms / 1000).toFixed(1)} dtk`;
+  if (ms < 1000) return tGlobal('{n} ms', { n: Math.round(ms) });
+  return tGlobal('{n} dtk', { n: (ms / 1000).toFixed(1) });
 }
 
 export function formatDate(ts?: number): string {
   if (!ts) return '—';
-  return new Date(ts).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
+  return new Date(ts).toLocaleString(getCurrentLocale(), { dateStyle: 'medium', timeStyle: 'short' });
 }

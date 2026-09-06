@@ -1,4 +1,5 @@
 import Icon, { type IconName } from './Icon';
+import { useI18n, tGlobal } from '../lib/i18n';
 
 export interface Step {
   label: string;
@@ -7,6 +8,7 @@ export interface Step {
 }
 
 export default function Stepper({ steps, current }: { steps: Step[]; current: number }) {
+  const { t } = useI18n();
   return (
     <div className="w-full">
       <div className="flex items-start">
@@ -38,11 +40,11 @@ export default function Stepper({ steps, current }: { steps: Step[]; current: nu
                   </div>
                 </div>
                 <div className={`mt-2 text-center leading-tight ${state === 'active' ? 'text-[var(--text)]' : state === 'done' ? 'text-[var(--text-2)]' : 'text-[var(--text-3)]'}`}>
-                  <div className="text-[13px] font-semibold whitespace-nowrap">{s.label}</div>
+                  <div className="text-[13px] font-semibold whitespace-nowrap">{t(s.label)}</div>
                   {num < current ? (
-                    <div className="text-[10px] text-[var(--ok-strong)]/90 font-medium">Selesai</div>
+                    <div className="text-[10px] text-[var(--ok-strong)]/90 font-medium">{t('Selesai')}</div>
                   ) : state === 'active' ? (
-                    <div className="text-[10px] text-[var(--accent-strong)]">Langkah {num} dari {steps.length}</div>
+                    <div className="text-[10px] text-[var(--accent-strong)]">{t('Langkah {n} dari {total}', { n: num, total: steps.length })}</div>
                   ) : null}
                 </div>
               </div>

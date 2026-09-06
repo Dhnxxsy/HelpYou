@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import Icon from './Icon';
 import { checkForUpdate, downloadUpdate, installUpdate, isDesktop } from '../lib/platform';
+import { useI18n, translateServerMessage } from '../lib/i18n';
 
 type Mode = 'idle' | 'available' | 'downloading' | 'ready' | 'error' | 'hidden';
 
@@ -17,6 +18,7 @@ function fmtBytes(n?: number): string {
 }
 
 export default function UpdateNotifier() {
+  const { t } = useI18n();
   const [mode, setMode] = useState<Mode>('idle');
   const [info, setInfo] = useState<UpdateInfo>({});
   const [progress, setProgress] = useState({ percent: 0, transferred: 0, total: 0 });
@@ -85,8 +87,8 @@ export default function UpdateNotifier() {
           <div className="w-8 h-8 rounded-full bg-[var(--warn-soft)] grid place-items-center text-[var(--warn-strong)] shrink-0">
             <Icon name="alert" className="w-4 h-4" />
           </div>
-          <div className="flex-1 text-sm text-[var(--warn-strong)]">{errorMsg ?? 'Pemeriksaan pembaruan gagal. Coba lagi saat membuka aplikasi.'}</div>
-          <button className="btn-ghost !p-2 text-[var(--text-2)] hover:text-[var(--text)]" onClick={() => setMode('hidden')} title="Tutup">
+          <div className="flex-1 text-sm text-[var(--warn-strong)]">{translateServerMessage(errorMsg ?? t('Pemeriksaan pembaruan gagal. Coba lagi saat membuka aplikasi.'))}</div>
+          <button className="btn-ghost !p-2 text-[var(--text-2)] hover:text-[var(--text)]" onClick={() => setMode('hidden')} title={t('Tutup')}>
             <Icon name="x" className="w-4 h-4" />
           </button>
         </div>
@@ -103,15 +105,15 @@ export default function UpdateNotifier() {
           </div>
           <div className="flex-1 min-w-[180px]">
             <div className="text-sm font-semibold text-[var(--text)]">
-              Pembaruan HelpYou {info.version ? `v${info.version}` : ''} tersedia
+              {t('Pembaruan HelpYou {version} tersedia', { version: info.version })}
             </div>
-            <p className="text-xs text-[var(--text-2)] mt-0.5">Ukuran unduhan: <span className="font-semibold text-[var(--accent-strong)]">{fmtBytes(info.size) || '—'}</span></p>
+            <p className="text-xs text-[var(--text-2)] mt-0.5">{t('Ukuran unduhan:')} <span className="font-semibold text-[var(--accent-strong)]">{fmtBytes(info.size) || '—'}</span></p>
           </div>
           <div className="flex items-center gap-2">
             <button className="btn-primary !py-2 !px-4 text-xs" onClick={startDownload}>
-              <Icon name="download" className="w-3.5 h-3.5" /> Update Sekarang
+              <Icon name="download" className="w-3.5 h-3.5" /> {t('Update Sekarang')}
             </button>
-            <button className="btn-ghost !p-2 text-[var(--text-2)] hover:text-[var(--text)]" onClick={() => setMode('hidden')} title="Nanti saja (diingatkan saat aplikasi dibuka lagi)">
+            <button className="btn-ghost !p-2 text-[var(--text-2)] hover:text-[var(--text)]" onClick={() => setMode('hidden')} title={t('Nanti saja (diingatkan saat aplikasi dibuka lagi)')}>
               <Icon name="x" className="w-4 h-4" />
             </button>
           </div>
@@ -130,7 +132,7 @@ export default function UpdateNotifier() {
             </div>
             <div className="flex-1 min-w-[180px]">
               <div className="text-sm font-semibold text-[var(--text)]">
-                Mengunduh pembaruan {info.version ? `v${info.version}` : ''}…
+                {t('Mengunduh pembaruan {version}…', { version: info.version })}
               </div>
               <div className="mt-1.5 h-1.5 rounded-full bg-[var(--overlay-2)] overflow-hidden">
                 <div className="h-full bg-gradient-to-r from-[var(--accent-deep)] to-[var(--accent-2)] transition-[width] duration-300" style={{ width: `${progress.percent || 3}%` }} />
@@ -153,13 +155,13 @@ export default function UpdateNotifier() {
           <Icon name="check" className="w-4 h-4" />
         </div>
         <div className="flex-1 min-w-[180px]">
-          <div className="text-sm font-semibold text-[var(--text)]">Pembaruan {info.version ? `v${info.version}` : ''} siap dipasang</div>
-          <p className="text-xs text-[var(--text-2)]">Aplikasi akan ditutup, diperbarui, dan dibuka kembali otomatis.</p>
+          <div className="text-sm font-semibold text-[var(--text)]">{t('Pembaruan {version} siap dipasang', { version: info.version })}</div>
+          <p className="text-xs text-[var(--text-2)]">{t('Aplikasi akan ditutup, diperbarui, dan dibuka kembali otomatis.')}</p>
         </div>
         <button className="btn-primary !py-2 !px-3.5 text-xs" onClick={() => void installUpdate()}>
-          <Icon name="download" className="w-3.5 h-3.5" /> Update &amp; Restart
+          <Icon name="download" className="w-3.5 h-3.5" /> {t('Update & Restart')}
         </button>
-        <button className="btn-ghost !p-2 text-[var(--text-2)] hover:text-[var(--text)]" onClick={() => setMode('hidden')} title="Nanti saja (akan terpasang saat aplikasi ditutup)">
+        <button className="btn-ghost !p-2 text-[var(--text-2)] hover:text-[var(--text)]" onClick={() => setMode('hidden')} title={t('Nanti saja (akan terpasang saat aplikasi ditutup)')}>
           <Icon name="x" className="w-4 h-4" />
         </button>
       </div>

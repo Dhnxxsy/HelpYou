@@ -4,6 +4,7 @@ import PageHeader from '../components/PageHeader';
 import { api } from '../lib/api';
 import { useDrives } from '../lib/useDrives';
 import { formatBytes } from '../lib/format';
+import { useI18n, tGlobal } from '../lib/i18n';
 import type { DiskScanResult, DiskBranch, DiskFile, DefragAnalyzeResult, DefragJobStatus } from '@shared/types';
 
 interface JobStatus {
@@ -37,15 +38,16 @@ function defragRecommendation(r: DefragAnalyzeResult): { label: string; cls: str
   if (!r.supported) return null;
   const ssd = /SSD|NVMe/i.test(r.mediaType);
   if (ssd) {
-    return { label: 'Drive solid-state — optimasi berupa Retrim (aman & cepat)', cls: 'bg-[var(--ok-soft)] text-[var(--ok-strong)] border-[var(--ok-border)]' };
+    return { label: tGlobal('Drive solid-state — optimasi berupa Retrim (aman & cepat)'), cls: 'bg-[var(--ok-soft)] text-[var(--ok-strong)] border-[var(--ok-border)]' };
   }
   if (r.fragPercent == null) return null;
-  if (r.fragPercent >= 15) return { label: `Drive terfragmentasi ${Math.round(r.fragPercent)}% — disarankan defrag`, cls: 'bg-[var(--warn-soft)] text-[var(--warn-strong)] border-[var(--warn-border)]' };
-  if (r.fragPercent < 5) return { label: 'Sedikit terfragmentasi — tidak perlu defrag', cls: 'bg-[var(--ok-soft)] text-[var(--ok-strong)] border-[var(--ok-border)]' };
-  return { label: `Fragmentasi rendah (${Math.round(r.fragPercent)}%) — defrag opsional`, cls: 'bg-[var(--overlay)] text-[var(--text-2)] border-[var(--border)]' };
+  if (r.fragPercent >= 15) return { label: tGlobal('Drive terfragmentasi {pct}% — disarankan defrag', { pct: Math.round(r.fragPercent) }), cls: 'bg-[var(--warn-soft)] text-[var(--warn-strong)] border-[var(--warn-border)]' };
+  if (r.fragPercent < 5) return { label: tGlobal('Sedikit terfragmentasi — tidak perlu defrag'), cls: 'bg-[var(--ok-soft)] text-[var(--ok-strong)] border-[var(--ok-border)]' };
+  return { label: tGlobal('Fragmentasi rendah ({pct}%) — defrag opsional', { pct: Math.round(r.fragPercent) }), cls: 'bg-[var(--overlay)] text-[var(--text-2)] border-[var(--border)]' };
 }
 
 export default function DiskAnalyzerView({ onBack }: { onBack: () => void }) {
+  const { t } = useI18n();
   const { drives } = useDrives();
   const [phase, setPhase] = useState<'idle' | 'scanning' | 'done'>('idle');
   const [root, setRoot] = useState('');
@@ -64,13 +66,13 @@ export default function DiskAnalyzerView({ onBack }: { onBack: () => void }) {
     setPhase('scanning');
     setResult(null);
     setCount(0);
-    setMsg('Menyiapkan pemindaian…');
+    setMsg(t('Menyiapkan pemindaian…'));
     try {
       const { jobId } = await api<{ jobId: string }>('/api/disk/analyze', { method: 'POST', body: JSON.stringify({ path: p }) });
       jobRef.current = jobId;
       poll(jobId);
     } catch (e: any) {
-      setError(e.message || 'Gagal mulai pemindaian.');
+      setError(e.message || t('Gagal mulai pemindaian.'));
       setPhase('idle');
     }
   };
@@ -96,7 +98,7 @@ export default function DiskAnalyzerView({ onBack }: { onBack: () => void }) {
         return;
       }
       if (st.status === 'error') {
-        setError(st.error || 'Pemindaian gagal.');
+        setError(st.error || t('Pemindaian gagal.'));
         setPhase('idle');
         jobRef.current = null;
         return;
@@ -144,7 +146,7 @@ export default function DiskAnalyzerView({ onBack }: { onBack: () => void }) {
       defragJobRef.current = { drive, jobId };
       await pollDefrag(drive, jobId, 'analyze');
     } catch (e: any) {
-      setDefragStatus((s) => ({ ...s, [drive]: { status: 'error', log: '', error: e.message || 'Gagal memulai analisis defrag.' } }));
+      setDefragStatus((s) => ({ ...s, [drive]: { status: 'error', log: '', error: e.message || t('Gagal memulai analisis defrag.') } }));
     } finally {
       setDefragBusy((b) => { const n = { ...b }; delete n[drive]; return n; });
     }
@@ -158,7 +160,7 @@ export default function DiskAnalyzerView({ onBack }: { onBack: () => void }) {
       defragJobRef.current = { drive, jobId };
       await pollDefrag(drive, jobId, 'optimize');
     } catch (e: any) {
-      setDefragStatus((s) => ({ ...s, [drive]: { status: 'error', log: '', error: e.message || 'Gagal memulai optimasi.' } }));
+      setDefragStatus((s) => ({ ...s, [drive]: { status: 'error', log: '', error: e.message || t('Gagal memulai optimasi.') } }));
     } finally {
       setDefragBusy((b) => { const n = { ...b }; delete n[drive]; return n; });
     }
@@ -193,8 +195,8 @@ export default function DiskAnalyzerView({ onBack }: { onBack: () => void }) {
     <div className="space-y-6 animate-fade-in">
       <PageHeader
         icon="disc"
-        title="Analisis Ruang Disk"
-        desc="Lihat apa yang memakan ruang di drive atau folder. Klik folder terbesar untuk menyusuri lebih dalam."
+        title={t('Analisis Ruang Disk')}
+        desc={t('Lihat apa yang memakan ruang di drive atau folder. Klik folder terbesar untuk menyusuri lebih dalam.')}
         onBack={onBack}
       />
 
@@ -214,17 +216,17 @@ export default function DiskAnalyzerView({ onBack }: { onBack: () => void }) {
                 </span>
                 <div className="min-w-0">
                   <div className="text-base font-bold text-[var(--text)]">{d.name}</div>
-                  <div className="text-[10px] text-[var(--text-3)] truncate">{d.isSystem ? 'Drive Sistem' : 'Drive Lokal'}</div>
+                  <div className="text-[10px] text-[var(--text-3)] truncate">{d.isSystem ? t('Drive Sistem') : t('Drive Lokal')}</div>
                 </div>
               </div>
               <div className="mt-3 h-1.5 rounded-full bg-[var(--overlay-2)] overflow-hidden">
                 <div className={`h-full rounded-full bg-gradient-to-r ${pct > 90 ? 'from-[var(--danger)] to-[var(--danger-strong)]' : 'from-[var(--accent)] to-[var(--accent-2)]'}`} style={{ width: `${pct}%` }} />
               </div>
               <div className="mt-1.5 flex items-baseline justify-between text-[11px]">
-                <span className="text-[var(--text-2)] tabular-nums">{formatBytes(d.used)} terpakai</span>
+                <span className="text-[var(--text-2)] tabular-nums">{t('{v} terpakai', { v: formatBytes(d.used) })}</span>
                 <span className={pct > 90 ? 'text-[var(--danger-strong)] font-medium' : 'text-[var(--text-3)]'}>{pct}%</span>
               </div>
-              <div className="text-[10px] text-[var(--text-3)] tabular-nums">dari {formatBytes(d.size)}</div>
+              <div className="text-[10px] text-[var(--text-3)] tabular-nums">{t('dari {v}', { v: formatBytes(d.size) })}</div>
             </button>
           );
         })}
@@ -234,12 +236,12 @@ export default function DiskAnalyzerView({ onBack }: { onBack: () => void }) {
         <input
           ref={rootInput}
           defaultValue={root}
-          placeholder="Masukkan folder, contoh: C:\Data atau D:\"
+          placeholder={t('Masukkan folder, contoh: C:\\Data atau D:\\')}
           className="input flex-1"
           onKeyDown={(e) => { if (e.key === 'Enter') analyze(rootInput.current?.value || ''); }}
         />
         <button className="btn-primary !px-5" onClick={() => analyze(rootInput.current?.value || '')} disabled={phase === 'scanning'}>
-          <Icon name="search" className="w-4 h-4" /> Analisis
+          <Icon name="search" className="w-4 h-4" /> {t('Analisis')}
         </button>
       </div>
 
@@ -249,9 +251,9 @@ export default function DiskAnalyzerView({ onBack }: { onBack: () => void }) {
             <Icon name="drive" className="w-5 h-5 text-white" />
           </span>
           <div className="min-w-0">
-            <h3 className="text-sm font-semibold text-[var(--text)]">Defragmentasi &amp; Optimasi Drive</h3>
+            <h3 className="text-sm font-semibold text-[var(--text)]">{t('Defragmentasi & Optimasi Drive')}</h3>
             <p className="text-xs text-[var(--text-3)] mt-0.5">
-              Menjalankan optimizer bawaan Windows (Optimize-Volume / defrag.exe). HDD di-defrag, SSD/NVMe di-retrim. Butuh izin administrator (UAC).
+              {t('Menjalankan optimizer bawaan Windows (Optimize-Volume / defrag.exe). HDD di-defrag, SSD/NVMe di-retrim. Butuh izin administrator (UAC).')}
             </p>
           </div>
         </div>
@@ -285,19 +287,19 @@ export default function DiskAnalyzerView({ onBack }: { onBack: () => void }) {
           <div className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--overlay)] p-4">
             <div className="flex flex-wrap items-center gap-2">
               <button className="btn-outline !h-8 !px-3 !text-xs" onClick={() => startDefragAnalyze(defragDrive)} disabled={!!defragRunning}>
-                <Icon name="scan" className="w-3.5 h-3.5" /> Analisis Fragmentasi
+                <Icon name="scan" className="w-3.5 h-3.5" /> {t('Analisis Fragmentasi')}
               </button>
               <button
                 className="btn-primary !h-8 !px-3 !text-xs"
                 onClick={() => startDefragOptimize(defragDrive)}
                 disabled={defragRunning === 'optimizing' || !defragResult?.supported}
-                title={!defragResult?.supported ? 'Analisis dulu (drive mungkin tidak didukung)' : undefined}
+                title={!defragResult?.supported ? t('Analisis dulu (drive mungkin tidak didukung)') : undefined}
               >
-                <Icon name="sparkle" className="w-3.5 h-3.5" /> Optimalkan / Defrag
+                <Icon name="sparkle" className="w-3.5 h-3.5" /> {t('Optimalkan / Defrag')}
               </button>
               {defragRunning === 'optimizing' && (
                 <button className="btn-ghost !h-8 !px-3 !text-xs text-[var(--danger-strong)]" onClick={cancelDefrag}>
-                  <Icon name="stop" className="w-3.5 h-3.5" /> Hentikan
+                  <Icon name="stop" className="w-3.5 h-3.5" /> {t('Hentikan')}
                 </button>
               )}
             </div>
@@ -306,26 +308,26 @@ export default function DiskAnalyzerView({ onBack }: { onBack: () => void }) {
               <div className="mt-3.5">
                 <div className="flex flex-wrap gap-1.5">
                   <span className={`chip ${MEDIA_CHIP[defragResult.mediaType] || 'bg-[var(--overlay)] text-[var(--text-2)] border-[var(--border)]'}`}>
-                    {defragResult.mediaType || 'Media'}
+                    {defragResult.mediaType || t('Media')}
                   </span>
                   <span className="chip bg-[var(--overlay)] text-[var(--text-2)] border-[var(--border)]">{defragResult.fileSystem || '-'}</span>
                   {defragResult.fragPercent != null && (
                     <span className="chip bg-[var(--overlay)] text-[var(--text-2)] border-[var(--border)] tabular-nums">
-                      Fragmentasi {Math.round(defragResult.fragPercent)}%
+                      {t('Fragmentasi {pct}%', { pct: Math.round(defragResult.fragPercent) })}
                     </span>
                   )}
                   {defragResult.fragmentedBytes != null && (
                     <span className="chip bg-[var(--overlay)] text-[var(--text-2)] border-[var(--border)] tabular-nums">
-                      Ruang terfragmentasi {formatBytes(defragResult.fragmentedBytes)}
+                      {t('Ruang terfragmentasi {v}', { v: formatBytes(defragResult.fragmentedBytes) })}
                     </span>
                   )}
                   {defragResult.fragmentedFiles != null && (
                     <span className="chip bg-[var(--overlay)] text-[var(--text-2)] border-[var(--border)] tabular-nums">
-                      {defragResult.fragmentedFiles.toLocaleString('id-ID')} file terfragmentasi
+                      {t('{n} file terfragmentasi', { n: defragResult.fragmentedFiles.toLocaleString('id-ID') })}
                     </span>
                   )}
                   {defragResult.lastOptimized && (
-                    <span className="chip bg-[var(--overlay)] text-[var(--text-2)] border-[var(--border)]">Optimasi terakhir {defragResult.lastOptimized}</span>
+                    <span className="chip bg-[var(--overlay)] text-[var(--text-2)] border-[var(--border)]">{t('Optimasi terakhir {v}', { v: defragResult.lastOptimized })}</span>
                   )}
                 </div>
                 {rec && (
@@ -337,7 +339,7 @@ export default function DiskAnalyzerView({ onBack }: { onBack: () => void }) {
                 {defragResult && !defragResult.supported && (
                   <p className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-[var(--warn-border)] bg-[var(--warn-soft)] px-2.5 py-1 text-[11px] text-[var(--warn-strong)]">
                     <Icon name="alert" className="w-3.5 h-3.5 shrink-0" />
-                    Drive tidak mendukung defragmentasi (butuh NTFS/ReFS).
+                    {t('Drive tidak mendukung defragmentasi (butuh NTFS/ReFS).')}
                   </p>
                 )}
               </div>
@@ -353,7 +355,7 @@ export default function DiskAnalyzerView({ onBack }: { onBack: () => void }) {
                       ) : (
                         <span className="inline-block h-3.5 w-3.5 rounded-full border-2 border-[var(--accent-border)] border-t-[var(--accent-strong)] animate-spin" />
                       )}
-                      <span>{defragLive.progress != null ? 'Bekerja…' : defragRunning === 'analyzing' ? 'Menganalisis fragmentasi…' : 'Mengoptimalkan drive…'}</span>
+                      <span>{defragLive.progress != null ? t('Bekerja…') : defragRunning === 'analyzing' ? t('Menganalisis fragmentasi…') : t('Mengoptimalkan drive…')}</span>
                     </div>
                     {defragLive.progress != null && (
                       <div className="mt-1.5 h-1.5 rounded-full bg-[var(--overlay-2)] overflow-hidden">
@@ -367,9 +369,9 @@ export default function DiskAnalyzerView({ onBack }: { onBack: () => void }) {
                     defragLive.status === 'done' ? 'text-[var(--ok-strong)]' : defragLive.status === 'cancelled' ? 'text-[var(--text-2)]' : 'text-[var(--danger-strong)]'
                   }`}>
                     <Icon name={defragLive.status === 'done' ? 'check' : defragLive.status === 'cancelled' ? 'x' : 'alert'} className="w-4 h-4 shrink-0" />
-                    {defragLive.status === 'done' && 'Optimasi selesai.'}
-                    {defragLive.status === 'cancelled' && 'Optimasi dihentikan.'}
-                    {defragLive.status === 'error' && (defragLive.error || 'Optimasi gagal.')}
+                    {defragLive.status === 'done' && t('Optimasi selesai.')}
+                    {defragLive.status === 'cancelled' && t('Optimasi dihentikan.')}
+                    {defragLive.status === 'error' && (defragLive.error || t('Optimasi gagal.'))}
                   </p>
                 )}
                 {defragLive.log && defragLive.log.trim() && defragLive.status !== 'running' && (
@@ -391,7 +393,7 @@ export default function DiskAnalyzerView({ onBack }: { onBack: () => void }) {
             <div className="animate-spin h-5 w-5 border-2 border-[var(--accent-border)] border-t-[var(--accent-strong)] rounded-full shrink-0" />
             <div className="min-w-0 flex-1">
               <div className="text-sm text-[var(--text)] font-medium truncate">{msg}</div>
-              <div className="text-xs text-[var(--text-3)] tabular-nums">{count.toLocaleString('id-ID')} file diperiksa</div>
+              <div className="text-xs text-[var(--text-3)] tabular-nums">{t('{n} file diperiksa', { n: count.toLocaleString('id-ID') })}</div>
             </div>
           </div>
         </div>
@@ -405,32 +407,32 @@ export default function DiskAnalyzerView({ onBack }: { onBack: () => void }) {
                 <Icon name="folder" className="w-4 h-4 text-[var(--accent-strong)] shrink-0" />
                 <span className="truncate font-medium">{root}</span>
                 <button className="btn-ghost !py-1 !px-2 text-[11px] shrink-0" onClick={() => analyze(parentOf(root))}>
-                  <Icon name="arrowRight" className="w-3 h-3 rotate-180" /> Naik ke induk
+                  <Icon name="arrowRight" className="w-3 h-3 rotate-180" /> {t('Naik ke induk')}
                 </button>
               </div>
               <button className="btn-ghost !py-1.5 !px-2.5 text-[11px] shrink-0" onClick={() => openPath(root)}>
-                <Icon name="external" className="w-3.5 h-3.5" /> Buka lokasi
+                <Icon name="external" className="w-3.5 h-3.5" /> {t('Buka lokasi')}
               </button>
             </div>
           )}
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="card px-4 py-3">
-              <div className="text-[10px] uppercase tracking-wider text-[var(--text-3)]">Total Terpakai</div>
+              <div className="text-[10px] uppercase tracking-wider text-[var(--text-3)]">{t('Total Terpakai')}</div>
               <div className="text-lg font-semibold tabular-nums text-[var(--text)] mt-0.5">{formatBytes(result.totalBytes)}</div>
             </div>
             <div className="card px-4 py-3">
-              <div className="text-[10px] uppercase tracking-wider text-[var(--text-3)]">File</div>
+              <div className="text-[10px] uppercase tracking-wider text-[var(--text-3)]">{t('File')}</div>
               <div className="text-lg font-semibold tabular-nums text-[var(--text)] mt-0.5">{result.totalFiles.toLocaleString('id-ID')}</div>
             </div>
             <div className="card px-4 py-3">
-              <div className="text-[10px] uppercase tracking-wider text-[var(--text-3)]">Folder</div>
+              <div className="text-[10px] uppercase tracking-wider text-[var(--text-3)]">{t('Folder')}</div>
               <div className="text-lg font-semibold tabular-nums text-[var(--text)] mt-0.5">{result.totalDirs.toLocaleString('id-ID')}</div>
             </div>
             <div className="card px-4 py-3">
-              <div className="text-[10px] uppercase tracking-wider text-[var(--text-3)]">Status</div>
+              <div className="text-[10px] uppercase tracking-wider text-[var(--text-3)]">{t('Status')}</div>
               <div className="text-lg font-semibold text-[var(--text)] mt-0.5">
-                {result.truncated ? <span className="text-[var(--warn-strong)]">Pemangkas Aktif</span> : <span className="text-[var(--ok-strong)]">Lengkap</span>}
+                {result.truncated ? <span className="text-[var(--warn-strong)]">{t('Pemangkas Aktif')}</span> : <span className="text-[var(--ok-strong)]">{t('Lengkap')}</span>}
               </div>
             </div>
           </div>
@@ -438,17 +440,17 @@ export default function DiskAnalyzerView({ onBack }: { onBack: () => void }) {
           {result.truncated && (
             <p className="text-xs text-[var(--warn-strong)] flex items-center gap-1.5">
               <Icon name="alert" className="w-3.5 h-3.5 shrink-0" />
-              Analisis dibatasi pada 200.000 file & kedalaman 48 lapis — ukuran ditampilkan bisa lebih kecil dari sebenarnya.
+              {t('Analisis dibatasi pada 200.000 file & kedalaman 48 lapis — ukuran ditampilkan bisa lebih kecil dari sebenarnya.')}
             </p>
           )}
 
           <div className="grid lg:grid-cols-2 gap-5 items-start">
             <div className="rounded-2xl border border-[var(--border)] overflow-hidden bg-[var(--overlay)]">
               <div className="px-4 py-3 border-b border-[var(--border)] text-sm font-semibold text-[var(--text)] flex items-center gap-2">
-                <Icon name="folder" className="w-4 h-4 text-[var(--accent-strong)]" /> Pengonsumsi Terbesar
+                <Icon name="folder" className="w-4 h-4 text-[var(--accent-strong)]" /> {t('Pengonsumsi Terbesar')}
               </div>
               {bars.length === 0 ? (
-                <p className="px-4 py-8 text-center text-sm text-[var(--text-3)]">Tidak ada isi terukur di lokasi ini.</p>
+                <p className="px-4 py-8 text-center text-sm text-[var(--text-3)]">{t('Tidak ada isi terukur di lokasi ini.')}</p>
               ) : (
                 <div className="divide-y divide-white/5">
                   {bars.map((b: DiskBranch) => (
@@ -462,7 +464,7 @@ export default function DiskAnalyzerView({ onBack }: { onBack: () => void }) {
                       </div>
                       <div className="text-right shrink-0">
                         <div className="text-sm font-semibold tabular-nums text-[var(--text)]">{formatBytes(b.sizeBytes)}</div>
-                        <div className="text-[10px] text-[var(--text-3)] tabular-nums">{b.itemCount.toLocaleString('id-ID')} item</div>
+                        <div className="text-[10px] text-[var(--text-3)] tabular-nums">{t('{n} item', { n: b.itemCount.toLocaleString('id-ID') })}</div>
                       </div>
                     </button>
                   ))}
@@ -472,10 +474,10 @@ export default function DiskAnalyzerView({ onBack }: { onBack: () => void }) {
 
             <div className="rounded-2xl border border-[var(--border)] overflow-hidden bg-[var(--overlay)]">
               <div className="px-4 py-3 border-b border-[var(--border)] text-sm font-semibold text-[var(--text)] flex items-center gap-2">
-                <Icon name="chart" className="w-4 h-4 text-[var(--accent-strong)]" /> File Terbesar
+                <Icon name="chart" className="w-4 h-4 text-[var(--accent-strong)]" /> {t('File Terbesar')}
               </div>
               {result.topFiles.length === 0 ? (
-                <p className="px-4 py-8 text-center text-sm text-[var(--text-3)]">Tidak ada file.</p>
+                <p className="px-4 py-8 text-center text-sm text-[var(--text-3)]">{t('Tidak ada file.')}</p>
               ) : (
                 <div className="divide-y divide-white/5">
                   {result.topFiles.map((f: DiskFile) => (
@@ -500,12 +502,12 @@ export default function DiskAnalyzerView({ onBack }: { onBack: () => void }) {
       {phase === 'idle' && !error && result == null && (
         <div className="card p-8 text-center">
           <Icon name="disc" className="w-8 h-8 text-[var(--accent-strong)] mx-auto" />
-          <p className="text-sm text-[var(--text-2)] mt-3">Pilih drive di atas, atau ketik folder untuk mulai menganalisis ruang disk.</p>
+          <p className="text-sm text-[var(--text-2)] mt-3">{t('Pilih drive di atas, atau ketik folder untuk mulai menganalisis ruang disk.')}</p>
         </div>
       )}
 
       <button className="btn-ghost !py-2 !px-3 text-xs" onClick={onBack}>
-        <Icon name="chevronRight" className="w-3.5 h-3.5 rotate-180" /> Kembali ke Beranda
+        <Icon name="chevronRight" className="w-3.5 h-3.5 rotate-180" /> {t('Kembali ke Beranda')}
       </button>
     </div>
   );

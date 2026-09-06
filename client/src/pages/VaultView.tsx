@@ -7,6 +7,7 @@ import { api } from '../lib/api';
 import { formatBytes, formatDate } from '../lib/format';
 import { isDesktop, pickFolder, pickVaultFiles } from '../lib/platform';
 import { useVaultMaster, MASTER_CHEAT } from '../lib/vaultMaster';
+import { useI18n, tGlobal } from '../lib/i18n';
 
 interface HiddenPath extends VaultHideEntry {
   label: string;
@@ -18,6 +19,7 @@ type ModalState =
   | null;
 
 export default function VaultView({ onBack }: { onBack: () => void }) {
+  const { t } = useI18n();
   const { unlocked, deactivate } = useVaultMaster();
   const [items, setItems] = useState<VaultItemMeta[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,7 +42,7 @@ export default function VaultView({ onBack }: { onBack: () => void }) {
       setItems(items);
       setError(null);
     } catch (e: any) {
-      setError(e?.message || 'Gagal memuat brankas.');
+      setError(e?.message || t('Gagal memuat brankas.'));
     } finally {
       setLoading(false);
     }
@@ -55,16 +57,16 @@ export default function VaultView({ onBack }: { onBack: () => void }) {
 
   const openPickFiles = async () => {
     if (!isDesktop) {
-      setError('Mode browser tidak bisa membuka dialog file. Jalankan lewat aplikasi desktop.');
+      setError(t('Mode browser tidak bisa membuka dialog file. Jalankan lewat aplikasi desktop.'));
       return;
     }
     const paths = await pickVaultFiles();
-    if (paths && paths.length > 0) setModal({ mode: 'hide', label: `${paths.length} file terpilih`, paths });
+    if (paths && paths.length > 0) setModal({ mode: 'hide', label: t('{n} file terpilih', { n: paths.length }), paths });
   };
 
   const openPickFolder = async () => {
     if (!isDesktop) {
-      setError('Mode browser tidak bisa membuka dialog folder. Jalankan lewat aplikasi desktop.');
+      setError(t('Mode browser tidak bisa membuka dialog folder. Jalankan lewat aplikasi desktop.'));
       return;
     }
     const p = await pickFolder();
@@ -86,7 +88,7 @@ export default function VaultView({ onBack }: { onBack: () => void }) {
       setModal(null);
       await load();
     } catch (e: any) {
-      setError(e?.message || 'Gagal menyembunyikan.');
+      setError(e?.message || t('Gagal menyembunyikan.'));
     } finally {
       setBusy(null);
     }
@@ -109,7 +111,7 @@ export default function VaultView({ onBack }: { onBack: () => void }) {
       setModal(null);
       await load();
     } catch (e: any) {
-      setError(e?.message || 'Gagal memulihkan.');
+      setError(e?.message || t('Gagal memulihkan.'));
     } finally {
       setBusy(null);
     }
@@ -124,7 +126,7 @@ export default function VaultView({ onBack }: { onBack: () => void }) {
       setDeleteTarget(null);
       await load();
     } catch (e: any) {
-      setError(e?.message || 'Gagal menghapus item brankas.');
+      setError(e?.message || t('Gagal menghapus item brankas.'));
     } finally {
       setBusy(null);
     }
@@ -160,7 +162,7 @@ export default function VaultView({ onBack }: { onBack: () => void }) {
         });
         if (active) setPreviewList(res.item);
       } catch (e: any) {
-        if (active) setPreviewErr(e?.message || 'Gagal membuka isi berkas.');
+        if (active) setPreviewErr(e?.message || t('Gagal membuka isi berkas.'));
       } finally {
         if (active) setBusy(null);
       }
@@ -179,7 +181,7 @@ export default function VaultView({ onBack }: { onBack: () => void }) {
       });
       setPreviewToken(res);
     } catch (e: any) {
-      setPreviewErr(e?.message || 'Gagal mempratinjau berkas ini.');
+      setPreviewErr(e?.message || t('Gagal mempratinjau berkas ini.'));
     } finally {
       setBusy(null);
     }
@@ -197,16 +199,16 @@ export default function VaultView({ onBack }: { onBack: () => void }) {
     <div className="space-y-6 animate-fade-in">
       <PageHeader
         icon="lock"
-        title="Brankas Rahasia"
-        desc="Sembunyikan file atau folder dengan enkripsi AES-256-GCM. Konten dan nama file dienkripsi dengan sandi — tanpa sandi yang benar, isinya tidak bisa dibaca siapa pun."
+        title={t('Brankas Rahasia')}
+        desc={t('Sembunyikan file atau folder dengan enkripsi AES-256-GCM. Konten dan nama file dienkripsi dengan sandi — tanpa sandi yang benar, isinya tidak bisa dibaca siapa pun.')}
         onBack={onBack}
         actions={
           <>
             <button className="btn-outline !py-2 !px-3 text-xs" onClick={openPickFiles} disabled={!!busy}>
-              <Icon name="upload" className="w-3.5 h-3.5" /> Sembunyikan File…
+              <Icon name="upload" className="w-3.5 h-3.5" /> {t('Sembunyikan File…')}
             </button>
             <button className="btn-primary !py-2 !px-3 text-xs" onClick={openPickFolder} disabled={!!busy}>
-              <Icon name="folder" className="w-3.5 h-3.5" /> Sembunyikan Folder…
+              <Icon name="folder" className="w-3.5 h-3.5" /> {t('Sembunyikan Folder…')}
             </button>
           </>
         }
@@ -218,12 +220,12 @@ export default function VaultView({ onBack }: { onBack: () => void }) {
           <Icon name="shield" className="w-5 h-5" />
         </div>
         <div className="text-xs text-[var(--text-2)] leading-relaxed">
-          <b className="text-[var(--accent-strong)]">Bagaimana ini bekerja:</b> setiap item dienkripsi dengan sandimu
-          (turunan kunci <span className="font-mono">scrypt</span> + <span className="font-mono">AES-256-GCM</span>),
-          nama asli file ikut dienkripsi, lalu berkas asli dihapus setelah ditimpa data acak.
-          Tanpa sandi, konten tidak bisa direkayasa balik.
+          <b className="text-[var(--accent-strong)]">{t('Bagaimana ini bekerja:')}</b> {t('setiap item dienkripsi dengan sandimu')}{' '}
+          {t('(turunan kunci')} <span className="font-mono">scrypt</span> + <span className="font-mono">AES-256-GCM</span>),{' '}
+          {t('nama asli file ikut dienkripsi, lalu berkas asli dihapus setelah ditimpa data acak.')}{' '}
+          {t('Tanpa sandi, konten tidak bisa direkayasa balik.')}
           <span className="block mt-1 text-[var(--text-3)]">
-            Sandi tidak dapat dipulihkan jika terlupa · maksimal 512 MB per item · item yang dipulihkan otomatis dihapus dari brankas.
+            {t('Sandi tidak dapat dipulihkan jika terlupa · maksimal 512 MB per item · item yang dipulihkan otomatis dihapus dari brankas.')}
           </span>
         </div>
       </div>
@@ -232,7 +234,7 @@ export default function VaultView({ onBack }: { onBack: () => void }) {
         <div className="card flex items-start gap-2.5 p-4 border-[var(--danger-border)] bg-[var(--danger-soft)] text-sm text-[var(--danger-strong)]">
           <Icon name="alert" className="w-4 h-4 mt-0.5 shrink-0" />
           <span>{error}</span>
-          <button className="btn-ghost !p-1 ml-auto text-[var(--danger-strong)]" onClick={() => setError(null)} aria-label="Tutup">
+          <button className="btn-ghost !p-1 ml-auto text-[var(--danger-strong)]" onClick={() => setError(null)} aria-label={t('Tutup')}>
             <Icon name="x" className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -244,11 +246,11 @@ export default function VaultView({ onBack }: { onBack: () => void }) {
             <Icon name="unlock" className="w-5 h-5" />
           </div>
           <div className="flex-1 text-xs text-[var(--ok-strong)]/90 leading-relaxed">
-            <b className="text-[var(--ok-strong)]">Mode Master aktif.</b> Semua item brankas bisa dibuka dan dipratinjau tanpa memasukkan sandi,
-            untuk kondisi saat sandi terlupa. Akses ini berlaku di sesi aplikasi sekarang.
+            <b className="text-[var(--ok-strong)]">{t('Mode Master aktif.')}</b> {t('Semua item brankas bisa dibuka dan dipratinjau tanpa memasukkan sandi,')}{' '}
+            {t('untuk kondisi saat sandi terlupa. Akses ini berlaku di sesi aplikasi sekarang.')}
           </div>
           <button className="btn-outline !py-2 !px-3 text-xs shrink-0" onClick={deactivate}>
-            <Icon name="lock" className="w-3.5 h-3.5" /> Kunci lagi
+            <Icon name="lock" className="w-3.5 h-3.5" /> {t('Kunci lagi')}
           </button>
         </div>
       )}
@@ -257,10 +259,13 @@ export default function VaultView({ onBack }: { onBack: () => void }) {
         <div className="card p-4 border-[var(--ok-border)] bg-[var(--ok)]/[0.05]">
           <div className="flex items-center justify-between gap-2 mb-3">
             <div className="text-sm font-semibold text-[var(--ok-strong)] flex items-center gap-2">
-              <Icon name="check" className="w-4 h-4" /> Disembunyikan: {lastResult.filter((r) => r.ok).length} berhasil ·{' '}
-              {lastResult.filter((r) => !r.ok).length} gagal
+              <Icon name="check" className="w-4 h-4" />{' '}
+              {t('Disembunyikan: {n} berhasil · {m} gagal', {
+                n: lastResult.filter((r) => r.ok).length,
+                m: lastResult.filter((r) => !r.ok).length,
+              })}
             </div>
-            <button className="btn-ghost !p-1.5 text-[var(--ok-strong)]" onClick={() => setLastResult(null)} aria-label="Tutup">
+            <button className="btn-ghost !p-1.5 text-[var(--ok-strong)]" onClick={() => setLastResult(null)} aria-label={t('Tutup')}>
               <Icon name="x" className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -281,9 +286,9 @@ export default function VaultView({ onBack }: { onBack: () => void }) {
           <div className="flex items-center justify-between gap-2 mb-3">
             <div className={`text-sm font-semibold flex items-center gap-2 ${unhideLog.ok ? 'text-[var(--ok-strong)]' : 'text-[var(--warn-strong)]'}`}>
               <Icon name="unlock" className="w-4 h-4" />
-              Pulihkan: {unhideLog.restored} berhasil · {unhideLog.failed} gagal
+              {t('Pulihkan: {n} berhasil · {m} gagal', { n: unhideLog.restored, m: unhideLog.failed })}
             </div>
-            <button className="btn-ghost !p-1.5 text-[var(--text-2)]" onClick={() => setUnhideLog(null)} aria-label="Tutup">
+            <button className="btn-ghost !p-1.5 text-[var(--text-2)]" onClick={() => setUnhideLog(null)} aria-label={t('Tutup')}>
               <Icon name="x" className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -298,9 +303,9 @@ export default function VaultView({ onBack }: { onBack: () => void }) {
               ))}
             </ul>
           )}
-          {unhideLog.ok && <p className="text-xs text-[var(--text-2)]">Semua file sudah dikembalikan ke lokasi asalnya dan item dihapus dari brankas.</p>}
+          {unhideLog.ok && <p className="text-xs text-[var(--text-2)]">{t('Semua file sudah dikembalikan ke lokasi asalnya dan item dihapus dari brankas.')}</p>}
           {!unhideLog.ok && (
-            <p className="text-xs text-[var(--text-2)] mt-2">Item tetap disimpan di brankas sampai semua file berhasil dipulihkan.</p>
+            <p className="text-xs text-[var(--text-2)] mt-2">{t('Item tetap disimpan di brankas sampai semua file berhasil dipulihkan.')}</p>
           )}
         </div>
       )}
@@ -312,13 +317,17 @@ export default function VaultView({ onBack }: { onBack: () => void }) {
             <span className="w-6 h-6 rounded-lg bg-gradient-to-br from-[var(--accent-deep)] to-[var(--accent-2)] grid place-items-center shadow-md shadow-[0_10px_30px_-10px_var(--accent-glow)]">
               <Icon name="lock" className="w-3.5 h-3.5 text-[var(--text)]" />
             </span>
-            <h2 className="text-sm font-semibold text-[var(--text)]">Item Tersembunyi</h2>
+            <h2 className="text-sm font-semibold text-[var(--text)]">{t('Item Tersembunyi')}</h2>
           </div>
           <div className="flex items-center gap-2">
             <span className="chip bg-[var(--overlay)] text-[var(--text-3)]">
-              {items.length} brankas · {totalCount} file · {formatBytes(totalSize)}
+              {t('{a} brankas · {b} file · {s}', {
+                a: items.length,
+                b: totalCount,
+                s: formatBytes(totalSize),
+              })}
             </span>
-            <button className="btn-ghost !p-2 text-[var(--text-2)]" onClick={() => void load()} disabled={loading} title="Muat ulang" aria-label="Muat ulang">
+            <button className="btn-ghost !p-2 text-[var(--text-2)]" onClick={() => void load()} disabled={loading} title={t('Muat ulang')} aria-label={t('Muat ulang')}>
               <Icon name="replay" className="w-4 h-4" />
             </button>
           </div>
@@ -333,9 +342,9 @@ export default function VaultView({ onBack }: { onBack: () => void }) {
             <div className="icon-tile w-14 h-14 rounded-2xl bg-[var(--accent-soft)] text-[var(--accent-strong)] mb-3">
               <Icon name="eyeOff" className="w-7 h-7" />
             </div>
-            <p className="text-sm font-medium text-[var(--text)]">Brankasmu kosong</p>
+            <p className="text-sm font-medium text-[var(--text)]">{t('Brankasmu kosong')}</p>
             <p className="text-xs text-[var(--text-3)] mt-1 max-w-sm">
-              Pilih file atau folder untuk mulai menyembunyikan. Item akan terenkripsi penuh dan tidak terlihat di sini tanpa sandi.
+              {t('Pilih file atau folder untuk mulai menyembunyikan. Item akan terenkripsi penuh dan tidak terlihat di sini tanpa sandi.')}
             </p>
           </div>
         ) : (
@@ -348,8 +357,8 @@ export default function VaultView({ onBack }: { onBack: () => void }) {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium text-[var(--text)] flex items-center gap-2">
-                      {item.type === 'folder' ? 'Folder tersembunyi' : 'File tersembunyi'}
-                      <span className="chip bg-[var(--overlay)] text-[var(--text-3)] !py-0.5 !px-1.5 text-[10px]">{item.count} file</span>
+                      {item.type === 'folder' ? t('Folder tersembunyi') : t('File tersembunyi')}
+                      <span className="chip bg-[var(--overlay)] text-[var(--text-3)] !py-0.5 !px-1.5 text-[10px]">{t('{n} file', { n: item.count })}</span>
                     </div>
                     <p className="text-[11px] text-[var(--text-3)] mt-1 tabular-nums">
                       {formatBytes(item.totalSize)} · {formatDate(item.createdAt)}
@@ -359,10 +368,10 @@ export default function VaultView({ onBack }: { onBack: () => void }) {
                     <button
                       className="btn-secondary !py-2 !px-3 text-xs !border-[var(--accent-border)] !text-[var(--accent-strong)]"
                       disabled={!!busy}
-                      title="Lihat pratinjau file di dalam item (tanpa memulihkan)"
+                      title={t('Lihat pratinjau file di dalam item (tanpa memulihkan)')}
                       onClick={() => void openInspect(item)}
                     >
-                      <Icon name="eye" className="w-3.5 h-3.5" /> Pratinjau…
+                      <Icon name="eye" className="w-3.5 h-3.5" /> {t('Pratinjau…')}
                     </button>
                     <button
                       className="btn-secondary !py-2 !px-3 text-xs !border-[var(--ok-border)] !text-[var(--ok-strong)]"
@@ -373,11 +382,11 @@ export default function VaultView({ onBack }: { onBack: () => void }) {
                           : setModal({ mode: 'unhide', label: item.id, id: item.id })
                       }
                     >
-                      <Icon name="unlock" className="w-3.5 h-3.5" /> Pulihkan…
+                      <Icon name="unlock" className="w-3.5 h-3.5" /> {t('Pulihkan…')}
                     </button>
                     <button
                       className="btn-danger !py-2 !px-3 text-xs"
-                      title="Hapus permanen tanpa memulihkan"
+                      title={t('Hapus permanen tanpa memulihkan')}
                       disabled={!!busy}
                       onClick={() => setDeleteTarget(item)}
                     >
@@ -406,9 +415,9 @@ export default function VaultView({ onBack }: { onBack: () => void }) {
       {deleteTarget && (
         <ConfirmDialog
           open
-          title="Hapus item dari brankas?"
-          description="File-nya TIDAK akan dipulihkan. Item terenkripsi ini akan dihapus permanen dan tidak bisa dikembalikan. Lanjutkan?"
-          confirmLabel="Hapus Permanen"
+          title={t('Hapus item dari brankas?')}
+          description={t('File-nya TIDAK akan dipulihkan. Item terenkripsi ini akan dihapus permanen dan tidak bisa dikembalikan. Lanjutkan?')}
+          confirmLabel={t('Hapus Permanen')}
           tone="danger"
           icon="trash"
           onConfirm={confirmDelete}
@@ -443,6 +452,7 @@ interface PasswordModalProps {
 }
 
 function PasswordModal({ mode, label, busy, onSubmit, onClose }: PasswordModalProps) {
+  const { t } = useI18n();
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [show, setShow] = useState(false);
@@ -450,7 +460,7 @@ function PasswordModal({ mode, label, busy, onSubmit, onClose }: PasswordModalPr
   const canSubmit = mode === 'unhide' ? password.length > 0 : password.length >= 4 && password === confirm;
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center p-4" role="dialog" aria-modal="true" aria-label="Sandi Brankas">
+    <div className="fixed inset-0 z-50 grid place-items-center p-4" role="dialog" aria-modal="true" aria-label={t('Sandi Brankas')}>
       <div className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm" onClick={busy ? undefined : onClose} />
       <form
         className="relative card w-full max-w-md p-6 gap-4 animate-fade-in"
@@ -464,70 +474,70 @@ function PasswordModal({ mode, label, busy, onSubmit, onClose }: PasswordModalPr
             <Icon name={mode === 'hide' ? 'lock' : 'unlock'} className="w-5 h-5" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-semibold text-[var(--text)]">{mode === 'hide' ? 'Atur Sandi untuk Menyembunyikan' : 'Masukkan Sandi untuk Memulihkan'}</h3>
+            <h3 className="text-sm font-semibold text-[var(--text)]">{mode === 'hide' ? t('Atur Sandi untuk Menyembunyikan') : t('Masukkan Sandi untuk Memulihkan')}</h3>
             <p className="text-xs text-[var(--text-3)] mt-1 break-all">{label}</p>
           </div>
-          <button type="button" className="btn-ghost !p-1.5 text-[var(--text-3)]" onClick={onClose} disabled={busy} aria-label="Tutup">
+          <button type="button" className="btn-ghost !p-1.5 text-[var(--text-3)]" onClick={onClose} disabled={busy} aria-label={t('Tutup')}>
             <Icon name="x" className="w-4 h-4" />
           </button>
         </div>
 
         {mode === 'hide' && (
           <p className="text-[11px] text-[var(--danger-strong)]/90 border border-[var(--danger-border)] bg-[var(--danger-soft)] rounded-lg px-3 py-2">
-            Jika sandi terlupa, data tidak dapat dipulihkan oleh siapa pun. Simpan sandi-mu di tempat aman.
+            {t('Jika sandi terlupa, data tidak dapat dipulihkan oleh siapa pun. Simpan sandi-mu di tempat aman.')}
           </p>
         )}
 
         <label className="block">
-          <span className="text-xs text-[var(--text-2)] mb-1.5 block">{mode === 'hide' ? 'Sandi' : 'Sandi Brankas'}</span>
+          <span className="text-xs text-[var(--text-2)] mb-1.5 block">{mode === 'hide' ? t('Sandi') : t('Sandi Brankas')}</span>
           <input
             type={show ? 'text' : 'password'}
             className="input w-full"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder={mode === 'hide' ? 'Minimal 4 karakter' : 'Ketik sandi untuk membuka…'}
+            placeholder={mode === 'hide' ? t('Minimal 4 karakter') : t('Ketik sandi untuk membuka…')}
             autoFocus
           />
         </label>
 
         {mode === 'hide' && (
           <label className="block">
-            <span className="text-xs text-[var(--text-2)] mb-1.5 block">Ulangi Sandi</span>
+            <span className="text-xs text-[var(--text-2)] mb-1.5 block">{t('Ulangi Sandi')}</span>
             <input
               type={show ? 'text' : 'password'}
               className="input w-full"
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
-              placeholder="Ketik ulang sandi yang sama"
+              placeholder={t('Ketik ulang sandi yang sama')}
             />
           </label>
         )}
 
         <label className="flex items-center gap-2 text-xs text-[var(--text-2)] select-none">
           <input type="checkbox" checked={show} onChange={(e) => setShow(e.target.checked)} className="accent-violet-500" />
-          Tampilkan sandi
+          {t('Tampilkan sandi')}
         </label>
 
         {mode === 'hide' && password.length > 0 && password !== confirm && (
-          <p className="text-xs text-[var(--danger-strong)]">Sandi tidak sama.</p>
+          <p className="text-xs text-[var(--danger-strong)]">{t('Sandi tidak sama.')}</p>
         )}
 
         <div className="flex items-center justify-end gap-2 pt-1">
           <button type="button" className="btn-ghost" onClick={onClose} disabled={busy}>
-            Batal
+            {t('Batal')}
           </button>
           <button type="submit" className="btn-primary" disabled={!canSubmit || busy}>
             {busy ? (
               <>
-                <span className="h-3.5 w-3.5 rounded-full border-2 border-[var(--border-2)] border-t-[var(--text-2)] animate-spin" /> Memproses…
+                <span className="h-3.5 w-3.5 rounded-full border-2 border-[var(--border-2)] border-t-[var(--text-2)] animate-spin" /> {t('Memproses…')}
               </>
             ) : mode === 'hide' ? (
               <>
-                <Icon name="lock" className="w-4 h-4" /> Sembunyikan Sekarang
+                <Icon name="lock" className="w-4 h-4" /> {t('Sembunyikan Sekarang')}
               </>
             ) : (
               <>
-                <Icon name="unlock" className="w-4 h-4" /> Pulihkan
+                <Icon name="unlock" className="w-4 h-4" /> {t('Pulihkan')}
               </>
             )}
           </button>
@@ -551,6 +561,7 @@ interface PreviewModalProps {
 }
 
 function PreviewModal({ item, unlocked, password, list, token, busy, error, onPassword, onPlay, onClose }: PreviewModalProps) {
+  const { t } = useI18n();
   const [pw, setPw] = useState('');
   const [show, setShow] = useState(false);
 
@@ -559,7 +570,7 @@ function PreviewModal({ item, unlocked, password, list, token, busy, error, onPa
   const previewUrl = token ? `/api/vault/preview/${token.token}` : null;
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center p-4" role="dialog" aria-modal="true" aria-label="Pratinjau Brankas">
+    <div className="fixed inset-0 z-50 grid place-items-center p-4" role="dialog" aria-modal="true" aria-label={t('Pratinjau Brankas')}>
       <div className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm" onClick={busy ? undefined : onClose} />
       <div className="relative card w-full max-w-lg p-6 max-h-[90vh] overflow-hidden flex flex-col animate-fade-in">
         <div className="flex items-start gap-3 mb-4">
@@ -567,12 +578,12 @@ function PreviewModal({ item, unlocked, password, list, token, busy, error, onPa
             <Icon name="eye" className="w-5 h-5" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-semibold text-[var(--text)]">Pratinjau Item</h3>
+            <h3 className="text-sm font-semibold text-[var(--text)]">{t('Pratinjau Item')}</h3>
             <p className="text-xs text-[var(--text-3)] mt-1 break-all">
-              {item.type === 'folder' ? 'Folder tersembunyi' : 'File tersembunyi'} · {item.count} file · {formatBytes(item.totalSize)}
+              {item.type === 'folder' ? t('Folder tersembunyi') : t('File tersembunyi')} · {t('{n} file', { n: item.count })} · {formatBytes(item.totalSize)}
             </p>
           </div>
-          <button type="button" className="btn-ghost !p-1.5 text-[var(--text-3)]" onClick={onClose} disabled={busy} aria-label="Tutup">
+          <button type="button" className="btn-ghost !p-1.5 text-[var(--text-3)]" onClick={onClose} disabled={busy} aria-label={t('Tutup')}>
             <Icon name="x" className="w-4 h-4" />
           </button>
         </div>
@@ -580,11 +591,11 @@ function PreviewModal({ item, unlocked, password, list, token, busy, error, onPa
         {needsPassword ? (
           <>
             <p className="text-[11px] text-[var(--text-3)] text-center mb-3">
-              Masukkan sandi untuk membuka isi item ini. <b>Pratinjau tidak memulihkan berkas apa pun.</b>
+              {t('Masukkan sandi untuk membuka isi item ini.')} <b>{t('Pratinjau tidak memulihkan berkas apa pun.')}</b>
               {unlocked ? null : (
                 <>
                   {' '}
-                  Lupa sandi? Ketik global <span className="font-mono text-[var(--ok-strong)]">bukadong</span> di mana saja di aplikasi untuk membuka akses.
+                  {t('Lupa sandi? Ketik global')} <span className="font-mono text-[var(--ok-strong)]">bukadong</span> {t('di mana saja di aplikasi untuk membuka akses.')}
                 </>
               )}
             </p>
@@ -596,33 +607,33 @@ function PreviewModal({ item, unlocked, password, list, token, busy, error, onPa
               }}
             >
               <label className="block">
-                <span className="text-xs text-[var(--text-2)] mb-1.5 block">Sandi Brankas</span>
+                <span className="text-xs text-[var(--text-2)] mb-1.5 block">{t('Sandi Brankas')}</span>
                 <input
                   type={show ? 'text' : 'password'}
                   className="input w-full"
                   value={pw}
                   onChange={(e) => setPw(e.target.value)}
-                  placeholder="Ketik sandi untuk membuka…"
+                  placeholder={t('Ketik sandi untuk membuka…')}
                   autoFocus
                 />
               </label>
               <label className="flex items-center gap-2 text-xs text-[var(--text-2)] select-none">
                 <input type="checkbox" checked={show} onChange={(e) => setShow(e.target.checked)} className="accent-sky-500" />
-                Tampilkan sandi
+                {t('Tampilkan sandi')}
               </label>
               {error && <p className="text-xs text-[var(--danger-strong)]">{error}</p>}
               <div className="flex items-center justify-end gap-2 pt-1">
                 <button type="button" className="btn-ghost" onClick={onClose} disabled={busy}>
-                  Batal
+                  {t('Batal')}
                 </button>
                 <button type="submit" className="btn-primary" disabled={pw.length === 0 || busy}>
                   {busy ? (
                     <>
-                      <span className="h-3.5 w-3.5 rounded-full border-2 border-[var(--border-2)] border-t-[var(--text-2)] animate-spin" /> Membuka…
+                      <span className="h-3.5 w-3.5 rounded-full border-2 border-[var(--border-2)] border-t-[var(--text-2)] animate-spin" /> {t('Membuka…')}
                     </>
                   ) : (
                     <>
-                      <Icon name="unlock" className="w-4 h-4" /> Buka
+                      <Icon name="unlock" className="w-4 h-4" /> {t('Buka')}
                     </>
                   )}
                 </button>
@@ -651,7 +662,7 @@ function PreviewModal({ item, unlocked, password, list, token, busy, error, onPa
                       className="w-full flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-left hover:bg-[var(--overlay)] text-xs text-[var(--text)]"
                       onClick={() => onPlay(i)}
                       disabled={busy}
-                      title="Pratinjau"
+                      title={t('Pratinjau')}
                     >
                       <Icon name="eye" className="w-3.5 h-3.5 shrink-0 text-[var(--accent-strong)]" />
                       <span className="flex-1 truncate">{f.name}</span>
@@ -667,7 +678,7 @@ function PreviewModal({ item, unlocked, password, list, token, busy, error, onPa
         {!needsPassword && !token && (
           <div className="flex justify-end pt-3 mt-2 border-t border-[var(--border)]">
             <button className="btn-ghost" onClick={onClose} disabled={busy}>
-              Tutup
+              {t('Tutup')}
             </button>
           </div>
         )}

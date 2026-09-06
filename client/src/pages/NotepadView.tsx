@@ -3,6 +3,7 @@ import PageHeader from '../components/PageHeader';
 import Icon from '../components/Icon';
 import { api } from '../lib/api';
 import type { Note } from '@shared/types';
+import { useI18n, tGlobal } from '../lib/i18n';
 
 interface NotepadViewProps {
   onBack: () => void;
@@ -13,7 +14,7 @@ interface MatchRange {
   end: number;
 }
 
-const WELCOME_CONTENT = `Selamat datang di Notepad HelpYou.
+const WELCOME_CONTENT = tGlobal(`Selamat datang di Notepad HelpYou.
 
 Semua catatan tersimpan otomatis dan 100% lokal. Data tidak pernah dikirim ke mana pun.
 
@@ -23,7 +24,7 @@ Panduan singkat:
 - Gunakan toolbar di atas editor untuk format teks: tebal, miring, judul, kutipan, kode, daftar, checklist, tautan, dan pemisah.
 - Ctrl+F untuk mencari, Ctrl+H untuk mencari & mengganti di dalam catatan.
 - "Buka File" untuk membaca file teks apa pun, dan "Simpan Sebagai" untuk mengekspor catatan ke file.
-- Aktifkan pin pada catatan favorit agar selalu muncul di urutan teratas.`;
+- Aktifkan pin pada catatan favorit agar selalu muncul di urutan teratas.`);
 
 function sortNotes(list: Note[]): Note[] {
   return [...list].sort((a, b) => {
@@ -35,15 +36,15 @@ function sortNotes(list: Note[]): Note[] {
 function timeAgo(ts: number): string {
   const diff = Date.now() - ts;
   const s = Math.floor(diff / 1000);
-  if (s < 5) return 'baru saja';
-  if (s < 60) return `${s} dtk lalu`;
+  if (s < 5) return tGlobal('baru saja');
+  if (s < 60) return tGlobal('{n} dtk lalu', { n: s });
   const m = Math.floor(s / 60);
-  if (m < 60) return `${m} mnt lalu`;
+  if (m < 60) return tGlobal('{n} mnt lalu', { n: m });
   const h = Math.floor(m / 60);
-  if (h < 24) return `${h} jam lalu`;
+  if (h < 24) return tGlobal('{n} jam lalu', { n: h });
   const d = Math.floor(h / 24);
-  if (d === 1) return 'kemarin';
-  if (d < 7) return `${d} hari lalu`;
+  if (d === 1) return tGlobal('kemarin');
+  if (d < 7) return tGlobal('{n} hari lalu', { n: d });
   return new Date(ts).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
 }
 
@@ -56,6 +57,7 @@ function snippetOf(content: string): string {
 }
 
 export default function NotepadView({ onBack }: NotepadViewProps) {
+  const { t } = useI18n();
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentId, setCurrentId] = useState<string | null>(null);
@@ -102,7 +104,7 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
       setError(null);
     } catch (e: any) {
       setSaveState('dirty');
-      setError(e?.message || 'Gagal menyimpan catatan.');
+      setError(e?.message || t('Gagal menyimpan catatan.'));
     }
   }, []);
 
@@ -160,7 +162,7 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
         if (list.length === 0) {
           const { note } = await api<{ note: Note }>('/api/notes', {
             method: 'POST',
-            body: JSON.stringify({ title: 'Catatan Pertama', content: WELCOME_CONTENT }),
+            body: JSON.stringify({ title: t('Catatan Pertama'), content: WELCOME_CONTENT }),
           });
           list = [note];
         }
@@ -169,7 +171,7 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
         setNotes(sorted);
         if (sorted[0]) openLocalNote(sorted[0]);
       } catch (e: any) {
-        if (!cancelled) setError(e?.message || 'Gagal memuat catatan.');
+        if (!cancelled) setError(e?.message || t('Gagal memuat catatan.'));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -181,14 +183,14 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
 
   useEffect(() => {
     if (!notice) return;
-    const t = window.setTimeout(() => setNotice(null), 4000);
-    return () => window.clearTimeout(t);
+    const timer = window.setTimeout(() => setNotice(null), 4000);
+    return () => window.clearTimeout(timer);
   }, [notice]);
 
   useEffect(() => {
     if (!looped) return;
-    const t = window.setTimeout(() => setLooped(false), 1200);
-    return () => window.clearTimeout(t);
+    const timer = window.setTimeout(() => setLooped(false), 1200);
+    return () => window.clearTimeout(timer);
   }, [looped]);
 
   // flush pending autosave when the view unmounts
@@ -222,14 +224,14 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
       openLocalNote(note);
       requestAnimationFrame(() => titleInputRef.current?.focus());
     } catch (e: any) {
-      setError(e?.message || 'Gagal membuat catatan.');
+      setError(e?.message || t('Gagal membuat catatan.'));
     }
   }
 
   async function removeNote(id: string) {
     const note = notes.find((n) => n.id === id);
     if (!note) return;
-    if (!window.confirm(`Hapus catatan "${note.title}"? Tindakan ini tidak bisa dibatalkan.`)) return;
+    if (!window.confirm(t('Hapus catatan "{title}"? Tindakan ini tidak bisa dibatalkan.', { title: note.title }))) return;
     try {
       await api(`/api/notes/${id}`, { method: 'DELETE' });
       const next = notes.filter((n) => n.id !== id);
@@ -242,7 +244,7 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
         if (next[0]) openLocalNote(next[0]);
       }
     } catch (e: any) {
-      setError(e?.message || 'Gagal menghapus catatan.');
+      setError(e?.message || t('Gagal menghapus catatan.'));
     }
   }
 
@@ -252,12 +254,12 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
     try {
       const { note } = await api<{ note: Note }>('/api/notes', {
         method: 'POST',
-        body: JSON.stringify({ title: `${n.title} (salinan)`, content: n.content, pinned: n.pinned }),
+        body: JSON.stringify({ title: t('{title} (salinan)', { title: n.title }), content: n.content, pinned: n.pinned }),
       });
       setNotes((prev) => sortNotes([note, ...prev]));
-      setNotice('Catatan digandakan.');
+      setNotice(t('Catatan digandakan.'));
     } catch (e: any) {
-      setError(e?.message || 'Gagal menggandakan catatan.');
+      setError(e?.message || t('Gagal menggandakan catatan.'));
     }
   }
 
@@ -269,7 +271,7 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
       });
       setNotes((prev) => sortNotes(prev.map((n) => (n.id === updated.id ? updated : n))));
     } catch (e: any) {
-      setError(e?.message || 'Gagal mengubah pin.');
+      setError(e?.message || t('Gagal mengubah pin.'));
     }
   }
 
@@ -281,12 +283,12 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
       try {
         const { note } = await api<{ note: Note }>('/api/notes', {
           method: 'POST',
-          body: JSON.stringify({ title: name.replace(/\.[a-zA-Z0-9]+$/, '') || 'Catatan', content }),
+          body: JSON.stringify({ title: name.replace(/\.[a-zA-Z0-9]+$/, '') || t('Catatan'), content }),
         });
         setNotes((prev) => sortNotes([note, ...prev]));
         openLocalNote(note);
       } catch (e: any) {
-        setError(e?.message || 'Gagal mengimpor file.');
+        setError(e?.message || t('Gagal mengimpor file.'));
       }
     })();
   }
@@ -299,7 +301,7 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
         setError(res.error);
         return;
       }
-      if (typeof res.content === 'string') openImported({ name: res.name || 'Catatan', content: res.content });
+      if (typeof res.content === 'string') openImported({ name: res.name || t('Catatan'), content: res.content });
     } else {
       fileInputRef.current?.click();
     }
@@ -308,19 +310,19 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
   async function handleSaveAs() {
     if (!currentIdRef.current) return;
     if (hasFileApi) {
-      const res = await window.electron!.notes.saveFile(titleRef.current || 'catatan', contentRef.current);
+      const res = await window.electron!.notes.saveFile(titleRef.current || t('catatan'), contentRef.current);
       if (!res) return;
       if (res.error) {
         setError(res.error);
       } else if (res.path) {
-        setNotice(`Tersimpan di ${res.path}`);
+        setNotice(t('Tersimpan di {path}', { path: res.path }));
       }
     } else {
       const blob = new Blob([contentRef.current], { type: 'text/plain;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${titleRef.current.replace(/[\\/:*?"<>|]/g, '_') || 'catatan'}.txt`;
+      a.download = `${titleRef.current.replace(/[\\/:*?"<>|]/g, '_') || t('catatan')}.txt`;
       a.click();
       URL.revokeObjectURL(url);
     }
@@ -465,7 +467,7 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
   }
 
   function applyLink() {
-    const url = window.prompt('Masukkan URL/alamat tujuan:');
+    const url = window.prompt(t('Masukkan URL/alamat tujuan:'));
     if (url === null || url === undefined) return;
     const cleaned = url.trim() || 'https://';
     const ta = textareaRef.current;
@@ -473,7 +475,7 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
     const start = ta.selectionStart || 0;
     const end = ta.selectionEnd ?? start;
     const selected = contentRef.current.slice(start, end);
-    const text = selected || 'teks';
+    const text = selected || t('teks');
     const next = contentRef.current.slice(0, start) + `[${text}](${cleaned})` + contentRef.current.slice(end);
     setContentDraft(next);
     setSaveState('dirty');
@@ -593,7 +595,7 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
     const ta = textareaRef.current;
     const text = ta?.selectionStart !== ta?.selectionEnd ? contentDraft.slice(ta!.selectionStart!, ta!.selectionEnd!) : '';
     void navigator.clipboard?.writeText(text || contentDraft).catch(() => undefined);
-    setNotice(text ? 'Teks terpilih disalin.' : 'Seluruh isi catatan disalin.');
+    setNotice(text ? t('Teks terpilih disalin.') : t('Seluruh isi catatan disalin.'));
   }
 
   function doUndoRedo(cmd: 'undo' | 'redo') {
@@ -632,10 +634,10 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
   });
 
   const stats = useMemo(() => {
-    const t = contentDraft;
-    const words = (t.trim().match(/\S+/g) || []).length;
-    const chars = t.length;
-    const lines = t ? t.split('\n').length : 0;
+    const text = contentDraft;
+    const words = (text.trim().match(/\S+/g) || []).length;
+    const chars = text.length;
+    const lines = text ? text.split('\n').length : 0;
     const mins = Math.max(1, Math.round(words / 220));
     return { words, chars, lines, mins };
   }, [contentDraft]);
@@ -653,21 +655,21 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
       <PageHeader
         icon="fileText"
         title="Notepad"
-        desc="Catat ide, daftar, dan catatan penting dalam editor yang nyaman — auto-save, format teks, cari & ganti, dan ekspor kapan saja."
+        desc={t('Catat ide, daftar, dan catatan penting dalam editor yang nyaman — auto-save, format teks, cari & ganti, dan ekspor kapan saja.')}
         onBack={onBack}
         actions={
           <>
-            <button className="btn-ghost" onClick={handleOpenFile} title="Buka file teks (Ctrl+O)">
+            <button className="btn-ghost" onClick={handleOpenFile} title={t('Buka file teks (Ctrl+O)')}>
               <Icon name="upload" className="w-4 h-4" />
-              Buka File
+              {t('Buka File')}
             </button>
-            <button className="btn-outline" onClick={handleSaveAs} disabled={!currentId} title="Ekspor ke file (Ctrl+S)">
+            <button className="btn-outline" onClick={handleSaveAs} disabled={!currentId} title={t('Ekspor ke file (Ctrl+S)')}>
               <Icon name="save" className="w-4 h-4" />
-              Simpan Sebagai
+              {t('Simpan Sebagai')}
             </button>
-            <button className="btn-primary" onClick={newNote} title="Catatan baru (Ctrl+N)">
+            <button className="btn-primary" onClick={newNote} title={t('Catatan baru (Ctrl+N)')}>
               <Icon name="sparkle" className="w-4 h-4" />
-              Catatan Baru
+              {t('Catatan Baru')}
             </button>
           </>
         }
@@ -676,7 +678,7 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
       {error && (
         <div className="flex items-start justify-between gap-3 rounded-xl border border-[var(--danger-border)] bg-[var(--danger-soft)] px-4 py-3 text-sm text-[var(--danger-strong)] animate-scale-in">
           <span>{error}</span>
-          <button className="shrink-0 text-[var(--danger-strong)] hover:text-[var(--text)]" onClick={() => setError(null)} aria-label="Tutup">
+          <button className="shrink-0 text-[var(--danger-strong)] hover:text-[var(--text)]" onClick={() => setError(null)} aria-label={t('Tutup')}>
             <Icon name="x" className="w-4 h-4" />
           </button>
         </div>
@@ -689,7 +691,7 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
       )}
       {looped && (
         <div className="text-xs text-[var(--accent-strong)] animate-scale-in">
-          Sudah di akhir &mdash; dilanjutkan dari awal.
+          {t('Sudah di akhir — dilanjutkan dari awal.')}
         </div>
       )}
 
@@ -713,14 +715,14 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
         <aside className="card p-2.5">
           <div className="px-1.5 pt-1 pb-2">
             <div className="flex items-center justify-between gap-2 mb-2">
-              <span className="eyebrow">Catatan</span>
+              <span className="eyebrow">{t('Catatan')}</span>
               <span className="chip bg-[var(--overlay)] text-[var(--text-3)]">{filtered.length}</span>
             </div>
             <div className="relative">
               <Icon name="search" className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-3)] pointer-events-none" />
               <input
                 className="input-field !pl-9 !py-2 text-[13px]"
-                placeholder="Cari catatan…"
+                placeholder={t('Cari catatan…')}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -728,7 +730,7 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
           </div>
           <div className="space-y-1 max-h-[46vh] overflow-y-auto pr-1 pb-1">
             {filtered.length === 0 && (
-              <div className="px-3 py-6 text-center text-xs text-[var(--text-3)]">Tidak ada catatan.</div>
+              <div className="px-3 py-6 text-center text-xs text-[var(--text-3)]">{t('Tidak ada catatan.')}</div>
             )}
             {filtered.map((note) => {
               const active = note.id === currentId;
@@ -761,7 +763,7 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
                     </span>
                     <button
                       className="hidden sm:grid w-6 h-6 place-items-center rounded-xl text-[var(--text-3)] hover:text-[var(--danger-strong)] hover:bg-[var(--danger-soft)] shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                      title="Hapus catatan"
+                      title={t('Hapus catatan')}
                       onClick={(e) => {
                         e.stopPropagation();
                         void removeNote(note.id);
@@ -778,7 +780,7 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
                   })()}
                   <div className="mt-1 flex items-center justify-between text-[10px] text-[var(--text-3)]">
                     <span>{timeAgo(note.updatedAt)}</span>
-                    {note.pinned && <span className="text-[var(--warn-strong)]">disematkan</span>}
+                    {note.pinned && <span className="text-[var(--warn-strong)]">{t('disematkan')}</span>}
                   </div>
                 </div>
               );
@@ -802,13 +804,13 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
                 <div className="icon-tile w-16 h-16 rounded-3xl bg-gradient-to-br from-amber-400 to-orange-600 shadow-lg shadow-[0_10px_30px_-10px_var(--warn-glow)]">
                   <Icon name="fileText" className="w-8 h-8" />
                 </div>
-                <h2 className="text-lg font-semibold text-[var(--text)]">Belum ada catatan</h2>
+                <h2 className="text-lg font-semibold text-[var(--text)]">{t('Belum ada catatan')}</h2>
                 <p className="text-sm text-[var(--text-2)] leading-relaxed">
-                  Buat catatan baru untuk mulai menulis, atau buka file teks yang sudah ada.
+                  {t('Buat catatan baru untuk mulai menulis, atau buka file teks yang sudah ada.')}
                 </p>
                 <button className="btn-primary" onClick={newNote}>
                   <Icon name="sparkle" className="w-4 h-4" />
-                  Buat Catatan Baru
+                  {t('Buat Catatan Baru')}
                 </button>
               </div>
             </div>
@@ -819,7 +821,7 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
                 <input
                   ref={titleInputRef}
                   className="flex-1 min-w-0 bg-transparent text-lg font-semibold text-[var(--text)] placeholder-gray-600 focus:outline-none truncate"
-                  placeholder="Judul catatan…"
+                  placeholder={t('Judul catatan…')}
                   value={titleDraft}
                   onChange={(e) => {
                     setTitleDraft(e.target.value);
@@ -835,7 +837,7 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
                       ? 'bg-[var(--warn-soft)] text-[var(--warn-strong)]'
                       : 'text-[var(--text-3)] hover:bg-[var(--overlay)] hover:text-[var(--text)]'
                   }`}
-                  title={currentNote?.pinned ? 'Lepas pin' : 'Sematkan di atas'}
+                  title={currentNote?.pinned ? t('Lepas pin') : t('Sematkan di atas')}
                   onClick={() => currentNote && void togglePin(currentNote)}
                 >
                   <Icon name={currentNote?.pinned ? 'pin' : 'pinOff'} className="w-[18px] h-[18px]" />
@@ -844,7 +846,7 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
                   className={`w-9 h-9 grid place-items-center rounded-xl transition-colors ${
                     findOpen ? 'bg-[var(--accent-soft)] text-[var(--accent-strong)]' : 'text-[var(--text-3)] hover:bg-[var(--overlay)] hover:text-[var(--text)]'
                   }`}
-                  title="Cari & ganti (Ctrl+F)"
+                  title={t('Cari & ganti (Ctrl+F)')}
                   onClick={() => {
                     setFindOpen((v) => !v);
                     requestAnimationFrame(() => findInputRef.current?.focus());
@@ -856,45 +858,45 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
                   className={`chip ml-1 ${saveState === 'saved' ? 'bg-[var(--ok-soft)] text-[var(--ok-strong)] border-[var(--ok-border)]' : saveState === 'saving' ? 'bg-[var(--warn-soft)] text-[var(--warn-strong)] border-[var(--warn-border)]' : 'bg-[var(--danger-soft)] text-[var(--danger-strong)] border-[var(--danger-border)]'}`}
                 >
                   {saveState === 'saved'
-                    ? `Tersimpan${savedAt ? ' ' + new Date(savedAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : ''}`
+                    ? t('Tersimpan {time}', { time: savedAt ? ' ' + new Date(savedAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '' })
                     : saveState === 'saving'
-                      ? 'Menyimpan…'
-                      : 'Belum tersimpan'}
+                      ? t('Menyimpan…')
+                      : t('Belum tersimpan')}
                 </span>
               </div>
 
               {/* formatting toolbar */}
               <div className="flex flex-wrap items-center gap-0.5 px-3 py-2 border-b border-[var(--border)] bg-[var(--overlay)]">
-                <ToolButton label="B" title="Tebal (Ctrl+B)" className="font-bold" onClick={() => wrapMarkdown('**')} />
-                <ToolButton label="I" title="Miring (Ctrl+I)" className="italic" onClick={() => wrapMarkdown('*')} />
-                <ToolButton label="U" title="Garis bawah (Ctrl+U)" className="underline" onClick={() => wrapMarkdown('<u>', '</u>')} />
-                <ToolButton label="S" title="Coret (markdown)" className="line-through" onClick={() => wrapMarkdown('~~')} />
+                <ToolButton label="B" title={t('Tebal (Ctrl+B)')} className="font-bold" onClick={() => wrapMarkdown('**')} />
+                <ToolButton label="I" title={t('Miring (Ctrl+I)')} className="italic" onClick={() => wrapMarkdown('*')} />
+                <ToolButton label="U" title={t('Garis bawah (Ctrl+U)')} className="underline" onClick={() => wrapMarkdown('<u>', '</u>')} />
+                <ToolButton label="S" title={t('Coret (markdown)')} className="line-through" onClick={() => wrapMarkdown('~~')} />
                 <ToolDivider />
-                <ToolButton label="H1" title="Judul 1" className="text-[11px]" onClick={() => applyHeading(1)} />
-                <ToolButton label="H2" title="Judul 2" className="text-[11px]" onClick={() => applyHeading(2)} />
-                <ToolButton label="H3" title="Judul 3" className="text-[11px]" onClick={() => applyHeading(3)} />
+                <ToolButton label="H1" title={t('Judul 1')} className="text-[11px]" onClick={() => applyHeading(1)} />
+                <ToolButton label="H2" title={t('Judul 2')} className="text-[11px]" onClick={() => applyHeading(2)} />
+                <ToolButton label="H3" title={t('Judul 3')} className="text-[11px]" onClick={() => applyHeading(3)} />
                 <ToolDivider />
-                <ToolIcon name="quote" title="Kutipan" onClick={applyQuote} />
-                <ToolIcon name="code" title="Kode" onClick={applyCode} />
+                <ToolIcon name="quote" title={t('Kutipan')} onClick={applyQuote} />
+                <ToolIcon name="code" title={t('Kode')} onClick={applyCode} />
                 <ToolDivider />
-                <ToolIcon name="listOrdered" title="Daftar bernomor" onClick={applyOrdered} />
-                <ToolButton label="•" title="Daftar berpoin" onClick={applyBullet} />
-                <ToolIcon name="checkSquare" title="Checklist" onClick={applyChecklist} />
+                <ToolIcon name="listOrdered" title={t('Daftar bernomor')} onClick={applyOrdered} />
+                <ToolButton label="•" title={t('Daftar berpoin')} onClick={applyBullet} />
+                <ToolIcon name="checkSquare" title={t('Checklist')} onClick={applyChecklist} />
                 <ToolDivider />
-                <ToolIcon name="link" title="Tautan" onClick={applyLink} />
-                <ToolIcon name="minus" title="Pemisah (----)" onClick={applyHr} />
+                <ToolIcon name="link" title={t('Tautan')} onClick={applyLink} />
+                <ToolIcon name="minus" title={t('Pemisah (----)')} onClick={applyHr} />
                 <ToolDivider />
-                <ToolIcon name="duplicate" title="Salin teks" onClick={copySelection} />
-                <button className="tool-btn" title="Urungkan (Ctrl+Z)" onClick={() => doUndoRedo('undo')}>
+                <ToolIcon name="duplicate" title={t('Salin teks')} onClick={copySelection} />
+                <button className="tool-btn" title={t('Urungkan (Ctrl+Z)')} onClick={() => doUndoRedo('undo')}>
                   <Icon name="undo" className="w-4 h-4" />
                 </button>
-                <button className="tool-btn" title="Ulangi (Ctrl+Y)" onClick={() => doUndoRedo('redo')}>
+                <button className="tool-btn" title={t('Ulangi (Ctrl+Y)')} onClick={() => doUndoRedo('redo')}>
                   <Icon name="replay" className="w-4 h-4" />
                 </button>
                 <div className="flex-1" />
                 <button
                   className={`tool-btn ${mono ? 'text-[var(--accent-strong)] bg-[var(--accent-soft)]' : ''}`}
-                  title="Ganti jenis huruf (monospace)"
+                  title={t('Ganti jenis huruf (monospace)')}
                   onClick={() => setMono((v) => !v)}
                 >
                   Aa
@@ -909,7 +911,7 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
                     <input
                       ref={findInputRef}
                       className="input-field !pl-8 !py-1.5 !text-xs w-40"
-                      placeholder="Cari…"
+                      placeholder={t('Cari…')}
                       value={findText}
                       onChange={(e) => {
                         setFindText(e.target.value);
@@ -926,7 +928,7 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
                   <input
                     ref={replaceInputRef}
                     className="input-field !py-1.5 !text-xs w-40"
-                    placeholder="Ganti dengan…"
+                    placeholder={t('Ganti dengan…')}
                     value={replaceText}
                     onChange={(e) => setReplaceText(e.target.value)}
                     onKeyDown={(e) => {
@@ -938,28 +940,28 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
                   />
                   <button
                     className={`tool-btn ${caseSensitive ? 'text-[var(--accent-strong)] bg-[var(--accent-soft)]' : ''}`}
-                    title="Cocokkan huruf besar/kecil"
+                    title={t('Cocokkan huruf besar/kecil')}
                     onClick={() => setCaseSensitive((v) => !v)}
                   >
                     Aa
                   </button>
-                  <button className="tool-btn" title="Sebelumnya (Shift+Enter)" onClick={() => gotoMatch(-1)}>
+                  <button className="tool-btn" title={t('Sebelumnya (Shift+Enter)')} onClick={() => gotoMatch(-1)}>
                     <Icon name="chevronRight" className="w-4 h-4 rotate-180" />
                   </button>
-                  <button className="tool-btn" title="Berikutnya (Enter)" onClick={() => gotoMatch(1)}>
+                  <button className="tool-btn" title={t('Berikutnya (Enter)')} onClick={() => gotoMatch(1)}>
                     <Icon name="chevronRight" className="w-4 h-4" />
                   </button>
                   <button className="btn-ghost !px-2.5 !py-1.5 !text-xs" onClick={replaceOne} disabled={!findText}>
-                    Ganti
+                    {t('Ganti')}
                   </button>
                   <button className="btn-ghost !px-2.5 !py-1.5 !text-xs" onClick={replaceAll} disabled={!findText || !matches.length}>
-                    Ganti Semua
+                    {t('Ganti Semua')}
                   </button>
                   <span className="text-[11px] tabular-nums text-[var(--text-3)]">
                     {matches.length ? `${Math.min((matchIdx < 0 ? 0 : matchIdx) + 1, matches.length)}/${matches.length}` : '0/0'}
                   </span>
                   <div className="flex-1" />
-                  <button className="tool-btn" title="Tutup (Esc)" onClick={() => setFindOpen(false)}>
+                  <button className="tool-btn" title={t('Tutup (Esc)')} onClick={() => setFindOpen(false)}>
                     <Icon name="x" className="w-4 h-4" />
                   </button>
                 </div>
@@ -971,7 +973,7 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
                 className={`flex-1 w-full min-h-[360px] resize-none bg-transparent px-4 py-3 text-sm leading-relaxed text-[var(--text)] placeholder-gray-600 focus:outline-none ${
                   mono ? 'font-mono' : 'font-sans'
                 }`}
-                placeholder="Tulis catatan di sini…"
+                placeholder={t('Tulis catatan di sini…')}
                 value={contentDraft}
                 onChange={(e) => {
                   setContentDraft(e.target.value);
@@ -983,11 +985,11 @@ export default function NotepadView({ onBack }: NotepadViewProps) {
               {/* status bar */}
               <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2 border-t border-[var(--border)] bg-[var(--overlay)] text-[11px] text-[var(--text-3)]">
                 <span className="tabular-nums">
-                  {stats.words} kata &middot; {stats.chars} karakter &middot; {stats.lines} baris &middot; &plusmn;{stats.mins} mnt baca
+                  {stats.words} {t('kata')} &middot; {stats.chars} {t('karakter')} &middot; {stats.lines} {t('baris')} &middot; &plusmn;{stats.mins} {t('mnt baca')}
                 </span>
                 <span className="flex items-center gap-1.5 text-[var(--text-3)]">
                   <span className={`w-1.5 h-1.5 rounded-full ${saveState === 'saved' ? 'bg-[var(--ok)]' : saveState === 'saving' ? 'bg-[var(--warn)] animate-pulse' : 'bg-rose-400'}`} />
-                  Auto-simpan {saveState === 'saved' ? 'aktif' : saveState === 'saving' ? 'sedang menyimpan' : 'menunggu…'}
+                  {t('Auto-simpan')} {saveState === 'saved' ? t('aktif') : saveState === 'saving' ? t('sedang menyimpan') : t('menunggu…')}
                 </span>
               </div>
             </div>

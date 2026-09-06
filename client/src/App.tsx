@@ -5,6 +5,7 @@ import UpdateNotifier from './components/UpdateNotifier';
 import Sidebar from './components/Sidebar';
 import { isDesktop } from './lib/platform';
 import { VaultMasterProvider, useVaultMaster, MASTER_CHEAT } from './lib/vaultMaster';
+import { useI18n } from './lib/i18n';
 import type { ToolId } from './lib/tools';
 
 const OrganizerTool = lazy(() => import('./pages/OrganizerTool'));
@@ -83,11 +84,12 @@ function GlobalCheatListener() {
 }
 
 function ToolFallback() {
+  const { t } = useI18n();
   return (
     <div className="w-full py-24 grid place-items-center">
       <div className="flex flex-col items-center gap-3">
         <div className="h-8 w-8 rounded-full border-2 border-[var(--accent-border)] border-t-[var(--accent-strong)] animate-spin" />
-        <p className="text-sm text-[var(--text-3)]">Menyiapkan tools…</p>
+        <p className="text-sm text-[var(--text-3)]">{t('Menyiapkan tools…')}</p>
       </div>
     </div>
   );

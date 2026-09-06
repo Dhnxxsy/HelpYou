@@ -2,17 +2,19 @@ import { useState } from 'react';
 import OrganizeView from './OrganizeView';
 import HistoryView from './HistoryView';
 import Icon from '../components/Icon';
+import { useI18n, tGlobal } from '../lib/i18n';
 
 type Sub = 'rapihkan' | 'riwayat';
 
 export default function OrganizerTool() {
+  const { t } = useI18n();
   const [sub, setSub] = useState<Sub>('rapihkan');
 
   return (
     <div className="space-y-4 animate-fade-in">
       <div className="flex flex-wrap items-center gap-1.5 bg-[var(--overlay)] border border-[var(--border)] rounded-xl p-1 w-fit">
-        <SubBtn active={sub === 'rapihkan'} onClick={() => setSub('rapihkan')} icon="organize" label="Rapihkan" />
-        <SubBtn active={sub === 'riwayat'} onClick={() => setSub('riwayat')} icon="clock" label="Riwayat" />
+        <SubBtn active={sub === 'rapihkan'} onClick={() => setSub('rapihkan')} icon="organize" label={t('Rapihkan')} />
+        <SubBtn active={sub === 'riwayat'} onClick={() => setSub('riwayat')} icon="clock" label={t('Riwayat')} />
       </div>
       {sub === 'rapihkan' ? <OrganizeView /> : <HistoryView />}
     </div>

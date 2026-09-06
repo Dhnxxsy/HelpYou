@@ -1,0 +1,770 @@
+ (butuh admin)
+ (dengan izin admin)
+ (lewat izin admin)
+ (memang sudah kosong).
+ (regex)
+ Item dari HKLM memerlukan izin administrator (UAC).
+ Lokasi admin memerlukan persetujuan UAC.
+ — program sudah tidak terdaftar di sistem
+(bisa dikembalikan)
+(bukan dihapus) ke
+(tidak ada rute / timeout)
+(turunan kunci
+, {skipped} dilewati (masih berisi/dilindungi)
+. Data tidak pernah meninggalkan perangkatmu.
+. Setelah sortir nyata diterapkan, folder-folder ini menjadi kosong dan bisa dihapus.
+. Setiap pemindahan berhasil tercatat di sini dan bisa di-Undo kapan saja.
+0 (semua)
+1 · Pilih Folder
+1 – 10 MB
+10 – 100 MB
+100 KB – 1 MB
+100% lokal · tanpa telemetri
+2 · Terapkan Pola
+< 100 KB
+=== Ringkasan Sistem ===
+Ada nama tujuan yang sama (bentrok). Perbaiki sebelum menerapkan.
+Admin
+Akan dipindahkan
+Akan kosong setelah sortir
+Akhiran
+Akhiran (sebelum ekstensi) untuk semua nama:
+Akhiri dengan
+Aksi
+Aktif
+Aktif ({n})
+Aktif — nonaktifkan
+Alat Jaringan
+Aman: server memeriksa ulang setiap folder sebelum dihapus. Folder
+Analisis
+Analisis Fragmentasi
+Analisis Ruang Disk
+Analisis dibatasi pada 200.000 file & kedalaman 48 lapis — ukuran ditampilkan bisa lebih kecil dari sebenarnya.
+Analisis dulu (drive mungkin tidak didukung)
+Aplikasi akan di-uninstall {mode}. Anda bisa membersihkan sisa file setelahnya.
+Aplikasi akan ditutup, diperbarui, dan dibuka kembali otomatis.
+Aplikasi ini tidak menyediakan uninstaller (mis. aplikasi portable).
+Arsip
+Atur Sandi untuk Menyembunyikan
+Aturan Sortir Kustom
+Audio
+Auto-simpan
+Awalan
+Awalan untuk semua nama:
+Awali dengan
+Bagaimana ini bekerja:
+Bahasa
+Bahasa berlaku langsung dan tersimpan otomatis di perangkat ini.
+Batal
+Batal Scan
+Batalkan
+Baterai
+Bekerja…
+Belum ada aplikasi terdeteksi.
+Belum ada aturan. Tambah aturan untuk menempatkan file ke folder sendiri atau melewatkan file tertentu saat scan berikutnya.
+Belum ada catatan
+Belum ada riwayat
+Belum tersimpan
+Beranda
+Berhasil dirapikan! 🎉
+Berikutnya (Enter)
+Berjalan lokal
+Berjalan…
+Berkas program (EXE) — akan dihapus ke Recycle Bin bila ditekan
+Berkas tidak ditemukan.
+Berlaku untuk scan berikutnya. Folder nama dibersihkan otomatis di sisi server.
+Bersih total {freed} dari {removed} item
+Bersih! Tidak ditemukan sisa file
+Bersihkan Semua
+Bersihkan cache, temp, dan file sementara dengan aman. File yang dipakai Windows otomatis dilewati.
+Bersihkan file sampah?
+Bersihkan temp, cache, dan file sementara dengan aman. File yang sedang dipakai otomatis dilewati.
+Bersihkan {n} Lokasi
+Bisa berupa drive (C:) atau subfolder seperti
+Brankas
+Brankas Rahasia
+Brankas terenkripsi · data tidak keluar perangkat
+Brankasmu kosong
+Buat Catatan Baru
+Buat catatan baru untuk mulai menulis, atau buka file teks yang sudah ada.
+Buka
+Buka File
+Buka Folder Hasil
+Buka file teks (Ctrl+O)
+Buka folder sumber
+Buka lokasi
+Bukan folder: 
+Buku
+Butuh Admin
+Butuh izin administrator untuk membersihkan
+CPU (detik)
+CPU: {name} — {cores} core / {logical} thread @ ~{clock} GHz
+Cara
+Cari & Ganti
+Cari & ganti (Ctrl+F)
+Cari catatan…
+Cari di Tempat Sampah…
+Cari file di dalam rencana...
+Cari nama / PID / jendela…
+Cari nama…
+Cari program atau penerbit...
+Cari teks:
+Cari…
+Catat ide dan catatan penting dengan editor nyaman: auto-save, format teks, cari & ganti, dan ekspor ke file.
+Catat ide, daftar, dan catatan penting dalam editor yang nyaman — auto-save, format teks, cari & ganti, dan ekspor kapan saja.
+Catatan
+Catatan Baru
+Catatan Pertama
+Catatan baru (Ctrl+N)
+Catatan digandakan.
+Catatan tidak ditemukan
+Cek catatan DNS untuk host ini.
+Checklist
+Coba Lagi
+Coba dengan Administrator (UAC)
+Coba muat ulang
+Cocokkan huruf besar/kecil
+Cocokkan pada
+Core
+Coret (markdown)
+Cpu (dtk)
+DNS Lookup
+Daftar bernomor
+Daftar berpoin
+Dari
+Data
+Data brankas rusak.
+Data dikirim keluar
+Defragmentasi & Optimasi Drive
+Desain
+Detail
+Deteksi file duplikat (berdasarkan isi file)
+Di jalankan sebagai administrator.
+Dihapus
+Dipindahkan
+Disembunyikan: {n} berhasil · {m} gagal
+Dokumen
+Drive Lokal
+Drive Sistem
+Drive solid-state — optimasi berupa Retrim (aman & cepat)
+Drive terfragmentasi {pct}% — disarankan defrag
+Drive tidak mendukung defragmentasi (butuh NTFS/ReFS).
+Drive tidak valid. Gunakan format seperti C:\ atau D:
+Duplikat
+Duplikat & folder kosong
+Ekspor CSV
+Ekspor ke file (Ctrl+S)
+Enkripsi brankas
+File
+File Organizer
+File Size
+File Terbesar
+File akan
+File akan dikembalikan ke lokasi asalnya. Tindakan ini juga tercatat dan bisa di-Undo kembali bila diperlukan.
+File akan dipindahkan sungguhan ke struktur folder yang rapi. Setiap pemindahan tercatat dan bisa di-Undo dari tab Riwayat.
+File dikelompokkan ke _TerSortir berdasarkan jenis & ukuran.
+File dipindai
+File ditemukan
+File duplikat
+File tersembunyi
+File tetap ada, hanya dipindahkan ke _TerSortir\Duplikat. Operasi ini tercatat dan bisa di-Undo dari tab Riwayat.
+File tidak ditemukan
+File tidak ditemukan.
+File yang sedang dipakai Windows tidak akan bisa dihapus dan otomatis dilewati. Selalu aman.
+File-nya TIDAK akan dipulihkan. Item terenkripsi ini akan dihapus permanen dan tidak bisa dikembalikan. Lanjutkan?
+Folder
+Folder & data aplikasi sudah bersih dari {name}.
+Folder Kosong
+Folder Tujuan
+Folder berikut berisi file yang semuanya akan dipindah ke
+Folder kosong (tidak ada file di dalamnya).
+Folder kosong / tidak ada subfolder.
+Folder kosong yang dihapus
+Folder sendiri untuk kata kunci, atau lewati file tertentu. Berlaku saat scan berikutnya.
+Folder terpilih:
+Folder tersembunyi
+Folder tidak ditemukan: 
+Folder tujuan (di dalam _TerSortir)
+Folder tujuan tidak valid pada aturan "{name}". Gunakan karakter aman (tanpa /\:*?"<>|).
+Font
+Fragmentasi rendah ({pct}%) — defrag opsional
+Fragmentasi {pct}%
+Gagal
+Gagal membaca Tempat Sampah.
+Gagal membaca daftar proses.
+Gagal membaca folder
+Gagal membaca folder.
+Gagal membaca informasi sistem.
+Gagal membersihkan residu.
+Gagal membersihkan.
+Gagal membuat catatan.
+Gagal membuka isi berkas.
+Gagal memeriksa pembaruan.
+Gagal memindahkan berkas.
+Gagal memindahkan duplikat
+Gagal memindai residu.
+Gagal memindai.
+Gagal mempratinjau berkas ini.
+Gagal memuat brankas.
+Gagal memuat catatan.
+Gagal memuat daftar program.
+Gagal memuat daftar startup.
+Gagal memulai analisis defrag.
+Gagal memulai optimasi.
+Gagal memulai scan
+Gagal memulai uninstaller.
+Gagal memulihkan item.
+Gagal memulihkan.
+Gagal menerapkan perubahan.
+Gagal mengenkripsi.
+Gagal menggandakan catatan.
+Gagal menghapus
+Gagal menghapus catatan.
+Gagal menghapus item brankas.
+Gagal menghapus.
+Gagal menghentikan proses.
+Gagal mengimpor file.
+Gagal mengosongkan Tempat Sampah.
+Gagal mengubah pin.
+Gagal mengubah status.
+Gagal mengunduh pembaruan.
+Gagal menyembunyikan.
+Gagal menyimpan catatan.
+Gagal mulai pemindaian.
+Gagal scan
+Gagal terhubung ke server selama scan. Coba mulai analisis dari awal.
+Gagal.
+Gagal: {message}
+Gambar
+Ganti
+Ganti Bahasa
+Ganti Nama Massal
+Ganti Semua
+Ganti Tema
+Ganti dengan:
+Ganti dengan…
+Ganti jenis huruf (monospace)
+Garis bawah (Ctrl+U)
+Hapus
+Hapus Permanen
+Hapus catatan
+Hapus catatan "{title}"? Tindakan ini tidak bisa dibatalkan.
+Hapus filter
+Hapus item dari brankas?
+Hapus item startup?
+Hapus pasang aplikasi dengan cepat dan bersih — termasuk bekas folder, data aplikasi, dan pintasan Start Menu.
+Hapus pasang program dengan cepat, tenang, dan bersih sampai ke akar — termasuk sisa file & pintasan.
+Hapus permanen tanpa memulihkan
+Hapus {n} folder kosong
+Hapus {n} folder kosong?
+Header brankas rusak.
+Hentikan
+Hentikan Proses
+Host / Alamat
+Host: {hostname} ({user})
+Hostname
+Image Disk
+Info & Laporan Sistem
+Info Sistem
+Isi Folder
+Item
+Item Tersembunyi
+Item berada di dalam brankas.
+Item berada di dalam folder aplikasi HelpYou.
+Item berada di luar folder Startup.
+Item berisi brankas — tidak boleh disembunyikan.
+Item bukan residu (sudah dihapus atau tidak dikenali).
+Item sudah tidak ada.
+Item tetap disimpan di brankas sampai semua file berhasil dipulihkan.
+Item tidak ditemukan
+Item tidak ditemukan di brankas.
+Item tidak valid.
+Izin administrator (UAC) dibatalkan.
+Jalankan
+Jalankan ping untuk mengukur latensi.
+Jalankan uninstaller tanpa dialog bila memungkinkan
+Jalur penuh
+Jejak pemindahan
+Jendela
+Jenis
+Jika sandi terlupa, data tidak dapat dipulihkan oleh siapa pun. Simpan sandi-mu di tempat aman.
+Judul 1
+Judul 2
+Judul 3
+Judul catatan…
+Jumlah dan statistik dihitung saat berjalan
+Kartu Grafis
+Kategori
+Ke
+Kecepatan
+Kedalaman maksimum
+Kehilangan koneksi ke server saat uninstall. Cek kembali programnya.
+Kelola Aturan
+Kelola aplikasi yang berjalan otomatis saat Windows menyala — nonaktifkan atau hapus yang tak dipakai.
+Kelola program yang berjalan otomatis saat Windows menyala. Nonaktifkan atau hapus item yang tidak diperlukan.
+Kelompok
+Keluar dari layar penuh
+Kembali ke Beranda
+Kembalikan {n} file?
+Kemungkinan file sedang dipakai program lain atau akses ditolak. Cek kembali lewat tab
+Kesalahan tidak diketahui.
+Ketik / tempel path folder, mis. C:\Users\Anda\Downloads
+Ketik sandi untuk membuka…
+Ketik ulang sandi yang sama
+Klik di bawah untuk memeriksa sisa file dan membersihkannya sampai akar.
+Kode
+Komposisi Folder (akan dipindah)
+Konfirmasi
+Kosongkan
+Kosongkan seluruh isi Tempat Sampah? Tindakan ini tidak dapat dibatalkan.
+Kunci lagi
+Kunci rahasia rusak.
+Kunci rahasia tidak tersedia untuk item ini.
+Kutipan
+Lainnya
+Langkah {n} dari {total}
+Langsung jalan
+Layar penuh
+Lengkap
+Lepas pin
+Lewati (biarkan)
+Lewati folder (pisah koma)
+Lihat aktivitas pemindahan dan kembalikan (undo) jika diperlukan.
+Lihat apa yang memakan ruang di drive atau folder. Klik folder terbesar untuk menyusuri lebih dalam.
+Lihat pratinjau file di dalam item (tanpa memulihkan)
+Lihat program yang sedang berjalan dan pemakaian memorinya, lalu hentikan proses yang macet.
+Lokasi
+Lokasi Asal
+Lokasi Sampah
+Lokasi Terdeteksi
+Lokasi tidak dapat diakses.
+Lupa sandi? Ketik global
+Maksimalkan jendela
+Masukkan Sandi untuk Memulihkan
+Masukkan URL/alamat tujuan:
+Masukkan folder, contoh: C:\Data atau D:\
+Masukkan sandi untuk membuka isi item ini.
+Media
+Membaca Tempat Sampah…
+Membaca daftar proses…
+Membaca informasi sistem…
+Membaca isi folder
+Membaca isi folder…
+Membaca registri & folder Startup…
+Membersihkan…
+Membuka…
+Memindahkan file ke struktur rapi. Proses ini usahakan jangan ditutup.
+Memindahkan...
+Memindai sisa file… ini bisa beberapa saat.
+Memindai...
+Memindai…
+Memori
+Memori (RAM)
+Memproses…
+Menerapkan sortir...
+Menerapkan…
+Menganalisis folder...
+Menganalisis fragmentasi…
+Menganalisis lokasi sampah…
+Mengandung teks
+Mengembalikan...
+Menghapus...
+Mengoptimalkan drive…
+Mengunduh pembaruan {version}…
+Menjalankan optimizer bawaan Windows (Optimize-Volume / defrag.exe). HDD di-defrag, SSD/NVMe di-retrim. Butuh izin administrator (UAC).
+Menyegarkan…
+Menyiapkan pemindaian…
+Menyiapkan tools…
+Menyiapkan uninstaller…
+Menyimpan…
+Metadata brankas rusak.
+Min. ukuran file (KB)
+Minimal 4 karakter
+Minimalkan
+Miring (Ctrl+I)
+Mode Master aktif.
+Mode browser tidak bisa membuka dialog file. Jalankan lewat aplikasi desktop.
+Mode browser tidak bisa membuka dialog folder. Jalankan lewat aplikasi desktop.
+Mode senyap
+Muat Ulang
+Muat ulang
+Mulai Analisis Folder
+Naik
+Naik ke induk
+Nama
+Nama Baru
+Nama File
+Nama Lama
+Nama baru (gunakan {n} untuk nomor urut, mis. Foto {n}):
+Nama baru harus di dalam folder yang sama.
+Nama file
+Nama label (opsional, untuk kejelasan)
+Nama sudah dipakai (ditimpa dilarang).
+Nanti saja (akan terpasang saat aplikasi ditutup)
+Nanti saja (diingatkan saat aplikasi dibuka lagi)
+Nilai
+Nomor Seri (BIOS)
+Nomor Urut
+Nomor mulai (default 1):
+Nonaktif ({n})
+Nonaktif — aktifkan
+Notepad
+OS: {caption} (build {build}, {arch})
+Optimalkan / Defrag
+Optimasi dihentikan.
+Optimasi gagal.
+Optimasi selesai.
+Optimasi terakhir {v}
+Organizer
+Organizer Folder Lokal
+PC / Laptop
+PC: {pc}
+PID {pid} · Sesi {session}
+Pemangkas Aktif
+Pembaruan HelpYou {version} tersedia
+Pembaruan {version} siap dipasang
+Pembersih
+Pembersih File Sampah
+Pembersih Sampah
+Pemeriksaan pembaruan gagal. Coba lagi saat membuka aplikasi.
+Pemindaian gagal.
+Pemisah (----)
+Penerbit
+Pengaturan Scan
+Pengaturan scan
+Pengelola Proses
+Pengelola Startup
+Pengonsumsi Terbesar
+Penyimpanan
+Perangkat tidak mendukung.
+Periksa & Bersihkan Residu
+Periksa residu
+Perintah uninstall
+Perubahan membutuhkan izin administrator
+Petakan pemakaian ruang drive secara visual dan temukan folder & file terbesar yang bisa diringkas.
+Pilih Drive / Disk
+Pilih Folder
+Pilih bahasa tampilan HelpYou.
+Pilih drive di atas, atau ketik folder untuk mulai menganalisis ruang disk.
+Pilih file atau folder untuk mulai menyembunyikan. Item akan terenkripsi penuh dan tidak terlihat di sini tanpa sandi.
+Pilih folder terlebih dahulu.
+Pilih folder yang ingin dirapikan
+Pilih folder, tools mengelompokkan file jadi rapi otomatis. Dilengkapi deteksi duplikat, folder kosong, dan laporan file terbesar.
+Pilih lokasi sampah terlebih dahulu.
+Pilih semua
+Pilih suasana HelpYou yang kamu suka.
+Pilih tema
+Pindahkan {n} duplikat
+Pindahkan {n} file
+Pindahkan {n} file duplikat?
+Pindahkan {n} file ke {folder}?
+Pindai Ulang
+Pindai port umum pada host ini.
+Pindai ulang
+Ping
+Ping, traceroute, cek DNS, dan pindai port untuk mendiagnosis koneksi.
+Pintasan
+Pola
+Pratinjau
+Pratinjau Brankas
+Pratinjau Item
+Pratinjau tidak memulihkan berkas apa pun.
+Pratinjau…
+Privasi penuh
+Program
+Program (EXE)
+Program mungkin belum terhapus sepenuhnya — periksa residu untuk memastikan.
+Program terpasang
+Proses
+Prosesor
+Pulihkan
+Pulihkan file yang terhapus ke lokasi asalnya, atau kosongkan isi Tempat Sampah sekaligus.
+Pulihkan file/folder yang terhapus, atau kosongkan isi Tempat Sampah semuanya.
+Pulihkan jendela
+Pulihkan: {n} berhasil · {m} gagal
+Pulihkan…
+RAM: {used} dari {total}
+Rapihkan
+Rapihkan File-mu
+Rapihkan Folder Lain
+Rapihkan folder, kelompokkan file otomatis, temukan duplikat & folder kosong. Bisa di-undo kapan saja.
+Rapikan file, bersihkan sampah, kelola startup, hingga kunci data pribadi — semuanya berjalan
+Recycle Bin
+Regex
+Regex tidak valid pada aturan "{name}".
+Rename Massal
+Rename banyak file sekaligus dengan pola — cari & ganti, awalan/akhiran, atau penomoran. Nama asli tidak ditimpa.
+Rename banyak file sekaligus: cari & ganti teks, awalan/akhiran, atau penomoran otomatis. Aman tanpa menimpa.
+Rencana
+Reset
+Residu: {name}
+Respons server tidak dikenali.
+Ringkasan lengkap PC-mu: OS, prosesor, RAM, kartu grafis, baterai, dan pemakaian setiap drive.
+Ringkasan perangkat keras, sistem operasi, memori, dan setiap drive — untuk memahami kondisi PC-mu.
+Riwayat
+Riwayat Sortir
+Ruang Disk
+Ruang terfragmentasi {v}
+Salin Ringkasan
+Salin teks
+Sandi
+Sandi Brankas
+Sandi minimal {n} karakter.
+Sandi salah atau data rusak.
+Sandi tidak dapat dipulihkan jika terlupa · maksimal 512 MB per item · item yang dipulihkan otomatis dihapus dari brankas.
+Sandi tidak sama.
+Scan Port
+Scan Ulang
+Scan dibatalkan.
+Sebelumnya (Shift+Enter)
+Sedikit terfragmentasi — tidak perlu defrag
+Selalu bisa di-Undo
+Selesai
+Selesai. {done} file/folder diubah namanya.
+Selesaikan wizard uninstall (bila muncul) di layar Anda.
+Seluruh isi catatan disalin.
+Sematkan di atas
+Sembunyikan
+Sembunyikan File…
+Sembunyikan Folder…
+Sembunyikan Sekarang
+Sembunyikan file atau folder dengan enkripsi AES-256-GCM berkata sandi. Nama file ikut terenkripsi dan aslinya dihapus aman.
+Sembunyikan file atau folder dengan enkripsi AES-256-GCM. Konten dan nama file dienkripsi dengan sandi — tanpa sandi yang benar, isinya tidak bisa dibaca siapa pun.
+Semua Tools File-mu,
+Semua aturan harus punya pola (value) yang tidak kosong.
+Semua file aman — tidak ada isi yang kembar terdeteksi.
+Semua file menuju
+Semua file sudah dikembalikan ke lokasi asalnya dan item dihapus dari brankas.
+Semua item brankas bisa dibuka dan dipratinjau tanpa memasukkan sandi,
+Serial OS
+Serial: {serial}
+Server akan memeriksa ulang setiap folder. Folder kosong yang dihapus tidak bisa di-Undo.
+Setiap pemindahan tercatat di Riwayat dan bisa dikembalikan.
+Setiap pemindahan tercatat di tab Riwayat dan bisa di-Undo.
+Simpan
+Simpan Aturan
+Simpan Sebagai
+Sistem Operasi
+Sortir folder terlebih dahulu di tab 
+Sortir ke folder
+Sortir otomatis
+Sortir {n} file
+Startup
+Status
+Status scan gagal dimuat
+Subfolder
+Sudah ada file di lokasi asli (dicegah agar tidak ditimpa).
+Sudah di akhir — dilanjutkan dari awal.
+Sudah kosong sekarang
+Suite Tools Lokal
+Suite Tools Lokal untuk Windows
+Sumber tidak ditemukan
+Sumber tidak ditemukan.
+Tambah Aturan
+Tampilkan sandi
+Tanggal pasang
+Tanpa iklan
+Tanpa sandi, konten tidak bisa direkayasa balik.
+Target tidak dikenal.
+Tautan
+Tebal (Ctrl+B)
+Teks terpilih disalin.
+Tema Tampilan
+Tema berlaku langsung dan tersimpan otomatis di perangkat ini.
+Tempat Sampah
+Tempat Sampah kosong. Semua bersih!
+Temukan file kembar dan folder menganggur, bersihkan dengan aman.
+Terapkan ({n})
+Terbuka
+Terhubung · {n} ms rata-rata
+Terjadi kesalahan
+Terlalu banyak nama duplikat
+Terlalu besar (maks 512 MB per item).
+Tersimpan di {path}
+Tersimpan {time}
+Tertutup
+Thread
+Tidak ada balasan
+Tidak ada balasan (timeout)
+Tidak ada catatan yang ditemukan.
+Tidak ada catatan.
+Tidak ada data file.
+Tidak ada drive yang terdeteksi.
+Tidak ada file duplikat
+Tidak ada file yang cocok dengan filter.
+Tidak ada file.
+Tidak ada folder kosong saat ini.
+Tidak ada hasil yang cocok.
+Tidak ada hasil.
+Tidak ada hop yang terdeteksi.
+Tidak ada isi terukur di lokasi ini.
+Tidak ada item aktif.
+Tidak ada item nonaktif.
+Tidak ada item startup yang terdeteksi.
+Tidak ada item untuk disembunyikan.
+Tidak ada program yang cocok.
+Tidak ada proses yang cocok.
+Tidak ada target admin yang valid. Pilih kembali lewat hasil pemindaian.
+Tidak ada.
+Tidak dapat membaca folder: 
+Tidak ditemukan
+Tidak punya uninstaller
+Tidak tersedia
+Tinjau rencana & pindahkan file
+Tipe
+Tipe file tidak bisa dipratinjau.
+Toggle aturan
+Token pratinjau kedaluwarsa.
+Toolbox — Utilitas Sistem
+Tools
+Tools Tersedia
+Tools siap pakai
+Torrent
+Total Item
+Total Sampah
+Total Terpakai
+Total Ukuran
+Total terduga
+Total ukuran
+Traceroute
+Traceroute bisa memakan waktu. Klik Jalankan.
+Tulis catatan di sini…
+Turun
+Tutup
+Tutup (Esc)
+Ukuran
+Ukuran terduga
+Ukuran unduhan:
+Ulangi (Ctrl+Y)
+Ulangi / Pilih Folder Lain
+Ulangi Sandi
+Undo
+Uninstall
+Uninstall mungkin perlu izin administrator, atau masih ada langkah yang harus diselesaikan di wizard-nya. Klik "Coba dengan Administrator" atau uninstall manual via Settings → Apps.
+Uninstall sedang berjalan…
+Uninstall {name}
+Uninstall {name}?
+Uninstaller
+Uninstaller Program
+Uninstaller selesai dengan kode {exitCode}.
+Uninstaller selesai, tapi program masih terdaftar di sistem.
+Update & Restart
+Update Sekarang
+Uptime
+Uptime: {days} hari
+Urungkan (Ctrl+Z)
+Urut Nama (A-Z)
+Urut Ukuran Terbesar
+Versi
+Versi BIOS
+Versi {n}
+Video
+Virtual
+Ya, bersihkan
+Ya, hapus
+Ya, kembalikan
+Ya, pindahkan
+Ya, uninstall
+Yakin?
+aktif
+aplikasi tidak valid
+aturan kustom
+baris
+baru saja
+catatan
+cth: Proyek Alpha
+cth: ^IMG_\d+
+cth: draft
+cth: video_bak, cache, draft
+dalam Satu Tempat.
+dan
+dan bisa dikembalikan lewat Riwayat.
+dari {v}
+dengan wizard normal
+di mana saja di aplikasi untuk membuka akses.
+dipindahkan
+dipindahkan sungguhan
+disematkan
+folder
+hemat {size}
+host diperlukan
+icon tidak tersedia
+id diperlukan
+item tidak valid
+karakter
+kata
+ke
+ke _TerSortir
+kemarin
+kini kosong. Gunakan
+lalu buka tab
+menunggu…
+mis. google.com atau 8.8.8.8
+mnt baca
+nama asli file ikut dienkripsi, lalu berkas asli dihapus setelah ditimpa data acak.
+nama tidak valid
+parameter tidak valid
+path tidak ditemukan
+periksa ulang
+pid tidak valid
+sedang menyimpan
+selalu dilindungi.
+setiap item dienkripsi dengan sandimu
+tanpa menampilkan dialog (mode senyap)
+teks
+termasuk isi nested
+tersimpan otomatis
+tidak ada nama yang diubah
+tidak bisa di-Undo
+untuk kondisi saat sandi terlupa. Akses ini berlaku di sesi aplikasi sekarang.
+untuk melihat detail.
+untuk menghapusnya dengan aman.
+{active} aturan aktif · dievaluasi berurutan, yang pertama cocok menang
+{a} brankas · {b} file · {s}
+{count} item · ±{size} · dihapus ke
+{count} program · ukuran adalah perkiraan dari registry
+{deleted} folder kosong dihapus{extra}.
+{done} sukses, {failed} gagal.
+{drive} {label} — {free} bebas dari {total}
+{moved} duplikat dipindahkan ke _TerSortir\Duplikat. Bisa di-Undo dari tab Riwayat.
+{name} akan dihapus (untuk item folder Startup, berkas dipindah ke Recycle Bin).
+{n} aktif
+{n} dipilih
+{n} dtk
+{n} dtk lalu
+{n} file
+{n} file berhasil dikembalikan ke lokasi asal.
+{n} file diperiksa
+{n} file dipindahkan ke
+{n} file gagal dipindahkan
+{n} file masih dipakai/dikunci dan dilewati.
+{n} file mengikuti aturan kustom
+{n} file terfragmentasi
+{n} file terpilih
+{n} file · daftar dirender secara virtual agar tetap lancar
+{n} folder sumber
+{n} grup duplikat · potensi hemat
+{n} hari lalu
+{n} item
+{n} item · {size}
+{n} jam lalu
+{n} lokasi akan dibersihkan permanen ({size}). File yang sedang dipakai akan dilewati.{admin}
+{n} mnt lalu
+{n} ms
+{n} nama akan diubah. Nama yang sama dengan aslinya diabaikan.
+{n} pemindahan
+{n} perubahan tertunda
+{n} proses · {bytes}
+{n} sesi
+{n} tools
+{okCount} dibersihkan, {failedCount} gagal: {reason}
+{okCount} item dibersihkan ke Recycle Bin.
+{title} (salinan)
+{v} dipakai
+{v} terpakai
+× {n} file
+→ _TerSortir/
+∞ (semua)
+≥ 100 MB
+✓ valid
+✗ regex tidak valid

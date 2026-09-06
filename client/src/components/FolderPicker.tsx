@@ -3,8 +3,10 @@ import { useDrives } from '../lib/useDrives';
 import { formatBytes } from '../lib/format';
 import Icon from './Icon';
 import { isDesktop, pickFolder } from '../lib/platform';
+import { useI18n, tGlobal } from '../lib/i18n';
 
 export default function FolderPicker({ value, onChange }: { value: string; onChange: (p: string) => void }) {
+  const { t } = useI18n();
   const { drives, loading, error: driveError, reload } = useDrives();
   const [current, setCurrent] = useState<string | null>(null);
   const [entries, setEntries] = useState<any[]>([]);
@@ -29,7 +31,7 @@ export default function FolderPicker({ value, onChange }: { value: string; onCha
     try {
       const res = await fetch('/api/folders?path=' + encodeURIComponent(path));
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Gagal');
+      if (!res.ok) throw new Error(data.error || t('Gagal'));
       setEntries(data.entries || []);
     } catch (e: any) {
       setError(e.message);
@@ -54,13 +56,13 @@ export default function FolderPicker({ value, onChange }: { value: string; onCha
           </svg>
           <input
             className="input-field pl-9 pr-24"
-            placeholder="Ketik / tempel path folder, mis. C:\Users\Anda\Downloads"
+            placeholder={t('Ketik / tempel path folder, mis. C:\Users\Anda\Downloads')}
             value={manual}
             onChange={e => { setManual(e.target.value); onChange(e.target.value); }}
             onKeyDown={e => { if (e.key === 'Enter') handleManual(); }}
           />
           <button onClick={handleManual} className="absolute right-1.5 top-1/2 -translate-y-1/2 btn-primary !py-1.5 !px-3 text-xs">
-            Buka
+            {t('Buka')}
           </button>
         </div>
         {isDesktop && (
@@ -69,7 +71,7 @@ export default function FolderPicker({ value, onChange }: { value: string; onCha
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border border-[var(--border)] bg-[var(--overlay)] hover:bg-[var(--overlay-2)] text-[var(--text-2)] whitespace-nowrap transition-colors"
           >
             <Icon name="folderOpen" className="w-3.5 h-3.5 text-[var(--accent-strong)]" />
-            Pilih Folder
+            {t('Pilih Folder')}
           </button>
         )}
       </div>
@@ -84,7 +86,7 @@ export default function FolderPicker({ value, onChange }: { value: string; onCha
 
       {/* Drive selector */}
       <div>
-        <div className="text-[11px] uppercase tracking-wider text-[var(--text-3)] mb-2 font-semibold">Pilih Drive / Disk</div>
+        <div className="text-[11px] uppercase tracking-wider text-[var(--text-3)] mb-2 font-semibold">{t('Pilih Drive / Disk')}</div>
         {driveError ? (
           <div className="rounded-xl border border-[var(--danger-border)] bg-[var(--danger-soft)] px-4 py-3 flex items-center justify-between gap-3 text-sm text-[var(--danger-strong)]">
             <span className="flex items-center gap-2">
@@ -92,7 +94,7 @@ export default function FolderPicker({ value, onChange }: { value: string; onCha
               {driveError}
             </span>
             <button className="btn-secondary !py-1.5 !px-3 text-xs shrink-0" onClick={reload}>
-              Coba Lagi
+              {t('Coba Lagi')}
             </button>
           </div>
         ) : (
@@ -118,7 +120,7 @@ export default function FolderPicker({ value, onChange }: { value: string; onCha
                   <div className="font-semibold text-sm text-[var(--text)]">{d.name}</div>
                 </div>
                 <div className="text-[10px] text-[var(--text-2)] flex justify-between mb-1">
-                  <span>{formatBytes(d.used)} dipakai</span>
+                  <span>{t('{v} dipakai', { v: formatBytes(d.used) })}</span>
                   <span>{pct}%</span>
                 </div>
                 <div className="h-1 rounded-full bg-[var(--overlay-2)] overflow-hidden">
@@ -134,7 +136,7 @@ export default function FolderPicker({ value, onChange }: { value: string; onCha
       {/* Current folder contents */}
       {current && (
         <div>
-          <div className="text-[11px] uppercase tracking-wider text-[var(--text-3)] mb-2 font-semibold">Isi Folder</div>
+          <div className="text-[11px] uppercase tracking-wider text-[var(--text-3)] mb-2 font-semibold">{t('Isi Folder')}</div>
           <div className="card max-h-72 overflow-y-auto p-2">
             <button className="w-full flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-[var(--overlay)] text-sm text-[var(--text-2)]" onClick={() => openFolder(parentPath(current))}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M19 12H5M11 19l-7-7 7-7"/></svg>
@@ -150,7 +152,7 @@ export default function FolderPicker({ value, onChange }: { value: string; onCha
                 <span className="truncate text-[var(--text)]">{e.name}</span>
               </button>
             ))}
-            {entries.length === 0 && <div className="px-3 py-4 text-xs text-[var(--text-3)]">Folder kosong / tidak ada subfolder.</div>}
+            {entries.length === 0 && <div className="px-3 py-4 text-xs text-[var(--text-3)]">{t('Folder kosong / tidak ada subfolder.')}</div>}
           </div>
         </div>
       )}

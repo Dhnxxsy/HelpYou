@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { formatBytes } from '../lib/format';
 import Icon, { type IconName } from './Icon';
 import ConfirmDialog from './ConfirmDialog';
+import { useI18n, tGlobal, translateServerMessage } from '../lib/i18n';
 
 export interface DupFile {
   path: string;
@@ -25,6 +26,7 @@ export default function DuplicatesPanel({
   root: string;
   onDone: (msg: string) => void;
 }) {
+  const { t } = useI18n();
   const [checked, setChecked] = useState<Record<string, boolean[]>>(() =>
     Object.fromEntries(groups.map(g => [g.id, g.files.map((_, i) => i !== 0)]))
   );
@@ -75,11 +77,11 @@ export default function DuplicatesPanel({
         body: JSON.stringify({ root, files }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Gagal memindahkan duplikat');
+      if (!res.ok) throw new Error(translateServerMessage(data.error) || tGlobal('Gagal memindahkan duplikat'));
       setChecked({});
-      onDone(`${data.moved} duplikat dipindahkan ke _TerSortir\\Duplikat. Bisa di-Undo dari tab Riwayat.`);
+      onDone(tGlobal('{moved} duplikat dipindahkan ke _TerSortir\\Duplikat. Bisa di-Undo dari tab Riwayat.', { moved: data.moved }));
     } catch (e: any) {
-      onDone('Gagal: ' + e.message);
+      onDone(tGlobal('Gagal: {message}', { message: e.message }));
     } finally {
       setBusy(false);
     }
@@ -89,8 +91,8 @@ export default function DuplicatesPanel({
     return (
       <EmptyState
         icon="check"
-        title="Tidak ada file duplikat"
-        sub="Semua file aman — tidak ada isi yang kembar terdeteksi."
+        title={t('Tidak ada file duplikat')}
+        sub={t('Semua file aman — tidak ada isi yang kembar terdeteksi.')}
         tone="emerald"
       />
     );
@@ -100,12 +102,12 @@ export default function DuplicatesPanel({
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <p className="text-sm text-[var(--text-2)]">
-          {groups.length} grup duplikat · potensi hemat{' '}
+          {t('{n} grup duplikat · potensi hemat', { n: groups.length })}{' '}
           <b className="text-[var(--ok-strong)]">{formatBytes(groups.reduce((s, g) => s + g.reclaimable, 0))}</b>
         </p>
         <button className="btn-primary !py-2 !px-4 text-xs" onClick={() => setConfirmOpen(true)} disabled={busy || selectedCount === 0}>
           <Icon name="duplicate" className="w-3.5 h-3.5" />
-          {busy ? 'Memindahkan...' : `Pindahkan ${selectedCount} duplikat`}
+          {busy ? t('Memindahkan...') : t('Pindahkan {n} duplikat', { n: selectedCount })}
         </button>
       </div>
 
@@ -118,11 +120,11 @@ export default function DuplicatesPanel({
               <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                 <div className="flex flex-wrap items-center gap-2 text-sm text-[var(--text-2)]">
                   <span className="chip bg-[var(--warn-soft)] text-[var(--warn-strong)] border border-[var(--warn-border)]">
-                    <Icon name="duplicate" className="w-3 h-3" /> Duplikat
+                    <Icon name="duplicate" className="w-3 h-3" /> {t('Duplikat')}
                   </span>
                   <b className="tabular-nums">{formatBytes(g.size)}</b>
-                  <span className="text-[var(--text-3)]">× {g.files.length} file</span>
-                  <span className="text-[11px] text-[var(--ok-strong)]/80">hemat {formatBytes(g.reclaimable)}</span>
+                  <span className="text-[var(--text-3)]">{t('× {n} file', { n: g.files.length })}</span>
+                  <span className="text-[11px] text-[var(--ok-strong)]/80">{t('hemat {size}', { size: formatBytes(g.reclaimable) })}</span>
                 </div>
                 <label className="flex items-center gap-1.5 text-xs text-[var(--text-2)] cursor-pointer select-none">
                   <input
@@ -131,7 +133,7 @@ export default function DuplicatesPanel({
                     checked={allChecked}
                     onChange={e => toggleAll(g, e.target.checked)}
                   />
-                  Pilih semua
+                  {t('Pilih semua')}
                 </label>
               </div>
               <div className="space-y-1">
@@ -139,7 +141,7 @@ export default function DuplicatesPanel({
                   <label key={f.path} className="flex items-center gap-2.5 text-xs cursor-pointer hover:bg-[var(--overlay)] rounded-lg px-2.5 py-1.5 group">
                     <input type="checkbox" className="accent-indigo-500 w-3.5 h-3.5 shrink-0" checked={st[i]} onChange={() => toggle(g, i)} />
                     <span className={`chip shrink-0 ${i === 0 ? 'bg-[var(--ok-soft)] text-[var(--ok-strong)]' : 'bg-[var(--overlay-2)] text-[var(--text-2)]'}`}>
-                      {i === 0 ? 'Simpan' : 'Duplikat'}
+                      {i === 0 ? t('Simpan') : t('Duplikat')}
                     </span>
                     <span className="truncate flex-1 text-[var(--text-2)] group-hover:text-[var(--text)]" title={f.path}>{f.path.replace(root + '\\', '')}</span>
                     <span className="text-[var(--text-3)] tabular-nums shrink-0">{formatBytes(f.size)}</span>
@@ -153,16 +155,16 @@ export default function DuplicatesPanel({
 
       <p className="text-[11px] text-[var(--text-3)] mt-3 flex items-center gap-1.5">
         <Icon name="info" className="w-3.5 h-3.5" />
-        File duplikat <b>dipindahkan</b> (bukan dihapus) ke <code className="text-[var(--warn-strong)]">_TerSortir\Duplikat</code> dan bisa dikembalikan lewat Riwayat.
+        {t('File duplikat')} <b>{t('dipindahkan')}</b> {t('(bukan dihapus) ke')} <code className="text-[var(--warn-strong)]">_TerSortir\Duplikat</code> {t('dan bisa dikembalikan lewat Riwayat.')}
       </p>
 
       <ConfirmDialog
         open={confirmOpen}
         tone="primary"
         icon="duplicate"
-        title={`Pindahkan ${selectedCount} file duplikat?`}
-        description="File tetap ada, hanya dipindahkan ke _TerSortir\\Duplikat. Operasi ini tercatat dan bisa di-Undo dari tab Riwayat."
-        confirmLabel="Ya, pindahkan"
+        title={t('Pindahkan {n} file duplikat?', { n: selectedCount })}
+        description={t('File tetap ada, hanya dipindahkan ke _TerSortir\\Duplikat. Operasi ini tercatat dan bisa di-Undo dari tab Riwayat.')}
+        confirmLabel={t('Ya, pindahkan')}
         onConfirm={moveSelected}
         onClose={() => setConfirmOpen(false)}
       />

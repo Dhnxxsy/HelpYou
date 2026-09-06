@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Icon, { type IconName } from '../components/Icon';
 import PageHeader from '../components/PageHeader';
 import { api } from '../lib/api';
+import { useI18n, tGlobal } from '../lib/i18n';
 import type { DnsRow, PingRow, PortRow, TraceHop } from '@shared/types';
 
 type Tab = 'ping' | 'trace' | 'dns' | 'ports';
@@ -10,6 +11,7 @@ const DEFAULT_HOST = 'google.com';
 const DEFAULT_PORTS = [21, 22, 23, 25, 53, 80, 110, 135, 139, 143, 443, 445, 993, 995, 1433, 3306, 3389, 5432, 8080, 8443];
 
 export default function NetworkToolsView({ onBack }: { onBack: () => void }) {
+  const { t } = useI18n();
   const [tab, setTab] = useState<Tab>('ping');
   const [host, setHost] = useState(DEFAULT_HOST);
   const [busy, setBusy] = useState<Tab | null>(null);
@@ -59,10 +61,10 @@ export default function NetworkToolsView({ onBack }: { onBack: () => void }) {
   }[tab];
 
   const TABS: { id: Tab; label: string; icon: IconName }[] = [
-    { id: 'ping', label: 'Ping', icon: 'network' },
-    { id: 'trace', label: 'Traceroute', icon: 'external' },
-    { id: 'dns', label: 'DNS Lookup', icon: 'search' },
-    { id: 'ports', label: 'Scan Port', icon: 'lock' },
+    { id: 'ping', label: t('Ping'), icon: 'network' },
+    { id: 'trace', label: t('Traceroute'), icon: 'external' },
+    { id: 'dns', label: t('DNS Lookup'), icon: 'search' },
+    { id: 'ports', label: t('Scan Port'), icon: 'lock' },
   ];
 
   const summary = (() => {
@@ -70,8 +72,8 @@ export default function NetworkToolsView({ onBack }: { onBack: () => void }) {
     const success = pings ? pings.filter((p) => !p.timedOut) : [];
     return pings && pings.length
       ? success.length
-        ? `Terhubung · ${(success.reduce((s, p) => s + p.ms, 0) / success.length).toFixed(0)} ms rata-rata`
-        : 'Tidak ada balasan'
+        ? t('Terhubung · {n} ms rata-rata', { n: (success.reduce((s, p) => s + p.ms, 0) / success.length).toFixed(0) })
+        : t('Tidak ada balasan')
       : '';
   })();
 
@@ -79,8 +81,8 @@ export default function NetworkToolsView({ onBack }: { onBack: () => void }) {
     <div className="space-y-6 animate-fade-in">
       <PageHeader
         icon="network"
-        title="Alat Jaringan"
-        desc="Ping, traceroute, cek DNS, dan pindai port untuk mendiagnosis koneksi."
+        title={t('Alat Jaringan')}
+        desc={t('Ping, traceroute, cek DNS, dan pindai port untuk mendiagnosis koneksi.')}
         onBack={onBack}
       />
 
@@ -88,10 +90,10 @@ export default function NetworkToolsView({ onBack }: { onBack: () => void }) {
 
       <div className="flex flex-col sm:flex-row sm:items-end gap-3">
         <div className="flex-1">
-          <label className="text-[11px] uppercase tracking-wider text-[var(--text-3)] mb-1.5 block font-semibold">Host / Alamat</label>
+          <label className="text-[11px] uppercase tracking-wider text-[var(--text-3)] mb-1.5 block font-semibold">{t('Host / Alamat')}</label>
           <input
             className="input-field !py-2.5 text-sm font-mono"
-            placeholder="mis. google.com atau 8.8.8.8"
+            placeholder={t('mis. google.com atau 8.8.8.8')}
             value={host}
             onChange={(e) => setHost(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') run(); }}
@@ -99,7 +101,7 @@ export default function NetworkToolsView({ onBack }: { onBack: () => void }) {
         </div>
         <button className="btn-primary !py-2.5" onClick={run} disabled={!host.trim() || !!busy}>
           <Icon name={busy === tab ? 'replay' : 'play'} className={`w-4 h-4 ${busy === tab ? 'animate-spin' : ''}`} />
-          {busy === tab ? 'Berjalan…' : 'Jalankan'}
+          {busy === tab ? t('Berjalan…') : t('Jalankan')}
         </button>
       </div>
 
@@ -111,13 +113,13 @@ export default function NetworkToolsView({ onBack }: { onBack: () => void }) {
       )}
 
       <div className="flex gap-1 bg-[var(--overlay)] border border-[var(--border)] rounded-xl p-1 overflow-x-auto">
-        {TABS.map((t) => (
+        {TABS.map((tabItem) => (
           <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${tab === t.id ? 'bg-gradient-to-r from-sky-500 to-indigo-500 text-white' : 'text-[var(--text-2)] hover:text-[var(--text)]'}`}
+            key={tabItem.id}
+            onClick={() => setTab(tabItem.id)}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${tab === tabItem.id ? 'bg-gradient-to-r from-sky-500 to-indigo-500 text-white' : 'text-[var(--text-2)] hover:text-[var(--text)]'}`}
           >
-            <Icon name={t.icon} className="w-4 h-4" /> {t.label}
+            <Icon name={tabItem.icon} className="w-4 h-4" /> {tabItem.label}
           </button>
         ))}
       </div>
@@ -126,13 +128,13 @@ export default function NetworkToolsView({ onBack }: { onBack: () => void }) {
         {/* Ping */}
         {tab === 'ping' && (
           <div className="divide-y divide-white/5">
-            {!pings && <EmptyBox loading={busy === 'ping'} label="Jalankan ping untuk mengukur latensi." />}
+            {!pings && <EmptyBox loading={busy === 'ping'} label={t('Jalankan ping untuk mengukur latensi.')} />}
             {pings && pings.map((p) => (
               <div key={p.seq} className="flex items-center justify-between px-4 py-2.5 text-sm">
                 <span className="text-[var(--text-3)] tabular-nums w-16">#{p.seq}</span>
                 <span className={`flex items-center gap-2 ${p.timedOut ? 'text-[var(--danger-strong)]' : 'text-[var(--ok-strong)]'}`}>
                   <span className={`w-2 h-2 rounded-full ${p.timedOut ? 'bg-rose-400' : 'bg-[var(--ok)]'}`} />
-                  {p.timedOut ? 'Tidak ada balasan (timeout)' : `${p.ms} ms`}
+                  {p.timedOut ? t('Tidak ada balasan (timeout)') : `${p.ms} ms`}
                 </span>
                 <span className="text-xs text-[var(--text-3)] tabular-nums">{p.ttl != null ? `TTL ${p.ttl}` : ''}</span>
               </div>
@@ -143,7 +145,7 @@ export default function NetworkToolsView({ onBack }: { onBack: () => void }) {
         {/* Trace */}
         {tab === 'trace' && (
           <div className="max-h-[440px] overflow-y-auto">
-            {hops === null && <EmptyBox loading={busy === 'trace'} label="Traceroute bisa memakan waktu. Klik Jalankan." />}
+            {hops === null && <EmptyBox loading={busy === 'trace'} label={t('Traceroute bisa memakan waktu. Klik Jalankan.')} />}
             {hops !== null && (
               <table className="w-full text-sm">
                 <tbody className="divide-y divide-white/5">
@@ -153,10 +155,10 @@ export default function NetworkToolsView({ onBack }: { onBack: () => void }) {
                       <td className="px-3 py-2 text-xs text-[var(--text-2)] tabular-nums w-44 whitespace-nowrap">
                         {h.times.length === 0 ? <span className="text-[var(--text-3)]">—</span> : h.times.join('  ')}
                       </td>
-                      <td className="px-4 py-2 text-xs text-[var(--text-2)] font-mono">{h.address || '(tidak ada rute / timeout)'}</td>
+                      <td className="px-4 py-2 text-xs text-[var(--text-2)] font-mono">{h.address || t('(tidak ada rute / timeout)')}</td>
                     </tr>
                   ))}
-                  {hops.length === 0 && <EmptyBox loading={false} label="Tidak ada hop yang terdeteksi." />}
+                  {hops.length === 0 && <EmptyBox loading={false} label={t('Tidak ada hop yang terdeteksi.')} />}
                 </tbody>
               </table>
             )}
@@ -166,11 +168,11 @@ export default function NetworkToolsView({ onBack }: { onBack: () => void }) {
         {/* DNS */}
         {tab === 'dns' && (
           <div className="max-h-[440px] overflow-y-auto">
-            {dns === null && <EmptyBox loading={busy === 'dns'} label="Cek catatan DNS untuk host ini." />}
+            {dns === null && <EmptyBox loading={busy === 'dns'} label={t('Cek catatan DNS untuk host ini.')} />}
             {dns !== null && (
               <table className="w-full text-sm">
                 <thead className="bg-[var(--overlay)] text-[10px] uppercase tracking-wider text-[var(--text-3)]">
-                  <tr><th className="text-left px-4 py-2.5 font-semibold w-16">Tipe</th><th className="text-left px-4 py-2.5 font-semibold">Nilai</th></tr>
+                  <tr><th className="text-left px-4 py-2.5 font-semibold w-16">{t('Tipe')}</th><th className="text-left px-4 py-2.5 font-semibold">{t('Nilai')}</th></tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
                   {dns.map((r, i) => (
@@ -179,7 +181,7 @@ export default function NetworkToolsView({ onBack }: { onBack: () => void }) {
                       <td className="px-4 py-2 text-xs text-[var(--text-2)] font-mono break-all">{r.value || r.name}</td>
                     </tr>
                   ))}
-                  {dns.length === 0 && <EmptyBox loading={false} label="Tidak ada catatan yang ditemukan." />}
+                  {dns.length === 0 && <EmptyBox loading={false} label={t('Tidak ada catatan yang ditemukan.')} />}
                 </tbody>
               </table>
             )}
@@ -189,7 +191,7 @@ export default function NetworkToolsView({ onBack }: { onBack: () => void }) {
         {/* Ports */}
         {tab === 'ports' && (
           <div className="max-h-[440px] overflow-y-auto">
-            {ports === null && <EmptyBox loading={busy === 'ports'} label="Pindai port umum pada host ini." />}
+            {ports === null && <EmptyBox loading={busy === 'ports'} label={t('Pindai port umum pada host ini.')} />}
             {ports !== null && (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 p-4">
                 {ports.map((p) => (
@@ -199,10 +201,10 @@ export default function NetworkToolsView({ onBack }: { onBack: () => void }) {
                       <span className={`w-2 h-2 rounded-full ${p.open ? 'bg-[var(--ok)]' : 'bg-[var(--bg-3)]'}`} />
                     </div>
                     <div className="text-[11px] text-[var(--text-3)] mt-0.5 truncate">{p.service || '—'}</div>
-                    <div className={`text-[10px] mt-0.5 ${p.open ? 'text-[var(--ok-strong)]' : 'text-[var(--text-3)]'}`}>{p.open ? 'Terbuka' : 'Tertutup'} · {p.ms} ms</div>
+                    <div className={`text-[10px] mt-0.5 ${p.open ? 'text-[var(--ok-strong)]' : 'text-[var(--text-3)]'}`}>{p.open ? t('Terbuka') : t('Tertutup')} · {p.ms} ms</div>
                   </div>
                 ))}
-                {ports.length === 0 && <EmptyBox loading={false} label="Tidak ada hasil." />}
+                {ports.length === 0 && <EmptyBox loading={false} label={t('Tidak ada hasil.')} />}
               </div>
             )}
           </div>
@@ -210,7 +212,7 @@ export default function NetworkToolsView({ onBack }: { onBack: () => void }) {
       </div>
 
       <button className="btn-ghost !py-2 !px-3 text-xs" onClick={onBack}>
-        <Icon name="chevronRight" className="w-3.5 h-3.5 rotate-180" /> Kembali ke Beranda
+        <Icon name="chevronRight" className="w-3.5 h-3.5 rotate-180" /> {t('Kembali ke Beranda')}
       </button>
     </div>
   );

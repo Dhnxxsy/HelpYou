@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import Icon, { type IconName } from './Icon';
+import { useI18n, tGlobal } from '../lib/i18n';
 
 export default function ConfirmDialog({
   open,
@@ -23,6 +24,8 @@ export default function ConfirmDialog({
   onConfirm: () => void;
   onClose: () => void;
 }) {
+  const { t } = useI18n();
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -55,8 +58,8 @@ export default function ConfirmDialog({
           </div>
         </div>
         <div className="flex justify-end gap-2.5 mt-6">
-          <button className="btn-ghost" onClick={onClose}>{cancelLabel}</button>
-          <button className={ackColor} onClick={onConfirm}>{confirmLabel}</button>
+          <button className="btn-ghost" onClick={onClose}>{cancelLabel ?? t('Batal')}</button>
+          <button className={ackColor} onClick={onConfirm}>{confirmLabel ?? t('Konfirmasi')}</button>
         </div>
       </div>
     </div>,

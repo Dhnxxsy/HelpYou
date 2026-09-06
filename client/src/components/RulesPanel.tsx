@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Icon from './Icon';
 import type { SortRule } from '@shared/types';
+import { useI18n, tGlobal } from '../lib/i18n';
 
 const OPERATIONS: Record<SortRule['operation'], string> = {
   contains: 'Mengandung teks',
@@ -52,6 +53,7 @@ export default function RulesPanel({
   onSave: (rules: SortRule[]) => void;
   onClose: () => void;
 }) {
+  const { t } = useI18n();
   const [draft, setDraft] = useState<SortRule[]>([]);
   const [error, setError] = useState<string | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
@@ -99,14 +101,14 @@ export default function RulesPanel({
   function save() {
     for (const r of draft) {
       if (!r.value.trim()) {
-        setError('Semua aturan harus punya pola (value) yang tidak kosong.');
+        setError(tGlobal('Semua aturan harus punya pola (value) yang tidak kosong.'));
         return;
       }
       if (r.operation === 'regex') {
-        try { new RegExp(r.value); } catch { setError(`Regex tidak valid pada aturan "${r.name || r.value}".`); return; }
+        try { new RegExp(r.value); } catch { setError(tGlobal('Regex tidak valid pada aturan "{name}".', { name: r.name || r.value })); return; }
       }
       if (r.action === 'sort' && !sanitizeFolder(r.folder ?? '')) {
-        setError(`Folder tujuan tidak valid pada aturan "${r.name || r.value}". Gunakan karakter aman (tanpa /\\:*?"<>|).`);
+        setError(tGlobal('Folder tujuan tidak valid pada aturan "{name}". Gunakan karakter aman (tanpa /\\:*?"<>|).', { name: r.name || r.value }));
         return;
       }
     }
@@ -117,7 +119,7 @@ export default function RulesPanel({
   const active = draft.filter(r => r.enabled).length;
 
   return createPortal(
-    <div className="fixed inset-0 z-50 grid place-items-center p-4" role="dialog" aria-modal="true" aria-label="Aturan Sortir Kustom">
+    <div className="fixed inset-0 z-50 grid place-items-center p-4" role="dialog" aria-modal="true" aria-label={t('Aturan Sortir Kustom')}>
       <div className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm" onClick={onClose} />
       <div className="relative card w-full max-w-2xl max-h-[88vh] flex flex-col border-[var(--border-2)] animate-scale-in" ref={panelRef}>
         {/* Header */}
@@ -127,13 +129,13 @@ export default function RulesPanel({
               <Icon name="settings" className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-semibold text-[var(--text)]">Aturan Sortir Kustom</h3>
+              <h3 className="text-base font-semibold text-[var(--text)]">{t('Aturan Sortir Kustom')}</h3>
               <p className="text-xs text-[var(--text-2)]">
-                {active} aturan aktif · dievaluasi berurutan, yang pertama cocok menang
+                {t('{active} aturan aktif · dievaluasi berurutan, yang pertama cocok menang', { active })}
               </p>
             </div>
           </div>
-          <button className="btn-ghost !p-2" onClick={onClose} aria-label="Tutup">
+          <button className="btn-ghost !p-2" onClick={onClose} aria-label={t('Tutup')}>
             <Icon name="x" className="w-5 h-5" />
           </button>
         </div>
@@ -148,7 +150,7 @@ export default function RulesPanel({
 
           {draft.length === 0 && (
             <div className="text-center text-sm text-[var(--text-3)] py-6">
-              Belum ada aturan. Tambah aturan untuk menempatkan file ke folder sendiri atau melewatkan file tertentu saat scan berikutnya.
+              {t('Belum ada aturan. Tambah aturan untuk menempatkan file ke folder sendiri atau melewatkan file tertentu saat scan berikutnya.')}
             </div>
           )}
 
@@ -161,60 +163,60 @@ export default function RulesPanel({
                   <button
                     onClick={() => update(r.id, { enabled: !r.enabled })}
                     className={`relative w-9 h-5 rounded-full transition-colors shrink-0 ${r.enabled ? 'bg-[var(--accent-deep)]' : 'bg-[var(--overlay-2)]'}`}
-                    title={r.enabled ? 'Aktif — nonaktifkan' : 'Nonaktif — aktifkan'}
-                    aria-label="Toggle aturan"
+                    title={r.enabled ? t('Aktif — nonaktifkan') : t('Nonaktif — aktifkan')}
+                    aria-label={t('Toggle aturan')}
                   >
                     <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${r.enabled ? 'left-[18px]' : 'left-0.5'}`} />
                   </button>
                   <span className={`w-6 h-6 rounded-full grid place-items-center text-[11px] font-semibold tabular-nums shrink-0 border ${i === draft.length - 1 ? 'bg-[var(--accent-soft)] text-[var(--accent-strong)] border-[var(--accent-border)]' : 'bg-[var(--overlay)] text-[var(--text-2)] border-[var(--border)]'}`}>{i + 1}</span>
                   <input
                     className="input !py-1.5 !px-2.5 text-xs flex-1 min-w-0"
-                    placeholder="Nama label (opsional, untuk kejelasan)"
+                    placeholder={t('Nama label (opsional, untuk kejelasan)')}
                     value={r.name || ''}
                     onChange={e => update(r.id, { name: e.target.value })}
                   />
-                  <button className="btn-ghost !p-1.5" onClick={() => move(i, -1)} disabled={i === 0} aria-label="Naik"><Icon name="arrowRight" className="w-4 h-4 rotate-180" /></button>
-                  <button className="btn-ghost !p-1.5" onClick={() => move(i, 1)} disabled={i === draft.length - 1} aria-label="Turun"><Icon name="arrowRight" className="w-4 h-4" /></button>
-                  <button className="btn-ghost !p-1.5 text-[var(--danger-strong)] hover:!bg-[var(--danger-soft)]" onClick={() => remove(r.id)} aria-label="Hapus"><Icon name="trash" className="w-4 h-4" /></button>
+                  <button className="btn-ghost !p-1.5" onClick={() => move(i, -1)} disabled={i === 0} aria-label={t('Naik')}><Icon name="arrowRight" className="w-4 h-4 rotate-180" /></button>
+                  <button className="btn-ghost !p-1.5" onClick={() => move(i, 1)} disabled={i === draft.length - 1} aria-label={t('Turun')}><Icon name="arrowRight" className="w-4 h-4" /></button>
+                  <button className="btn-ghost !p-1.5 text-[var(--danger-strong)] hover:!bg-[var(--danger-soft)]" onClick={() => remove(r.id)} aria-label={t('Hapus')}><Icon name="trash" className="w-4 h-4" /></button>
                 </div>
 
                 {/* Row 2: action + match target */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                   <label>
-                    <span className="text-[var(--text-3)] block mb-1">Aksi</span>
+                    <span className="text-[var(--text-3)] block mb-1">{t('Aksi')}</span>
                     <select className="input !py-1.5 !px-2" value={r.action} onChange={e => update(r.id, { action: e.target.value as SortRule['action'] })}>
-                      <option value="sort">✨ Sortir ke folder</option>
-                      <option value="skip">⏭ Lewati (biarkan)</option>
+                      <option value="sort">✨ {t('Sortir ke folder')}</option>
+                      <option value="skip">⏭ {t('Lewati (biarkan)')}</option>
                     </select>
                   </label>
                   <label>
-                    <span className="text-[var(--text-3)] block mb-1">Cocokkan pada</span>
+                    <span className="text-[var(--text-3)] block mb-1">{t('Cocokkan pada')}</span>
                     <select className="input !py-1.5 !px-2" value={r.matchOn} onChange={e => update(r.id, { matchOn: e.target.value as SortRule['matchOn'] })}>
-                      <option value="name">Nama file</option>
-                      <option value="path">Jalur penuh</option>
+                      <option value="name">{t('Nama file')}</option>
+                      <option value="path">{t('Jalur penuh')}</option>
                     </select>
                   </label>
                   <label>
-                    <span className="text-[var(--text-3)] block mb-1">Cara</span>
+                    <span className="text-[var(--text-3)] block mb-1">{t('Cara')}</span>
                     <select className="input !py-1.5 !px-2" value={r.operation} onChange={e => update(r.id, { operation: e.target.value as SortRule['operation'] })}>
                       {(Object.keys(OPERATIONS) as SortRule['operation'][]).map(op => (
-                        <option key={op} value={op}>{OPERATIONS[op]}</option>
+                        <option key={op} value={op}>{t(OPERATIONS[op])}</option>
                       ))}
                     </select>
                   </label>
                   <label className="sm:col-span-2">
                     <span className="text-[var(--text-3)] block mb-1">
-                      Pola{r.operation === 'regex' ? ' (regex)' : ''}
+                      {t('Pola')}{r.operation === 'regex' ? t(' (regex)') : ''}
                       {regexStatus(r) === 'ok' && (
-                        <span className="ml-2 text-[10px] font-medium text-[var(--ok-strong)]">✓ valid</span>
+                        <span className="ml-2 text-[10px] font-medium text-[var(--ok-strong)]">{t('✓ valid')}</span>
                       )}
                       {regexStatus(r) === 'bad' && (
-                        <span className="ml-2 text-[10px] font-medium text-[var(--danger-strong)]">✗ regex tidak valid</span>
+                        <span className="ml-2 text-[10px] font-medium text-[var(--danger-strong)]">{t('✗ regex tidak valid')}</span>
                       )}
                     </span>
                     <input
                       className="input !py-1.5 !px-2.5 font-mono"
-                      placeholder={r.operation === 'regex' ? 'cth: ^IMG_\\d+' : 'cth: draft'}
+                      placeholder={r.operation === 'regex' ? t('cth: ^IMG_\\d+') : t('cth: draft')}
                       value={r.value}
                       onChange={e => update(r.id, { value: e.target.value })}
                     />
@@ -225,21 +227,21 @@ export default function RulesPanel({
                 {r.action === 'sort' && (
                   <div className="mt-2 text-xs">
                     <label>
-                      <span className="text-[var(--text-3)] block mb-1">Folder tujuan (di dalam _TerSortir)</span>
+                      <span className="text-[var(--text-3)] block mb-1">{t('Folder tujuan (di dalam _TerSortir)')}</span>
                       <div className="flex items-center gap-2">
                         <input
                           className="input !py-1.5 !px-2.5 flex-1"
-                          placeholder="cth: Proyek Alpha"
+                          placeholder={t('cth: Proyek Alpha')}
                           value={r.folder}
                           onChange={e => update(r.id, { folder: e.target.value })}
                         />
                         {folderPreview && (
                           <span className="text-[var(--text-2)] shrink-0">
-                            → _TerSortir/<b className="text-[var(--accent-strong)]">{folderPreview}</b>
+                            {t('→ _TerSortir/')}<b className="text-[var(--accent-strong)]">{folderPreview}</b>
                           </span>
                         )}
                         {r.folder && !folderPreview && (
-                          <span className="text-[var(--danger-strong)] shrink-0">nama tidak valid</span>
+                          <span className="text-[var(--danger-strong)] shrink-0">{t('nama tidak valid')}</span>
                         )}
                       </div>
                     </label>
@@ -250,7 +252,7 @@ export default function RulesPanel({
           })}
 
           <button className="btn-secondary w-full !py-2.5 text-sm !border-dashed !bg-transparent hover:!bg-[var(--overlay)]" onClick={() => setDraft(prev => [...prev, newRule()])}>
-            <Icon name="settings" className="w-4 h-4" /> Tambah Aturan
+            <Icon name="settings" className="w-4 h-4" /> {t('Tambah Aturan')}
           </button>
         </div>
 
@@ -258,11 +260,11 @@ export default function RulesPanel({
         <div className="px-5 py-4 border-t border-[var(--border)] flex flex-wrap items-center justify-between gap-3">
           <p className="text-[11px] text-[var(--text-3)] flex items-center gap-1.5">
             <Icon name="info" className="w-3.5 h-3.5 shrink-0" />
-            Berlaku untuk scan berikutnya. Folder nama dibersihkan otomatis di sisi server.
+            {t('Berlaku untuk scan berikutnya. Folder nama dibersihkan otomatis di sisi server.')}
           </p>
           <div className="flex gap-2.5">
-            <button className="btn-ghost text-sm" onClick={onClose}>Batalkan</button>
-            <button className="btn-primary text-sm" onClick={save}>Simpan Aturan</button>
+            <button className="btn-ghost text-sm" onClick={onClose}>{t('Batalkan')}</button>
+            <button className="btn-primary text-sm" onClick={save}>{t('Simpan Aturan')}</button>
           </div>
         </div>
       </div>

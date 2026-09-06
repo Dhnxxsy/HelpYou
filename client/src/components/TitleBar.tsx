@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { isDesktop } from '@/lib/platform';
 import type { WindowMaxState } from '@/lib/platform';
+import { useI18n, tGlobal } from '../lib/i18n';
 
 function WindowIcon({ d }: { d: string }) {
   return (
@@ -23,6 +24,7 @@ const CLOSE = 'M3 3l6 6M9 3 3 9';
 const INITIAL: WindowMaxState = { maximized: false, fullscreen: false };
 
 export default function TitleBar() {
+  const { t } = useI18n();
   const [state, setState] = useState<WindowMaxState>(INITIAL);
 
   useEffect(() => {
@@ -47,28 +49,28 @@ export default function TitleBar() {
 
       <div className="flex items-stretch" style={{ WebkitAppRegion: 'no-drag' } as CSSProperties}>
         <button
-          aria-label="Minimalkan"
+          aria-label={t('Minimalkan')}
           onClick={() => controls?.minimize()}
           className="w-11 flex items-center justify-center text-[var(--text-2)] hover:text-[var(--text)] hover:bg-[var(--overlay-2)] transition-colors"
         >
           <WindowIcon d={MINIMIZE} />
         </button>
         <button
-          aria-label={restoreable ? 'Pulihkan jendela' : 'Maksimalkan jendela'}
+          aria-label={restoreable ? t('Pulihkan jendela') : t('Maksimalkan jendela')}
           onClick={() => controls?.toggleMaximize().then((s) => setState((p) => ({ ...p, ...s })))}
           className={`w-11 flex items-center justify-center transition-colors ${restoreable ? 'text-[var(--accent-strong)] hover:bg-[var(--accent-soft-2)]' : 'text-[var(--text-2)] hover:text-[var(--text)] hover:bg-[var(--overlay-2)]'}`}
         >
           <WindowIcon d={restoreable ? RESTORE : MAXIMIZE} />
         </button>
         <button
-          aria-label={state.fullscreen ? 'Keluar dari layar penuh' : 'Layar penuh'}
+          aria-label={state.fullscreen ? t('Keluar dari layar penuh') : t('Layar penuh')}
           onClick={() => controls?.toggleFullscreen().then((s) => setState((p) => ({ ...p, ...s })))}
           className={`w-11 flex items-center justify-center transition-colors ${state.fullscreen ? 'text-[var(--accent-strong)] hover:bg-[var(--accent-soft-2)]' : 'text-[var(--text-2)] hover:text-[var(--text)] hover:bg-[var(--overlay-2)]'}`}
         >
           <WindowIcon d={state.fullscreen ? EXIT_FULLSCREEN : ENTER_FULLSCREEN} />
         </button>
         <button
-          aria-label="Tutup"
+          aria-label={t('Tutup')}
           onClick={() => controls?.close()}
           className="w-11 flex items-center justify-center text-[var(--text-2)] hover:text-[var(--text)] hover:bg-red-500/90 transition-colors"
         >

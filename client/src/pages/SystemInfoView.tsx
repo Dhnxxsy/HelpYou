@@ -3,9 +3,11 @@ import Icon, { type IconName } from '../components/Icon';
 import PageHeader from '../components/PageHeader';
 import { api } from '../lib/api';
 import { formatBytes } from '../lib/format';
+import { useI18n, tGlobal } from '../lib/i18n';
 import type { SystemInfoReport } from '@shared/types';
 
 export default function SystemInfoView({ onBack }: { onBack: () => void }) {
+  const { t } = useI18n();
   const [report, setReport] = useState<SystemInfoReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -17,7 +19,7 @@ export default function SystemInfoView({ onBack }: { onBack: () => void }) {
       const res = await api<{ report: SystemInfoReport }>('/api/system/report');
       setReport(res.report);
     } catch (e: any) {
-      setError(e.message || 'Gagal membaca informasi sistem.');
+      setError(e.message || t('Gagal membaca informasi sistem.'));
     } finally {
       setLoading(false);
     }
@@ -30,15 +32,17 @@ export default function SystemInfoView({ onBack }: { onBack: () => void }) {
     const r = report;
     const ramUsed = Math.max(0, r.ram.total - r.ram.free);
     const lines = [
-      `=== Ringkasan Sistem ===`,
-      `PC: ${r.pc.manufacturer} ${r.pc.model}`,
-      `OS: ${r.os.caption} (build ${r.os.build}, ${r.os.arch})`,
-      `CPU: ${r.cpu.name} — ${r.cpu.cores} core / ${r.cpu.logical} thread @ ~${r.cpu.clockGhz} GHz`,
-      `RAM: ${formatBytes(ramUsed)} dari ${formatBytes(r.ram.total)}`,
-      `Uptime: ${r.os.uptimeDays} hari`,
-      `Host: ${r.os.hostname} (${r.os.user})`,
-      `Serial: ${r.pc.serial}`,
-      ...r.disks.filter((d) => d.total > 0).map((d) => `${d.drive} ${d.label || ''} — ${formatBytes(d.free)} bebas dari ${formatBytes(d.total)}`.trim()),
+      t('=== Ringkasan Sistem ==='),
+      t('PC: {pc}', { pc: `${r.pc.manufacturer} ${r.pc.model}` }),
+      t('OS: {caption} (build {build}, {arch})', { caption: r.os.caption, build: r.os.build, arch: r.os.arch }),
+      t('CPU: {name} — {cores} core / {logical} thread @ ~{clock} GHz', { name: r.cpu.name, cores: r.cpu.cores, logical: r.cpu.logical, clock: r.cpu.clockGhz }),
+      t('RAM: {used} dari {total}', { used: formatBytes(ramUsed), total: formatBytes(r.ram.total) }),
+      t('Uptime: {days} hari', { days: r.os.uptimeDays }),
+      t('Host: {hostname} ({user})', { hostname: r.os.hostname, user: r.os.user }),
+      t('Serial: {serial}', { serial: r.pc.serial }),
+      ...r.disks.filter((d) => d.total > 0).map((d) =>
+        t('{drive} {label} — {free} bebas dari {total}', { drive: d.drive, label: d.label || '', free: formatBytes(d.free), total: formatBytes(d.total) }).trim()
+      ),
     ];
     try { await navigator.clipboard.writeText(lines.join('\n')); } catch { /* ignore */ }
   };
@@ -47,16 +51,16 @@ export default function SystemInfoView({ onBack }: { onBack: () => void }) {
     <div className="space-y-6 animate-fade-in">
       <PageHeader
         icon="cpu"
-        title="Info & Laporan Sistem"
-        desc="Ringkasan perangkat keras, sistem operasi, memori, dan setiap drive — untuk memahami kondisi PC-mu."
+        title={t('Info & Laporan Sistem')}
+        desc={t('Ringkasan perangkat keras, sistem operasi, memori, dan setiap drive — untuk memahami kondisi PC-mu.')}
         onBack={onBack}
         actions={
           <>
             <button className="btn-ghost !py-2 !px-3 text-xs" onClick={load} disabled={loading}>
-              <Icon name="replay" className="w-4 h-4" /> Muat Ulang
+              <Icon name="replay" className="w-4 h-4" /> {t('Muat Ulang')}
             </button>
             <button className="btn-primary !py-2 !px-3 text-xs" onClick={copySummary} disabled={!report}>
-              <Icon name="duplicate" className="w-4 h-4" /> Salin Ringkasan
+              <Icon name="duplicate" className="w-4 h-4" /> {t('Salin Ringkasan')}
             </button>
           </>
         }
@@ -67,34 +71,34 @@ export default function SystemInfoView({ onBack }: { onBack: () => void }) {
       {loading && (
         <div className="card p-8 text-center">
           <div className="animate-spin h-6 w-6 border-2 border-[var(--warn-border)] border-t-[var(--warn-strong)] rounded-full mx-auto" />
-          <p className="text-sm text-[var(--text-2)] mt-3">Membaca informasi sistem…</p>
+          <p className="text-sm text-[var(--text-2)] mt-3">{t('Membaca informasi sistem…')}</p>
         </div>
       )}
 
       {!loading && report && (
         <div className="space-y-5">
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <StatCard label="Sistem Operasi" value={`${report.os.caption}\n${report.os.version || ''}\nBuild ${report.os.build} · ${report.os.arch}`} icon="disc" />
-            <StatCard label="PC / Laptop" value={`${report.pc.manufacturer} ${report.pc.model}`.trim() || 'Tidak terdeteksi'} icon="cpu" />
-            <StatCard label="Hostname" value={`${report.os.hostname}\n${report.os.user}`} icon="network" />
-            <StatCard label="Uptime" value={`${report.os.uptimeDays} hari`} icon="clock" />
+            <StatCard label={t('Sistem Operasi')} value={`${report.os.caption}\n${report.os.version || ''}\nBuild ${report.os.build} · ${report.os.arch}`} icon="disc" />
+            <StatCard label={t('PC / Laptop')} value={`${report.pc.manufacturer} ${report.pc.model}`.trim() || 'Tidak terdeteksi'} icon="cpu" />
+            <StatCard label={t('Hostname')} value={`${report.os.hostname}\n${report.os.user}`} icon="network" />
+            <StatCard label={t('Uptime')} value={`${report.os.uptimeDays} hari`} icon="clock" />
           </div>
 
           <div className="rounded-2xl border border-[var(--border)] overflow-hidden bg-[var(--overlay)]">
             <div className="px-4 py-3 border-b border-[var(--border)] text-sm font-semibold text-[var(--text)] flex items-center gap-2">
-              <Icon name="cpu" className="w-4 h-4 text-[var(--warn-strong)]" /> Prosesor
+              <Icon name="cpu" className="w-4 h-4 text-[var(--warn-strong)]" /> {t('Prosesor')}
             </div>
             <div className="px-4 py-3 text-sm text-[var(--text)]">{report.cpu.name || 'Tidak terdeteksi'}</div>
             <div className="px-4 pb-3 grid grid-cols-3 gap-3 text-center">
-              <MiniStat label="Core" value={String(report.cpu.cores)} />
-              <MiniStat label="Thread" value={String(report.cpu.logical)} />
-              <MiniStat label="Kecepatan" value={`~${report.cpu.clockGhz} GHz`} />
+              <MiniStat label={t('Core')} value={String(report.cpu.cores)} />
+              <MiniStat label={t('Thread')} value={String(report.cpu.logical)} />
+              <MiniStat label={t('Kecepatan')} value={`~${report.cpu.clockGhz} GHz`} />
             </div>
           </div>
 
           <div className="rounded-2xl border border-[var(--border)] overflow-hidden bg-[var(--overlay)]">
             <div className="px-4 py-3 border-b border-[var(--border)] text-sm font-semibold text-[var(--text)] flex items-center justify-between">
-              <span className="flex items-center gap-2"><Icon name="box" className="w-4 h-4 text-[var(--warn-strong)]" /> Memori (RAM)</span>
+              <span className="flex items-center gap-2"><Icon name="box" className="w-4 h-4 text-[var(--warn-strong)]" /> {t('Memori (RAM)')}</span>
               <span className="text-xs font-normal text-[var(--text-2)]">{formatBytes(report.ram.free)} bebas</span>
             </div>
             <div className="px-4 py-3">
@@ -108,7 +112,7 @@ export default function SystemInfoView({ onBack }: { onBack: () => void }) {
           {report.battery && (
             <div className="rounded-2xl border border-[var(--border)] overflow-hidden bg-[var(--overlay)]">
               <div className="px-4 py-3 border-b border-[var(--border)] text-sm font-semibold text-[var(--text)] flex items-center justify-between">
-                <span className="flex items-center gap-2"><Icon name="gauge" className="w-4 h-4 text-[var(--ok-strong)]" /> Baterai</span>
+                <span className="flex items-center gap-2"><Icon name="gauge" className="w-4 h-4 text-[var(--ok-strong)]" /> {t('Baterai')}</span>
                 <span className="text-xs font-normal text-[var(--text-2)]">{report.battery.status}</span>
               </div>
               <div className="px-4 py-3">
@@ -121,7 +125,7 @@ export default function SystemInfoView({ onBack }: { onBack: () => void }) {
           {report.gpu.length > 0 && (
             <div className="rounded-2xl border border-[var(--border)] overflow-hidden bg-[var(--overlay)]">
               <div className="px-4 py-3 border-b border-[var(--border)] text-sm font-semibold text-[var(--text)] flex items-center gap-2">
-                <Icon name="chart" className="w-4 h-4 text-[var(--warn-strong)]" /> Kartu Grafis
+                <Icon name="chart" className="w-4 h-4 text-[var(--warn-strong)]" /> {t('Kartu Grafis')}
               </div>
               <div className="divide-y divide-white/5">
                 {report.gpu.map((g, i) => (
@@ -136,11 +140,11 @@ export default function SystemInfoView({ onBack }: { onBack: () => void }) {
 
           <div className="rounded-2xl border border-[var(--border)] overflow-hidden bg-[var(--overlay)]">
             <div className="px-4 py-3 border-b border-[var(--border)] text-sm font-semibold text-[var(--text)] flex items-center gap-2">
-              <Icon name="drive" className="w-4 h-4 text-[var(--warn-strong)]" /> Penyimpanan
+              <Icon name="drive" className="w-4 h-4 text-[var(--warn-strong)]" /> {t('Penyimpanan')}
             </div>
             <div className="divide-y divide-white/5">
               {report.disks.filter((d) => d.total > 0).length === 0 && (
-                <div className="px-4 py-6 text-center text-sm text-[var(--text-3)]">Tidak ada drive yang terdeteksi.</div>
+                <div className="px-4 py-6 text-center text-sm text-[var(--text-3)]">{t('Tidak ada drive yang terdeteksi.')}</div>
               )}
               {report.disks.filter((d) => d.total > 0).map((d, i) => (
                 <div key={i} className="px-4 py-3">
@@ -158,15 +162,15 @@ export default function SystemInfoView({ onBack }: { onBack: () => void }) {
           </div>
 
           <div className="grid sm:grid-cols-2 gap-3">
-            <InfoLine label="Nomor Seri (BIOS)" value={report.pc.serial || '—'} />
-            <InfoLine label="Versi BIOS" value={report.pc.bios || '—'} />
-            <InfoLine label="Serial OS" value={report.os.installDate || '—'} />
+            <InfoLine label={t('Nomor Seri (BIOS)')} value={report.pc.serial || '—'} />
+            <InfoLine label={t('Versi BIOS')} value={report.pc.bios || '—'} />
+            <InfoLine label={t('Serial OS')} value={report.os.installDate || '—'} />
           </div>
         </div>
       )}
 
       <button className="btn-ghost !py-2 !px-3 text-xs" onClick={onBack}>
-        <Icon name="chevronRight" className="w-3.5 h-3.5 rotate-180" /> Kembali ke Beranda
+        <Icon name="chevronRight" className="w-3.5 h-3.5 rotate-180" /> {t('Kembali ke Beranda')}
       </button>
     </div>
   );

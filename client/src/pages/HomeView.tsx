@@ -1,5 +1,6 @@
 import Icon from '../components/Icon';
 import { ACTIVE_TOOLS, type ToolId } from '../lib/tools';
+import { useI18n, tGlobal } from '../lib/i18n';
 
 const FEATURES = [
   { icon: 'shield' as const, label: 'Privasi penuh' },
@@ -15,31 +16,32 @@ const STATS = [
 ];
 
 export default function HomeView({ onOpen }: { onOpen: (tool: ToolId) => void }) {
+  const { t } = useI18n();
   return (
     <div className="space-y-10 animate-fade-in">
       {/* Hero */}
       <section className="pt-6 pb-2 px-1">
         <div className="flex items-center gap-1.5 chip bg-[var(--accent-soft)] text-[var(--accent-strong)] border-[var(--accent-border)] px-3 py-1 w-fit mb-6">
           <Icon name="sparkle" className="w-3.5 h-3.5" />
-          Suite Tools Lokal untuk Windows
+          {t('Suite Tools Lokal untuk Windows')}
         </div>
         <h1 className="text-3xl sm:text-[44px] font-bold tracking-[-0.02em] leading-[1.12] text-balance max-w-3xl">
           <span className="text-gradient drop-shadow-[0_0_36px_rgba(129,140,248,0.28)]">
-            Semua Tools File-mu,
+            {t('Semua Tools File-mu,')}
             <br />
-            dalam Satu Tempat.
+            {t('dalam Satu Tempat.')}
           </span>
         </h1>
         <p className="text-[15px] text-[var(--text-2)] mt-5 max-w-2xl leading-relaxed text-balance">
-          Rapikan file, bersihkan sampah, kelola startup, hingga kunci data pribadi — semuanya berjalan{' '}
-          <span className="text-[var(--ok-strong)] font-medium">100% lokal</span>. Data tidak pernah meninggalkan perangkatmu.
+          {t('Rapikan file, bersihkan sampah, kelola startup, hingga kunci data pribadi — semuanya berjalan')}{' '}
+          <span className="text-[var(--ok-strong)] font-medium">100% lokal</span>{t('. Data tidak pernah meninggalkan perangkatmu.')}
         </p>
 
         <div className="flex flex-wrap items-center gap-2.5 mt-6">
           {FEATURES.map((f) => (
             <span key={f.label} className="chip bg-[var(--overlay)] text-[var(--text-2)] px-3 py-1 gap-1.5">
               <Icon name={f.icon} className="w-3.5 h-3.5 text-[var(--accent-strong)]" />
-              {f.label}
+              {t(f.label)}
             </span>
           ))}
         </div>
@@ -54,7 +56,7 @@ export default function HomeView({ onOpen }: { onOpen: (tool: ToolId) => void })
             </span>
             <div className="min-w-0">
               <div className="text-lg font-bold text-[var(--text)] leading-none tabular-nums">{s.value}</div>
-              <div className="text-[11px] text-[var(--text-3)] mt-1 truncate">{s.label}</div>
+              <div className="text-[11px] text-[var(--text-3)] mt-1 truncate">{t(s.label)}</div>
             </div>
           </div>
         ))}
@@ -65,31 +67,31 @@ export default function HomeView({ onOpen }: { onOpen: (tool: ToolId) => void })
         <div className="flex items-center justify-between gap-2 mb-5">
           <div className="flex items-center">
             <span className="section-bar" />
-            <h2 className="text-sm font-semibold text-[var(--text)]">Tools Tersedia</h2>
+            <h2 className="text-sm font-semibold text-[var(--text)]">{t('Tools Tersedia')}</h2>
           </div>
-          <span className="chip bg-[var(--overlay)] text-[var(--text-3)]">{ACTIVE_TOOLS.length} tools</span>
+          <span className="chip bg-[var(--overlay)] text-[var(--text-3)]">{t('{n} tools', { n: ACTIVE_TOOLS.length })}</span>
         </div>
         <div className="grid sm:grid-cols-2 gap-4">
-          {ACTIVE_TOOLS.map((t, i) => (
+          {ACTIVE_TOOLS.map((tool, i) => (
             <button
-              key={t.title}
-              onClick={() => onOpen(t.tool)}
+              key={tool.title}
+              onClick={() => onOpen(tool.tool)}
               className="card card-hover p-5 text-left flex items-start gap-4 group animate-slide-up"
               style={{ animationDelay: `${i * 45}ms` }}
             >
               <div
-                className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${t.accent} grid place-items-center text-white shadow-lg ${t.glow} group-hover:scale-105 group-hover:-rotate-3 transition-transform shrink-0`}
+                className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${tool.accent} grid place-items-center text-white shadow-lg ${tool.glow} group-hover:scale-105 group-hover:-rotate-3 transition-transform shrink-0`}
               >
-                <Icon name={t.icon} className="w-6 h-6" />
+                <Icon name={tool.icon} className="w-6 h-6" />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="text-[15px] font-semibold text-[var(--text)] flex items-center gap-1.5">
-                  {t.title}
+                  {t(tool.title)}
                   <span className="w-5 h-5 grid place-items-center rounded-full bg-[var(--accent-soft)] text-[var(--accent-strong)] group-hover:bg-[var(--accent-deep)] group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0">
                     <Icon name="arrowRight" className="w-3.5 h-3.5" />
                   </span>
                 </div>
-                <p className="text-xs text-[var(--text-2)] mt-1.5 leading-relaxed line-clamp-2">{t.desc}</p>
+                <p className="text-xs text-[var(--text-2)] mt-1.5 leading-relaxed line-clamp-2">{t(tool.desc)}</p>
               </div>
             </button>
           ))}

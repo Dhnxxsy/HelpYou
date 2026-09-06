@@ -3,9 +3,11 @@ import Icon from '../components/Icon';
 import PageHeader from '../components/PageHeader';
 import { api } from '../lib/api';
 import { formatBytes } from '../lib/format';
+import { useI18n, tGlobal } from '../lib/i18n';
 import type { ProcessInfo } from '@shared/types';
 
 export default function ProcessManagerView({ onBack }: { onBack: () => void }) {
+  const { t } = useI18n();
   const [processes, setProcesses] = useState<ProcessInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -22,7 +24,7 @@ export default function ProcessManagerView({ onBack }: { onBack: () => void }) {
       const res = await api<{ processes: ProcessInfo[] }>('/api/process/list');
       setProcesses(res.processes || []);
     } catch (e: any) {
-      setError(e.message || 'Gagal membaca daftar proses.');
+      setError(e.message || t('Gagal membaca daftar proses.'));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -38,12 +40,12 @@ export default function ProcessManagerView({ onBack }: { onBack: () => void }) {
         method: 'POST',
         body: JSON.stringify({ pid }),
       });
-      if (!res.ok) throw new Error(res.error || 'Gagal menghentikan proses.');
+      if (!res.ok) throw new Error(res.error || t('Gagal menghentikan proses.'));
       setConfirmPid(null);
       setSelected(null);
       await load(false);
     } catch (e: any) {
-      setError(e.message || 'Gagal menghentikan proses.');
+      setError(e.message || t('Gagal menghentikan proses.'));
     }
   };
 
@@ -61,12 +63,12 @@ export default function ProcessManagerView({ onBack }: { onBack: () => void }) {
     <div className="space-y-6 animate-fade-in">
       <PageHeader
         icon="activity"
-        title="Pengelola Proses"
-        desc="Lihat program yang sedang berjalan dan pemakaian memorinya, lalu hentikan proses yang macet."
+        title={t('Pengelola Proses')}
+        desc={t('Lihat program yang sedang berjalan dan pemakaian memorinya, lalu hentikan proses yang macet.')}
         onBack={onBack}
         actions={
           <button className="btn-outline !py-2 !px-3 text-xs" onClick={() => load(false)} disabled={loading || refreshing}>
-            <Icon name="replay" className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} /> {refreshing ? 'Menyegarkan…' : 'Muat Ulang'}
+            <Icon name="replay" className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} /> {refreshing ? t('Menyegarkan…') : t('Muat Ulang')}
           </button>
         }
       />
@@ -76,17 +78,17 @@ export default function ProcessManagerView({ onBack }: { onBack: () => void }) {
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="relative flex-1">
           <Icon name="search" className="w-4 h-4 text-[var(--text-3)] absolute left-3 top-1/2 -translate-y-1/2" />
-          <input className="input-field pl-9 !py-2 text-sm" placeholder="Cari nama / PID / jendela…" value={query} onChange={(e) => setQuery(e.target.value)} />
+          <input className="input-field pl-9 !py-2 text-sm" placeholder={t('Cari nama / PID / jendela…')} value={query} onChange={(e) => setQuery(e.target.value)} />
         </div>
         <div className="chip bg-[var(--accent-soft)] text-[var(--accent-strong)] border-[var(--accent-border)]">
-          {filtered.length} proses · {formatBytes(memTotal * 1024 * 1024)}
+          {t('{n} proses · {bytes}', { n: filtered.length, bytes: formatBytes(memTotal * 1024 * 1024) })}
         </div>
       </div>
 
       {loading && !processes.length && (
         <div className="card p-8 text-center">
           <div className="animate-spin h-6 w-6 border-2 border-[var(--accent-border)] border-t-[var(--accent-strong)] rounded-full mx-auto" />
-          <p className="text-sm text-[var(--text-2)] mt-3">Membaca daftar proses…</p>
+          <p className="text-sm text-[var(--text-2)] mt-3">{t('Membaca daftar proses…')}</p>
         </div>
       )}
 
@@ -95,11 +97,11 @@ export default function ProcessManagerView({ onBack }: { onBack: () => void }) {
           <table className="w-full text-sm">
             <thead className="bg-[var(--overlay)] text-[10px] uppercase tracking-wider text-[var(--text-3)]">
               <tr>
-                <th className="text-left px-4 py-2.5 font-semibold">Proses</th>
+                <th className="text-left px-4 py-2.5 font-semibold">{t('Proses')}</th>
                 <th className="text-left px-4 py-2.5 font-semibold hidden sm:table-cell">PID</th>
-                <th className="text-right px-4 py-2.5 font-semibold">Memori</th>
-                <th className="text-left px-4 py-2.5 font-semibold hidden md:table-cell">CPU (detik)</th>
-                <th className="text-left px-4 py-2.5 font-semibold hidden lg:table-cell">Jendela</th>
+                <th className="text-right px-4 py-2.5 font-semibold">{t('Memori')}</th>
+                <th className="text-left px-4 py-2.5 font-semibold hidden md:table-cell">{t('CPU (detik)')}</th>
+                <th className="text-left px-4 py-2.5 font-semibold hidden lg:table-cell">{t('Jendela')}</th>
                 <th className="text-right px-3 py-2.5 w-24"></th>
               </tr>
             </thead>
@@ -120,19 +122,19 @@ export default function ProcessManagerView({ onBack }: { onBack: () => void }) {
                   <td className="px-3 py-2 text-right">
                     {confirmPid === p.pid ? (
                       <div className="flex items-center gap-1.5 justify-end">
-                        <button className="btn-danger !py-1 !px-2 text-[11px]" onClick={() => kill(p.pid)}>Yakin?</button>
-                        <button className="btn-ghost !py-1 !px-2 text-[11px]" onClick={() => setConfirmPid(null)}>Batal</button>
+                        <button className="btn-danger !py-1 !px-2 text-[11px]" onClick={() => kill(p.pid)}>{t('Yakin?')}</button>
+                        <button className="btn-ghost !py-1 !px-2 text-[11px]" onClick={() => setConfirmPid(null)}>{t('Batal')}</button>
                       </div>
                     ) : (
                       <button className="btn-ghost !py-1 !px-2 text-[11px] hover:!bg-[var(--danger-soft)] hover:!text-[var(--danger-strong)]" onClick={() => setConfirmPid(p.pid)}>
-                        Hentikan
+                        {t('Hentikan')}
                       </button>
                     )}
                   </td>
                 </tr>
               ))}
               {filtered.length === 0 && (
-                <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-[var(--text-3)]">Tidak ada proses yang cocok.</td></tr>
+                <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-[var(--text-3)]">{t('Tidak ada proses yang cocok.')}</td></tr>
               )}
             </tbody>
           </table>
@@ -148,7 +150,7 @@ export default function ProcessManagerView({ onBack }: { onBack: () => void }) {
               </span>
               <div>
                 <div className="font-bold text-[var(--text)]">{selected.name}.exe</div>
-                <div className="text-xs text-[var(--text-3)]">PID {selected.pid} · Sesi {selected.sessionId}</div>
+                <div className="text-xs text-[var(--text-3)]">{t('PID {pid} · Sesi {session}', { pid: selected.pid, session: selected.sessionId })}</div>
               </div>
             </div>
             <div className="grid grid-cols-3 gap-2 text-center">
@@ -158,18 +160,18 @@ export default function ProcessManagerView({ onBack }: { onBack: () => void }) {
               </div>
               <div className="rounded-xl bg-[var(--overlay)] border border-[var(--border)] py-3">
                 <div className="text-lg font-bold text-[var(--text)] tabular-nums">{selected.cpuSeconds.toFixed(0)}</div>
-                <div className="text-[10px] uppercase tracking-wider text-[var(--text-3)]">Cpu (dtk)</div>
+                <div className="text-[10px] uppercase tracking-wider text-[var(--text-3)]">{t('Cpu (dtk)')}</div>
               </div>
               <div className="rounded-xl bg-[var(--overlay)] border border-[var(--border)] py-3">
                 <div className="text-lg font-bold text-[var(--text)] tabular-nums truncate">{selected.path ? formatPathBase(selected.path) : '—'}</div>
                 <div className="text-[10px] uppercase tracking-wider text-[var(--text-3)]">Path</div>
               </div>
             </div>
-            <div className="rounded-xl bg-[var(--overlay)] border border-[var(--border)] px-4 py-3 text-sm text-[var(--text-2)] break-all">{selected.path || 'Lokasi tidak dapat diakses.'}</div>
+            <div className="rounded-xl bg-[var(--overlay)] border border-[var(--border)] px-4 py-3 text-sm text-[var(--text-2)] break-all">{selected.path || t('Lokasi tidak dapat diakses.')}</div>
             <div className="flex gap-2 justify-end">
-              <button className="btn-ghost" onClick={() => setSelected(null)}>Tutup</button>
+              <button className="btn-ghost" onClick={() => setSelected(null)}>{t('Tutup')}</button>
               <button className="btn-danger" onClick={() => { setConfirmPid(selected.pid); setSelected(null); }}>
-                <Icon name="stop" className="w-4 h-4" /> Hentikan Proses
+                <Icon name="stop" className="w-4 h-4" /> {t('Hentikan Proses')}
               </button>
             </div>
           </div>
@@ -177,7 +179,7 @@ export default function ProcessManagerView({ onBack }: { onBack: () => void }) {
       )}
 
       <button className="btn-ghost !py-2 !px-3 text-xs" onClick={onBack}>
-        <Icon name="chevronRight" className="w-3.5 h-3.5 rotate-180" /> Kembali ke Beranda
+        <Icon name="chevronRight" className="w-3.5 h-3.5 rotate-180" /> {t('Kembali ke Beranda')}
       </button>
     </div>
   );

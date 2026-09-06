@@ -4,13 +4,14 @@ import Icon, { type IconName } from '../components/Icon';
 import ConfirmDialog from '../components/ConfirmDialog';
 import AppIcon from '../components/AppIcon';
 import { formatBytes } from '../lib/format';
+import { useI18n, tGlobal } from '../lib/i18n';
 import type { InstalledApp, ResidueEntry } from '@shared/types';
 
 function kindLabel(kind: ResidueEntry['kind']): string {
-  if (kind === 'folder') return 'Folder';
-  if (kind === 'executable') return 'Program (EXE)';
-  if (kind === 'shortcut') return 'Pintasan';
-  return 'File';
+  if (kind === 'folder') return tGlobal('Folder');
+  if (kind === 'executable') return tGlobal('Program (EXE)');
+  if (kind === 'shortcut') return tGlobal('Pintasan');
+  return tGlobal('File');
 }
 
 const KIND_ICON: Record<ResidueEntry['kind'], IconName> = {
@@ -38,6 +39,7 @@ async function api<T>(url: string, opts?: RequestInit): Promise<T> {
 }
 
 export default function UninstallerView({ onBack }: { onBack: () => void }) {
+  const { t } = useI18n();
   const [apps, setApps] = useState<InstalledApp[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -59,7 +61,7 @@ export default function UninstallerView({ onBack }: { onBack: () => void }) {
       setApps(list);
       warmIcons(list);
     } catch (e: any) {
-      setError(e.message || 'Gagal memuat daftar program.');
+      setError(e.message || t('Gagal memuat daftar program.'));
     } finally {
       setLoading(false);
     }
@@ -106,17 +108,17 @@ export default function UninstallerView({ onBack }: { onBack: () => void }) {
       {/* Heading */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div>
-          <div className="eyebrow mb-1.5">Toolbox — Utilitas Sistem</div>
+          <div className="eyebrow mb-1.5">{t('Toolbox — Utilitas Sistem')}</div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-            <span className="text-gradient">Uninstaller Program</span>
+            <span className="text-gradient">{t('Uninstaller Program')}</span>
           </h1>
           <p className="text-sm text-[var(--text-2)] mt-1.5 max-w-2xl">
-            Hapus pasang aplikasi dengan cepat dan bersih — termasuk bekas folder, data aplikasi, dan pintasan Start Menu.
+            {t('Hapus pasang aplikasi dengan cepat dan bersih — termasuk bekas folder, data aplikasi, dan pintasan Start Menu.')}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <StatsPill label="Program" value={apps.length.toLocaleString('id-ID')} />
-          <StatsPill label="Total terduga" value={formatBytes(totalSize)} />
+          <StatsPill label={t('Program')} value={apps.length.toLocaleString('id-ID')} />
+          <StatsPill label={t('Total terduga')} value={formatBytes(totalSize)} />
         </div>
       </div>
 
@@ -126,22 +128,22 @@ export default function UninstallerView({ onBack }: { onBack: () => void }) {
           <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-3)]" />
           <input
             className="input pl-9"
-            placeholder="Cari program atau penerbit..."
+            placeholder={t('Cari program atau penerbit...')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <select className="input !w-auto !py-2 pr-9" value={sort} onChange={(e) => setSort(e.target.value as 'name' | 'size')}>
-            <option value="name">Urut Nama (A-Z)</option>
-            <option value="size">Urut Ukuran Terbesar</option>
+            <option value="name">{t('Urut Nama (A-Z)')}</option>
+            <option value="size">{t('Urut Ukuran Terbesar')}</option>
           </select>
-          <label className="flex items-center gap-2 text-xs text-[var(--text-2)] cursor-pointer select-none px-1" title="Jalankan uninstaller tanpa dialog bila memungkinkan">
+          <label className="flex items-center gap-2 text-xs text-[var(--text-2)] cursor-pointer select-none px-1" title={t('Jalankan uninstaller tanpa dialog bila memungkinkan')}>
             <input type="checkbox" className="accent-indigo-500 w-4 h-4" checked={silent} onChange={(e) => setSilent(e.target.checked)} />
-            Mode senyap
+            {t('Mode senyap')}
           </label>
           <button className="btn-secondary !py-2 !px-3.5 text-xs" onClick={() => loadApps(true)} disabled={loading}>
-            <Icon name="replay" className="w-3.5 h-3.5" /> Muat Ulang
+            <Icon name="replay" className="w-3.5 h-3.5" /> {t('Muat Ulang')}
           </button>
         </div>
       </div>
@@ -164,8 +166,8 @@ export default function UninstallerView({ onBack }: { onBack: () => void }) {
           {filtered.length === 0 ? (
             <div className="py-14 text-center text-sm text-[var(--text-3)] flex flex-col items-center gap-2">
               <Icon name="package" className="w-6 h-6 text-[var(--text-3)]" />
-              {apps.length === 0 ? 'Belum ada aplikasi terdeteksi.' : 'Tidak ada program yang cocok.'}
-              <button className="btn-ghost !py-2 !px-3 text-xs mt-2" onClick={() => loadApps(true)}>Coba muat ulang</button>
+              {apps.length === 0 ? t('Belum ada aplikasi terdeteksi.') : t('Tidak ada program yang cocok.')}
+              <button className="btn-ghost !py-2 !px-3 text-xs mt-2" onClick={() => loadApps(true)}>{t('Coba muat ulang')}</button>
             </div>
           ) : (
             <div className="divide-y divide-white/5">
@@ -185,16 +187,16 @@ export default function UninstallerView({ onBack }: { onBack: () => void }) {
         </div>
       )}
 
-      <p className="text-[11px] text-[var(--text-3)]">{filtered.length.toLocaleString('id-ID')} program · ukuran adalah perkiraan dari registry</p>
+      <p className="text-[11px] text-[var(--text-3)]">{t('{count} program · ukuran adalah perkiraan dari registry', { count: filtered.length.toLocaleString('id-ID') })}</p>
 
       {/* Confirm uninstall */}
       <ConfirmDialog
         open={!!confirmApp}
         tone="danger"
         icon="trash"
-        title={confirmApp ? `Uninstall ${confirmApp.name}?` : ''}
-        description={confirmApp ? `Aplikasi akan di-uninstall ${silent ? 'tanpa menampilkan dialog (mode senyap)' : 'dengan wizard normal'}. Anda bisa membersihkan sisa file setelahnya.` : ''}
-        confirmLabel="Ya, uninstall"
+        title={confirmApp ? t('Uninstall {name}?', { name: confirmApp.name }) : ''}
+        description={confirmApp ? t('Aplikasi akan di-uninstall {mode}. Anda bisa membersihkan sisa file setelahnya.', { mode: silent ? t('tanpa menampilkan dialog (mode senyap)') : t('dengan wizard normal') }) : ''}
+        confirmLabel={t('Ya, uninstall')}
         onClose={() => setConfirmApp(null)}
         onConfirm={() => {
           const app = confirmApp;
@@ -218,7 +220,7 @@ export default function UninstallerView({ onBack }: { onBack: () => void }) {
       {residueApp && <ResidueModal app={residueApp} onClose={() => setResidueApp(null)} />}
 
       <button className="btn-ghost !py-2 !px-3 text-xs" onClick={onBack}>
-        <Icon name="chevronRight" className="w-3.5 h-3.5 rotate-180" /> Kembali ke Beranda
+        <Icon name="chevronRight" className="w-3.5 h-3.5 rotate-180" /> {t('Kembali ke Beranda')}
       </button>
     </div>
   );
@@ -241,6 +243,7 @@ function AppRow({ app, index, expanded, onToggle, onUninstall, onResidue }: {
   onUninstall: () => void;
   onResidue: () => void;
 }) {
+  const { t } = useI18n();
   const canUninstall = !!(app.uninstallString || app.quietUninstallString);
   return (
     <div className="row">
@@ -252,26 +255,26 @@ function AppRow({ app, index, expanded, onToggle, onUninstall, onResidue }: {
             {app.displayVersion && <span className="chip bg-[var(--overlay)] text-[var(--text-2)] border border-[var(--border)] text-[10px] shrink-0">{app.displayVersion}</span>}
           </div>
           <div className="text-xs text-[var(--text-3)] truncate mt-0.5">
-            {[app.publisher, app.arch, bytesOfApp(app) !== undefined ? formatBytes(bytesOfApp(app)) : null].filter(Boolean).join(' · ') || 'Program terpasang'}
+            {[app.publisher, app.arch, bytesOfApp(app) !== undefined ? formatBytes(bytesOfApp(app)) : null].filter(Boolean).join(' · ') || t('Program terpasang')}
           </div>
         </div>
         <div className="hidden sm:flex flex-col items-end text-xs text-[var(--text-3)] shrink-0 mr-1">
           {app.installDate ? <span className="tabular-nums">{formatInstallDate(app.installDate)}</span> : <span>—</span>}
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
-          <button className="btn-ghost !p-2 text-[var(--text-2)]" title="Periksa residu" onClick={onResidue}>
+          <button className="btn-ghost !p-2 text-[var(--text-2)]" title={t('Periksa residu')} onClick={onResidue}>
             <Icon name="broom" className="w-4 h-4" />
           </button>
           <button
             className="btn-danger !py-2 !px-3.5 !text-xs"
             disabled={!canUninstall}
-            title={canUninstall ? 'Uninstall' : 'Tidak punya uninstaller'}
+            title={canUninstall ? t('Uninstall') : t('Tidak punya uninstaller')}
             onClick={onUninstall}
           >
             <Icon name="trash" className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Uninstall</span>
+            <span className="hidden sm:inline">{t('Uninstall')}</span>
           </button>
-          <button className="btn-ghost !p-2 text-[var(--text-2)]" onClick={onToggle} title="Detail">
+          <button className="btn-ghost !p-2 text-[var(--text-2)]" onClick={onToggle} title={t('Detail')}>
             <Icon name="chevronRight" className={`w-4 h-4 transition-transform duration-200 ${expanded ? 'rotate-90' : ''}`} />
           </button>
         </div>
@@ -279,26 +282,26 @@ function AppRow({ app, index, expanded, onToggle, onUninstall, onResidue }: {
 
       {expanded && (
         <div className="px-4 pb-4 grid sm:grid-cols-2 gap-x-6 gap-y-2.5 animate-fade-in">
-          {app.publisher && <DetailRow label="Penerbit" value={app.publisher} />}
-          {app.displayVersion && <DetailRow label="Versi" value={app.displayVersion} />}
-          {app.installDate && <DetailRow label="Tanggal pasang" value={formatInstallDate(app.installDate)} />}
-          {app.arch && <DetailRow label="Tipe" value={app.arch} />}
-          {bytesOfApp(app) !== undefined && <DetailRow label="Ukuran terduga" value={formatBytes(bytesOfApp(app))} />}
+          {app.publisher && <DetailRow label={t('Penerbit')} value={app.publisher} />}
+          {app.displayVersion && <DetailRow label={t('Versi')} value={app.displayVersion} />}
+          {app.installDate && <DetailRow label={t('Tanggal pasang')} value={formatInstallDate(app.installDate)} />}
+          {app.arch && <DetailRow label={t('Tipe')} value={app.arch} />}
+          {bytesOfApp(app) !== undefined && <DetailRow label={t('Ukuran terduga')} value={formatBytes(bytesOfApp(app))} />}
           {app.installLocation ? (
             <div className="flex items-center justify-between gap-3">
-              <DetailRow label="Lokasi" value={app.installLocation} />
+              <DetailRow label={t('Lokasi')} value={app.installLocation} />
               <button className="btn-ghost !py-1.5 !px-2.5 text-xs shrink-0" onClick={() => openFolder(app.installLocation!)}>
-                <Icon name="folderOpen" className="w-3.5 h-3.5" /> Buka
+                <Icon name="folderOpen" className="w-3.5 h-3.5" /> {t('Buka')}
               </button>
             </div>
-          ) : <DetailRow label="Lokasi" value="Tidak tersedia" />}
-          <DetailRow label="Perintah uninstall" value={app.uninstallString || app.quietUninstallString || 'Tidak tersedia'} mono />
+          ) : <DetailRow label={t('Lokasi')} value={t('Tidak tersedia')} />}
+          <DetailRow label={t('Perintah uninstall')} value={app.uninstallString || app.quietUninstallString || t('Tidak tersedia')} mono />
           <div className="sm:col-span-2 flex flex-wrap gap-2 pt-1.5">
             <button className="btn-secondary !py-2 !px-3 text-xs" onClick={onResidue}>
-              <Icon name="broom" className="w-3.5 h-3.5" /> Periksa &amp; Bersihkan Residu
+              <Icon name="broom" className="w-3.5 h-3.5" /> {t('Periksa & Bersihkan Residu')}
             </button>
             {!canUninstall && (
-              <span className="text-[11px] text-[var(--warn-strong)]/90 self-center">Aplikasi ini tidak menyediakan uninstaller (mis. aplikasi portable).</span>
+              <span className="text-[11px] text-[var(--warn-strong)]/90 self-center">{t('Aplikasi ini tidak menyediakan uninstaller (mis. aplikasi portable).')}</span>
             )}
           </div>
         </div>
@@ -341,6 +344,7 @@ function ModalShell({ icon, tone, title, children, onClose, wide }: {
   onClose: () => void;
   wide?: boolean;
 }) {
+  const { t } = useI18n();
   const toneCls =
     tone === 'indigo' ? 'bg-[var(--accent-soft)] text-[var(--accent-strong)] border-[var(--accent-border)]'
     : tone === 'emerald' ? 'bg-[var(--ok-soft)] text-[var(--ok-strong)] border-[var(--ok-border)]'
@@ -357,7 +361,7 @@ function ModalShell({ icon, tone, title, children, onClose, wide }: {
           <div className="min-w-0 flex-1">
             <h3 className="text-base font-semibold text-[var(--text)] leading-tight">{title}</h3>
           </div>
-          <button className="btn-ghost !p-2 text-[var(--text-2)] hover:text-[var(--text)] shrink-0" onClick={onClose} title="Tutup">
+          <button className="btn-ghost !p-2 text-[var(--text-2)] hover:text-[var(--text)] shrink-0" onClick={onClose} title={t('Tutup')}>
             <Icon name="x" className="w-4 h-4" />
           </button>
         </div>
@@ -388,6 +392,7 @@ function RunModal({ app, initialSilent, onClose, onResidue, onChanged }: {
   onResidue: (app: InstalledApp) => void;
   onChanged: () => void;
 }) {
+  const { t } = useI18n();
   const [info, setInfo] = useState<RunInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [adminTry, setAdminTry] = useState(false);
@@ -405,7 +410,7 @@ function RunModal({ app, initialSilent, onClose, onResidue, onChanged }: {
       poll(data.runId);
     } catch (e: any) {
       setInfo(null);
-      setError(e.message || 'Gagal memulai uninstaller.');
+      setError(e.message || t('Gagal memulai uninstaller.'));
     }
   }
 
@@ -422,7 +427,7 @@ function RunModal({ app, initialSilent, onClose, onResidue, onChanged }: {
         }
       } catch {
         if (!cancelled) {
-          setError('Kehilangan koneksi ke server saat uninstall. Cek kembali programnya.');
+          setError(t('Kehilangan koneksi ke server saat uninstall. Cek kembali programnya.'));
           clearInterval(iv);
         }
       }
@@ -440,7 +445,7 @@ function RunModal({ app, initialSilent, onClose, onResidue, onChanged }: {
   // 0 = ok, 3010/1641 = reboot required, 1605 = already uninstalled
 
   return (
-    <ModalShell icon="trash" tone="violet" title={`Uninstall ${app.name}`} onClose={onClose}>
+    <ModalShell icon="trash" tone="violet" title={t('Uninstall {name}', { name: app.name })} onClose={onClose}>
       {error && (
         <div className="rounded-xl border border-[var(--danger-border)] bg-[var(--danger-soft)] p-3.5 text-sm text-[var(--danger-strong)] flex flex-col gap-3">
           <span className="flex items-start gap-2">
@@ -448,7 +453,7 @@ function RunModal({ app, initialSilent, onClose, onResidue, onChanged }: {
           </span>
           {!adminTry && (
             <button className="btn-secondary !py-2 !px-3.5 text-xs self-start" onClick={() => startRun(true)}>
-              <Icon name="shield" className="w-3.5 h-3.5" /> Coba dengan Administrator (UAC)
+              <Icon name="shield" className="w-3.5 h-3.5" /> {t('Coba dengan Administrator (UAC)')}
             </button>
           )}
         </div>
@@ -457,7 +462,7 @@ function RunModal({ app, initialSilent, onClose, onResidue, onChanged }: {
       {!info && !error && (
         <div className="flex items-center gap-3 text-sm text-[var(--text-2)]">
           <div className="w-5 h-5 rounded-full border-2 border-[var(--accent-border)] border-t-[var(--accent-strong)] animate-spin" />
-          Menyiapkan uninstaller…
+          {t('Menyiapkan uninstaller…')}
         </div>
       )}
 
@@ -468,9 +473,9 @@ function RunModal({ app, initialSilent, onClose, onResidue, onChanged }: {
             <span className="absolute inset-0 m-auto w-full h-full rounded-full border border-[var(--accent-border)] animate-ping-slow" />
           </div>
           <div>
-            <div className="text-sm font-semibold text-[var(--text)]">Uninstall sedang berjalan…</div>
+            <div className="text-sm font-semibold text-[var(--text)]">{t('Uninstall sedang berjalan…')}</div>
             <div className="text-xs text-[var(--text-2)] mt-1">
-              {info?.asAdmin ? 'Di jalankan sebagai administrator.' : 'Selesaikan wizard uninstall (bila muncul) di layar Anda.'}
+              {info?.asAdmin ? t('Di jalankan sebagai administrator.') : t('Selesaikan wizard uninstall (bila muncul) di layar Anda.')}
             </div>
           </div>
         </div>
@@ -482,18 +487,18 @@ function RunModal({ app, initialSilent, onClose, onResidue, onChanged }: {
             <Icon name={success && info.verified !== false ? 'check' : 'info'} className="w-4 h-4 mt-0.5 shrink-0" />
             <div>
               {success && info.verified !== false ? (
-                <><b>Uninstall selesai{info.verified === true ? ' — program sudah tidak terdaftar di sistem' : ''}.</b> Klik di bawah untuk memeriksa sisa file dan membersihkannya sampai akar.</>
+                <><b>Uninstall selesai{info.verified === true ? t(' — program sudah tidak terdaftar di sistem') : ''}.</b> {t('Klik di bawah untuk memeriksa sisa file dan membersihkannya sampai akar.')}</>
               ) : success && info.verified === false ? (
-                <><b>Uninstaller selesai, tapi program masih terdaftar di sistem.</b> Uninstall mungkin perlu izin administrator, atau masih ada langkah yang harus diselesaikan di wizard-nya. Klik "Coba dengan Administrator" atau uninstall manual via Settings → Apps.</>
+                <><b>{t('Uninstaller selesai, tapi program masih terdaftar di sistem.')}</b> {t('Uninstall mungkin perlu izin administrator, atau masih ada langkah yang harus diselesaikan di wizard-nya. Klik "Coba dengan Administrator" atau uninstall manual via Settings → Apps.')}</>
               ) : (
-                <><b>Uninstaller selesai dengan kode {info.exitCode}.</b> Program mungkin belum terhapus sepenuhnya — periksa residu untuk memastikan.</>
+                <><b>{t('Uninstaller selesai dengan kode {exitCode}.', { exitCode: info.exitCode })}</b> {t('Program mungkin belum terhapus sepenuhnya — periksa residu untuk memastikan.')}</>
               )}
             </div>
           </div>
           <div className="flex flex-wrap justify-end gap-2.5">
-            <button className="btn-ghost !py-2 !px-3.5 text-sm" onClick={onClose}>Selesai</button>
+            <button className="btn-ghost !py-2 !px-3.5 text-sm" onClick={onClose}>{t('Selesai')}</button>
             <button className="btn-primary !py-2 !px-4 text-sm" onClick={() => onResidue(app)}>
-              <Icon name="broom" className="w-4 h-4" /> Periksa &amp; Bersihkan Residu
+              <Icon name="broom" className="w-4 h-4" /> {t('Periksa & Bersihkan Residu')}
             </button>
           </div>
         </div>
@@ -507,6 +512,7 @@ function RunModal({ app, initialSilent, onClose, onResidue, onChanged }: {
 /* ------------------------------------------------------------------ */
 
 function ResidueModal({ app, onClose }: { app: InstalledApp; onClose: () => void }) {
+  const { t } = useI18n();
   const [entries, setEntries] = useState<ResidueEntry[] | null>(null);
   const [scanning, setScanning] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -523,7 +529,7 @@ function ResidueModal({ app, onClose }: { app: InstalledApp; onClose: () => void
       });
       setEntries(data.entries || []);
     } catch (e: any) {
-      setNotice({ ok: false, text: e.message || 'Gagal memindai residu.' });
+      setNotice({ ok: false, text: e.message || t('Gagal memindai residu.') });
     } finally {
       setScanning(false);
     }
@@ -545,12 +551,12 @@ function ResidueModal({ app, onClose }: { app: InstalledApp; onClose: () => void
       const failed = data.results.filter((r) => !r.ok);
       setEntries((prev) => (prev || []).filter((e) => !paths.includes(e.path)));
       if (failed.length > 0) {
-        setNotice({ ok: false, text: `${okCount} dibersihkan, ${failed.length} gagal: ${failed[0].error || 'periksa ulang'}` });
+        setNotice({ ok: false, text: t('{okCount} dibersihkan, {failedCount} gagal: {reason}', { okCount, failedCount: failed.length, reason: failed[0].error || t('periksa ulang') }) });
       } else if (okCount > 0) {
-        setNotice({ ok: true, text: `${okCount} item dibersihkan ke Recycle Bin.` });
+        setNotice({ ok: true, text: t('{okCount} item dibersihkan ke Recycle Bin.', { okCount }) });
       }
     } catch (e: any) {
-      setNotice({ ok: false, text: e.message || 'Gagal membersihkan residu.' });
+      setNotice({ ok: false, text: e.message || t('Gagal membersihkan residu.') });
     } finally {
       setBusy(false);
     }
@@ -560,11 +566,11 @@ function ResidueModal({ app, onClose }: { app: InstalledApp; onClose: () => void
   const totalBytes = list.reduce((s, e) => s + e.sizeBytes, 0);
 
   return (
-    <ModalShell icon="broom" tone="emerald" title={`Residu: ${app.name}`} onClose={onClose} wide>
+    <ModalShell icon="broom" tone="emerald" title={t('Residu: {name}', { name: app.name })} onClose={onClose} wide>
       {scanning ? (
         <div className="flex items-center gap-3 text-sm text-[var(--text-2)] py-4">
           <div className="w-5 h-5 rounded-full border-2 border-[var(--ok-border)] border-t-[var(--ok-strong)] animate-spin" />
-          Memindai sisa file… ini bisa beberapa saat.
+          {t('Memindai sisa file… ini bisa beberapa saat.')}
         </div>
       ) : notice && !entries?.length ? (
         <Notice ok={notice.ok}>{notice.text}</Notice>
@@ -573,17 +579,17 @@ function ResidueModal({ app, onClose }: { app: InstalledApp; onClose: () => void
           <div className="w-12 h-12 rounded-2xl bg-[var(--ok-soft)] border border-[var(--ok-border)] grid place-items-center text-[var(--ok-strong)]">
             <Icon name="check" className="w-6 h-6" />
           </div>
-          <div className="text-sm font-semibold text-[var(--text)]">Bersih! Tidak ditemukan sisa file</div>
-          <div className="text-xs text-[var(--text-3)]">Folder &amp; data aplikasi sudah bersih dari {app.name}.</div>
+          <div className="text-sm font-semibold text-[var(--text)]">{t('Bersih! Tidak ditemukan sisa file')}</div>
+          <div className="text-xs text-[var(--text-3)]">{t('Folder & data aplikasi sudah bersih dari {name}.', { name: app.name })}</div>
         </div>
       ) : (
         <>
           {notice && <Notice ok={notice.ok}>{notice.text}</Notice>}
           <div className="rounded-xl border border-[var(--border)] bg-[var(--overlay)] overflow-hidden">
             <div className="grid grid-cols-12 gap-2 px-4 py-2 bg-[var(--overlay)] text-[11px] uppercase tracking-wider text-[var(--text-3)] font-semibold">
-              <div className="col-span-6">Lokasi</div>
-              <div className="col-span-3">Jenis</div>
-              <div className="col-span-3 text-right">Ukuran</div>
+              <div className="col-span-6">{t('Lokasi')}</div>
+              <div className="col-span-3">{t('Jenis')}</div>
+              <div className="col-span-3 text-right">{t('Ukuran')}</div>
             </div>
             <div className="divide-y divide-white/5 max-h-56 overflow-y-auto">
               {list.map((e) => (
@@ -592,14 +598,14 @@ function ResidueModal({ app, onClose }: { app: InstalledApp; onClose: () => void
                   <div className="col-span-3 text-xs flex items-center gap-1.5">
                     <Icon name={KIND_ICON[e.kind]} className={`w-3.5 h-3.5 ${e.kind === 'executable' ? 'text-[var(--warn-strong)]' : 'text-[var(--text-3)]'}`} />
                     {e.kind === 'executable' ? (
-                      <span className="chip bg-[var(--warn-soft)] text-[var(--warn-strong)] border border-[var(--warn-border)] text-[10px]" title="Berkas program (EXE) — akan dihapus ke Recycle Bin bila ditekan">Program (EXE)</span>
+                      <span className="chip bg-[var(--warn-soft)] text-[var(--warn-strong)] border border-[var(--warn-border)] text-[10px]" title={t('Berkas program (EXE) — akan dihapus ke Recycle Bin bila ditekan')}>{t('Program (EXE)')}</span>
                     ) : (
                       <span className="text-[var(--text-3)]">{kindLabel(e.kind)}</span>
                     )}
                   </div>
                   <div className="col-span-3 flex items-center justify-end gap-2">
                     <span className="text-xs text-[var(--text-2)] tabular-nums">{e.sizeBytes > 0 ? formatBytes(e.sizeBytes) : '—'}</span>
-                    <button className="btn-ghost !p-1.5 text-[var(--text-2)] hover:text-[var(--danger-strong)]" title="Hapus" disabled={busy} onClick={() => remove([e.path])}>
+                    <button className="btn-ghost !p-1.5 text-[var(--text-2)] hover:text-[var(--danger-strong)]" title={t('Hapus')} disabled={busy} onClick={() => remove([e.path])}>
                       <Icon name="trash" className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -609,14 +615,14 @@ function ResidueModal({ app, onClose }: { app: InstalledApp; onClose: () => void
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
             <div className="text-xs text-[var(--text-3)]">
-              {list.length} item · ±{formatBytes(totalBytes)} · dihapus ke <b>Recycle Bin</b> (bisa dikembalikan)
+              {t('{count} item · ±{size} · dihapus ke', { count: list.length, size: formatBytes(totalBytes) })}{' '}<b>Recycle Bin</b>{' '}{t('(bisa dikembalikan)')}
             </div>
             <div className="flex gap-2.5">
               <button className="btn-ghost !py-2 !px-3.5 text-sm" onClick={() => scan()} disabled={busy}>
-                <Icon name="replay" className="w-3.5 h-3.5" /> Pindai ulang
+                <Icon name="replay" className="w-3.5 h-3.5" /> {t('Pindai ulang')}
               </button>
               <button className="btn-primary !py-2 !px-4 text-sm" disabled={busy} onClick={() => remove(list.map((e) => e.path))}>
-                <Icon name="broom" className="w-4 h-4" /> Bersihkan Semua
+                <Icon name="broom" className="w-4 h-4" /> {t('Bersihkan Semua')}
               </button>
             </div>
           </div>

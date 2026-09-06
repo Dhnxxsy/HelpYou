@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { formatDate } from '../lib/format';
 import Icon from '../components/Icon';
 import ConfirmDialog from '../components/ConfirmDialog';
+import { useI18n, tGlobal } from '../lib/i18n';
 
 interface HistoryEntry {
   id: string;
@@ -10,6 +11,7 @@ interface HistoryEntry {
 }
 
 export default function HistoryView() {
+  const { t } = useI18n();
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -42,7 +44,7 @@ export default function HistoryView() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      setMsg({ ok: true, text: `${data.restored} file berhasil dikembalikan ke lokasi asal.` });
+      setMsg({ ok: true, text: t('{n} file berhasil dikembalikan ke lokasi asal.', { n: data.restored }) });
       load();
     } catch (e: any) {
       setMsg({ ok: false, text: e.message });
@@ -57,18 +59,18 @@ export default function HistoryView() {
     <div className="space-y-5 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
         <div>
-          <div className="eyebrow mb-1.5">Jejak pemindahan</div>
+          <div className="eyebrow mb-1.5">{t('Jejak pemindahan')}</div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-            <span className="text-gradient">Riwayat Sortir</span>
+            <span className="text-gradient">{t('Riwayat Sortir')}</span>
           </h1>
           <p className="text-sm text-[var(--text-2)] mt-1.5">
-            Lihat aktivitas pemindahan dan kembalikan (undo) jika diperlukan.
+            {t('Lihat aktivitas pemindahan dan kembalikan (undo) jika diperlukan.')}
           </p>
         </div>
         {history.length > 0 && (
           <div className="flex gap-2 text-xs">
-            <span className="chip bg-[var(--overlay-2)] text-[var(--text-2)]">{history.length} sesi</span>
-            <span className="chip bg-[var(--overlay-2)] text-[var(--text-2)]">{totalMoves} pemindahan</span>
+            <span className="chip bg-[var(--overlay-2)] text-[var(--text-2)]">{t('{n} sesi', { n: history.length })}</span>
+            <span className="chip bg-[var(--overlay-2)] text-[var(--text-2)]">{t('{n} pemindahan', { n: totalMoves })}</span>
           </div>
         )}
       </div>
@@ -89,9 +91,9 @@ export default function HistoryView() {
           <div className="w-14 h-14 rounded-2xl bg-[var(--overlay)] border border-[var(--border)] grid place-items-center text-[var(--text-3)]">
             <Icon name="clock" className="w-7 h-7" />
           </div>
-          <div className="text-sm text-[var(--text-2)]">Belum ada riwayat</div>
+          <div className="text-sm text-[var(--text-2)]">{t('Belum ada riwayat')}</div>
           <p className="text-xs text-[var(--text-3)] max-w-xs">
-            Sortir folder terlebih dahulu di tab <b>Rapihkan</b>. Setiap pemindahan berhasil tercatat di sini dan bisa di-Undo kapan saja.
+            {t('Sortir folder terlebih dahulu di tab ')}<b>{t('Rapihkan')}</b>{t('. Setiap pemindahan berhasil tercatat di sini dan bisa di-Undo kapan saja.')}
           </p>
         </div>
       ) : (
@@ -107,7 +109,7 @@ export default function HistoryView() {
                       <Icon name="organize" className="w-5 h-5" />
                     </div>
                     <div>
-                      <div className="font-medium text-sm text-[var(--text)]">Sortir {h.moves.length} file</div>
+                      <div className="font-medium text-sm text-[var(--text)]">{t('Sortir {n} file', { n: h.moves.length })}</div>
                       <div className="text-xs text-[var(--text-2)] flex items-center gap-1.5">
                         <Icon name="clock" className="w-3 h-3" /> {formatDate(new Date(h.date).getTime())}
                       </div>
@@ -115,11 +117,11 @@ export default function HistoryView() {
                   </div>
                   <div className="flex items-center gap-2">
                     <button className="btn-secondary !py-1.5 !px-3 text-xs" onClick={() => setExpanded(isOpen ? null : h.id)}>
-                      {isOpen ? 'Sembunyikan' : 'Detail'}
+                      {isOpen ? t('Sembunyikan') : t('Detail')}
                     </button>
                     <button className="btn-danger !py-1.5 !px-3 text-xs" onClick={() => setUndoTarget(h)} disabled={isBusy}>
                       <Icon name="undo" className="w-3.5 h-3.5" />
-                      {isBusy ? 'Mengembalikan...' : 'Undo'}
+                      {isBusy ? t('Mengembalikan...') : t('Undo')}
                     </button>
                   </div>
                 </div>
@@ -144,9 +146,9 @@ export default function HistoryView() {
         open={!!undoTarget}
         tone="danger"
         icon="undo"
-        title={`Kembalikan ${undoTarget?.moves.length ?? 0} file?`}
-        description="File akan dikembalikan ke lokasi asalnya. Tindakan ini juga tercatat dan bisa di-Undo kembali bila diperlukan."
-        confirmLabel="Ya, kembalikan"
+        title={t('Kembalikan {n} file?', { n: undoTarget?.moves.length ?? 0 })}
+        description={t('File akan dikembalikan ke lokasi asalnya. Tindakan ini juga tercatat dan bisa di-Undo kembali bila diperlukan.')}
+        confirmLabel={t('Ya, kembalikan')}
         onConfirm={() => undoTarget && undo(undoTarget.id)}
         onClose={() => setUndoTarget(null)}
       />

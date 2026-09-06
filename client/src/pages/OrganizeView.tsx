@@ -11,6 +11,7 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import { CATEGORY_META } from '../lib/categories';
 import { formatBytes, formatDuration } from '../lib/format';
 import { downloadCSV } from '../lib/csv';
+import { useI18n, tGlobal } from '../lib/i18n';
 import type { FileCategory, SizeBand, SortRule } from '@shared/types';
 
 interface ScanFileLite {
@@ -63,19 +64,20 @@ const EMPTY_SETTINGS: ScanSettings = {
 const CUSTOM_COLORS = ['#818cf8', '#e879f9', '#38bdf8', '#34d399', '#fbbf24', '#fb7185', '#a3e635', '#94a3b8'];
 
 const WIZARD_STEPS: Step[] = [
-  { label: 'Pilih Folder', icon: 'folder' },
-  { label: 'Analisis', icon: 'scan' },
-  { label: 'Rencana', icon: 'organize' },
-  { label: 'Selesai', icon: 'check' },
+  { label: tGlobal('Pilih Folder'), icon: 'folder' },
+  { label: tGlobal('Analisis'), icon: 'scan' },
+  { label: tGlobal('Rencana'), icon: 'organize' },
+  { label: tGlobal('Selesai'), icon: 'check' },
 ];
 
 const FEATURES: { icon: IconName; title: string; desc: string }[] = [
-  { icon: 'organize', title: 'Sortir otomatis', desc: 'File dikelompokkan ke _TerSortir berdasarkan jenis & ukuran.' },
-  { icon: 'duplicate', title: 'Duplikat & folder kosong', desc: 'Temukan file kembar dan folder menganggur, bersihkan dengan aman.' },
-  { icon: 'undo', title: 'Selalu bisa di-Undo', desc: 'Setiap pemindahan tercatat di Riwayat dan bisa dikembalikan.' },
+  { icon: 'organize', title: tGlobal('Sortir otomatis'), desc: tGlobal('File dikelompokkan ke _TerSortir berdasarkan jenis & ukuran.') },
+  { icon: 'duplicate', title: tGlobal('Duplikat & folder kosong'), desc: tGlobal('Temukan file kembar dan folder menganggur, bersihkan dengan aman.') },
+  { icon: 'undo', title: tGlobal('Selalu bisa di-Undo'), desc: tGlobal('Setiap pemindahan tercatat di Riwayat dan bisa dikembalikan.') },
 ];
 
 export default function OrganizeView() {
+  const { t } = useI18n();
   const [folder, setFolder] = useState('');
   const [stage, setStage] = useState<Stage>('pick');
   const [scanMsg, setScanMsg] = useState('');
@@ -100,10 +102,10 @@ export default function OrganizeView() {
 
   useEffect(() => {
     if (stage !== 'scanning') return;
-    const t = setInterval(() => {
+    const iv = setInterval(() => {
       if (startTimeRef.current) setElapsed(Math.floor((Date.now() - startTimeRef.current) / 1000));
     }, 1000);
-    return () => clearInterval(t);
+    return () => clearInterval(iv);
   }, [stage]);
 
   useEffect(() => {
@@ -134,7 +136,7 @@ export default function OrganizeView() {
   }
 
   async function startScan() {
-    if (!folder.trim()) { setError('Pilih folder terlebih dahulu.'); return; }
+    if (!folder.trim()) { setError(t('Pilih folder terlebih dahulu.')); return; }
     setError(null);
     setFlash(null);
     setResult(null);
@@ -161,7 +163,7 @@ export default function OrganizeView() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Gagal memulai scan');
+      if (!res.ok) throw new Error(data.error || t('Gagal memulai scan'));
       jobIdRef.current = data.jobId;
       pollScan(data.jobId);
     } catch (e: any) {
@@ -176,12 +178,12 @@ export default function OrganizeView() {
     timerRef.current = setInterval(async () => {
       try {
         const res = await fetch('/api/scan/' + jobId);
-        if (!res.ok) throw new Error('Status scan gagal dimuat');
+        if (!res.ok) throw new Error(t('Status scan gagal dimuat'));
         const data = await res.json();
         failures = 0;
         if (data.status === 'running') {
           setProgress(data.progress || 0);
-          setScanMsg(data.message || 'Memindai...');
+          setScanMsg(data.message || t('Memindai...'));
         } else if (data.status === 'done') {
           clearInterval(timerRef.current);
           setProgress(data.result.summary.totalFiles);
@@ -190,17 +192,17 @@ export default function OrganizeView() {
         } else if (data.status === 'cancelled') {
           clearInterval(timerRef.current);
           setStage('pick');
-          setFlash({ ok: false, text: 'Scan dibatalkan.' });
+          setFlash({ ok: false, text: t('Scan dibatalkan.') });
         } else if (data.status === 'error') {
           clearInterval(timerRef.current);
-          setError(data.error || 'Gagal scan');
+          setError(data.error || t('Gagal scan'));
           setStage('pick');
         }
       } catch {
         failures++;
         if (failures >= 8) {
           clearInterval(timerRef.current);
-          setError('Gagal terhubung ke server selama scan. Coba mulai analisis dari awal.');
+          setError(t('Gagal terhubung ke server selama scan. Coba mulai analisis dari awal.'));
           setStage('pick');
         }
       }
@@ -212,7 +214,7 @@ export default function OrganizeView() {
     try { await fetch('/api/scan/' + jobIdRef.current + '/cancel', { method: 'POST' }); } catch { /* ignore */ }
     clearInterval(timerRef.current);
     setStage('pick');
-    setFlash({ ok: false, text: 'Scan dibatalkan.' });
+    setFlash({ ok: false, text: t('Scan dibatalkan.') });
   }
 
   async function apply() {
@@ -226,7 +228,7 @@ export default function OrganizeView() {
         body: JSON.stringify({ root: result.root, moves: result.moves.map(m => ({ from: m.path, to: m.dest })) }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Gagal');
+      if (!res.ok) throw new Error(data.error || t('Gagal'));
       setApplyState({ moved: data.moved, failed: data.failed, totalBytes: data.totalBytes });
       setStage('done');
     } catch (e: any) {
@@ -264,7 +266,7 @@ export default function OrganizeView() {
     const shown = filteredMoves;
     downloadCSV(
       'file-organizer-rencana.csv',
-      ['Kategori', 'Ukuran', 'Nama File', 'File Size', 'Dari', 'Ke'],
+      [t('Kategori'), t('Ukuran'), t('Nama File'), t('File Size'), t('Dari'), t('Ke')],
       shown.map(m => {
         const f = fileByPath.get(m.path);
         const d = m.dest.slice(result.organizeFolder.length + 1).split('\\');
@@ -323,12 +325,12 @@ export default function OrganizeView() {
       {/* Heading */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div>
-          <div className="eyebrow mb-1.5">Organizer Folder Lokal</div>
+          <div className="eyebrow mb-1.5">{t('Organizer Folder Lokal')}</div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-            <span className="text-gradient">Rapihkan File-mu</span>
+            <span className="text-gradient">{t('Rapihkan File-mu')}</span>
           </h1>
           <p className="text-sm text-[var(--text-2)] mt-1.5 max-w-xl">
-            Pilih folder, tools mengelompokkan file jadi rapi otomatis. Dilengkapi deteksi duplikat, folder kosong, dan laporan file terbesar.
+            {t('Pilih folder, tools mengelompokkan file jadi rapi otomatis. Dilengkapi deteksi duplikat, folder kosong, dan laporan file terbesar.')}
           </p>
         </div>
       </div>
@@ -364,16 +366,16 @@ export default function OrganizeView() {
               <div>
                 <div className="flex items-center gap-2.5">
                   <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-[var(--accent-deep)] to-[var(--accent-2)] text-white grid place-items-center text-xs font-bold">1</span>
-                  <h2 className="text-lg font-semibold text-[var(--text)]">Pilih folder yang ingin dirapikan</h2>
+                  <h2 className="text-lg font-semibold text-[var(--text)]">{t('Pilih folder yang ingin dirapikan')}</h2>
                 </div>
                 <p className="text-xs text-[var(--text-2)] mt-1.5 ml-9">
-                  Bisa berupa drive (C:) atau subfolder seperti <code className="text-[var(--accent-strong)]">Downloads</code>.
+                  {t('Bisa berupa drive (C:) atau subfolder seperti')} <code className="text-[var(--accent-strong)]">Downloads</code>.
                 </p>
               </div>
               <button
                 className="btn-ghost !p-2 text-[var(--text-3)]"
                 onClick={() => setSettingsOpen(o => !o)}
-                title="Pengaturan scan"
+                title={t('Pengaturan scan')}
               >
                 <Icon name="settings" className={`w-[18px] h-[18px] transition-transform duration-300 ${settingsOpen ? 'rotate-90' : ''}`} />
               </button>
@@ -384,37 +386,37 @@ export default function OrganizeView() {
             {settingsOpen && (
               <div className="rounded-xl border border-[var(--border)] bg-[var(--overlay)] p-4 mt-5 animate-fade-in">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="eyebrow">Pengaturan Scan</div>
-                  <span className="chip bg-[var(--overlay)] text-[var(--text-2)] border border-[var(--border)] text-[10px]">tersimpan otomatis</span>
+                  <div className="eyebrow">{t('Pengaturan Scan')}</div>
+                  <span className="chip bg-[var(--overlay)] text-[var(--text-2)] border border-[var(--border)] text-[10px]">{t('tersimpan otomatis')}</span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
                   <div>
-                    <label className="text-xs text-[var(--text-2)] block mb-1.5">Lewati folder (pisah koma)</label>
+                    <label className="text-xs text-[var(--text-2)] block mb-1.5">{t('Lewati folder (pisah koma)')}</label>
                     <input
                       className="input"
-                      placeholder="cth: video_bak, cache, draft"
+                      placeholder={t('cth: video_bak, cache, draft')}
                       value={settings.extraIgnoreDirs.join(', ')}
                       onChange={e => updateSettings({ extraIgnoreDirs: e.target.value.split(/[,;]/).map(s => s.trim()).filter(Boolean) })}
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-[var(--text-2)] block mb-1.5">Kedalaman maksimum</label>
+                    <label className="text-xs text-[var(--text-2)] block mb-1.5">{t('Kedalaman maksimum')}</label>
                     <input
                       className="input"
                       type="number"
                       min={1}
-                      placeholder="∞ (semua)"
+                      placeholder={t('∞ (semua)')}
                       value={settings.maxDepth ?? ''}
                       onChange={e => updateSettings({ maxDepth: e.target.value === '' ? null : Math.max(1, Number(e.target.value)) })}
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-[var(--text-2)] block mb-1.5">Min. ukuran file (KB)</label>
+                    <label className="text-xs text-[var(--text-2)] block mb-1.5">{t('Min. ukuran file (KB)')}</label>
                     <input
                       className="input"
                       type="number"
                       min={0}
-                      placeholder="0 (semua)"
+                      placeholder={t('0 (semua)')}
                       value={settings.minSizeKB ?? ''}
                       onChange={e => updateSettings({ minSizeKB: e.target.value === '' ? null : Math.max(0, Number(e.target.value)) })}
                     />
@@ -427,18 +429,18 @@ export default function OrganizeView() {
                     checked={settings.detectDuplicates}
                     onChange={e => updateSettings({ detectDuplicates: e.target.checked })}
                   />
-                  Deteksi file duplikat (berdasarkan isi file)
+                  {t('Deteksi file duplikat (berdasarkan isi file)')}
                 </label>
                 <div className="mt-5 pt-4 border-t border-[var(--border)] flex flex-wrap items-center justify-between gap-3">
                   <div className="text-xs text-[var(--text-2)]">
-                    <span className="font-semibold text-[var(--text)]">Aturan Sortir Kustom</span>
+                    <span className="font-semibold text-[var(--text)]">{t('Aturan Sortir Kustom')}</span>
                     <span className="ml-2 chip bg-[var(--accent-soft)] text-[var(--accent-strong)] border border-[var(--accent-border)]">
-                      {settings.rules.filter(r => r.enabled).length} aktif
+                      {t('{n} aktif', { n: settings.rules.filter(r => r.enabled).length })}
                     </span>
-                    <p className="text-[11px] text-[var(--text-3)] mt-1">Folder sendiri untuk kata kunci, atau lewati file tertentu. Berlaku saat scan berikutnya.</p>
+                    <p className="text-[11px] text-[var(--text-3)] mt-1">{t('Folder sendiri untuk kata kunci, atau lewati file tertentu. Berlaku saat scan berikutnya.')}</p>
                   </div>
                   <button className="btn-secondary !py-2 !px-3.5 text-xs" onClick={() => setRulesOpen(true)}>
-                    <Icon name="settings" className="w-3.5 h-3.5" /> Kelola Aturan
+                    <Icon name="settings" className="w-3.5 h-3.5" /> {t('Kelola Aturan')}
                   </button>
                 </div>
               </div>
@@ -447,9 +449,9 @@ export default function OrganizeView() {
             <div className="flex flex-wrap items-center gap-3 mt-6 pt-5 border-t border-[var(--border)]">
               <button className="btn-primary !py-3 !px-6" onClick={startScan} disabled={!folder}>
                 <Icon name="scan" className="w-4 h-4" />
-                Mulai Analisis Folder
+                {t('Mulai Analisis Folder')}
               </button>
-              {folder && <p className="text-xs text-[var(--text-3)]">Folder terpilih: <span className="text-[var(--text-2)]">{folder}</span></p>}
+              {folder && <p className="text-xs text-[var(--text-3)]">{t('Folder terpilih:')} <span className="text-[var(--text-2)]">{folder}</span></p>}
             </div>
             {error && <p className="mt-4 text-sm text-[var(--danger-strong)] flex items-center gap-1.5"><Icon name="alert" className="w-4 h-4" />{error}</p>}
           </div>
@@ -464,14 +466,14 @@ export default function OrganizeView() {
             <span className="absolute inset-0 m-auto w-full h-full rounded-full border border-[var(--accent-border)] animate-ping-slow" />
           </div>
           <div className="text-center">
-            <div className="font-semibold text-[var(--text)]">Menganalisis folder...</div>
-            <div className="text-xs text-[var(--text-2)] mt-1.5 max-w-md truncate">{scanMsg || 'Membaca isi folder'}</div>
+            <div className="font-semibold text-[var(--text)]">{t('Menganalisis folder...')}</div>
+            <div className="text-xs text-[var(--text-2)] mt-1.5 max-w-md truncate">{scanMsg || t('Membaca isi folder')}</div>
           </div>
           <div className="w-full max-w-md space-y-2.5">
             <div className="flex items-center gap-6 justify-between text-xs text-[var(--text-2)]">
               <span className="flex items-center gap-1.5">
                 <Icon name="folder" className="w-3.5 h-3.5 text-[var(--accent-strong)]" />
-                File dipindai
+                {t('File dipindai')}
               </span>
               <span className="tabular-nums text-[var(--text)]/90 text-sm font-semibold">{progress.toLocaleString('id-ID')}</span>
             </div>
@@ -479,12 +481,12 @@ export default function OrganizeView() {
               <div className="h-full bg-gradient-to-r from-[var(--accent-deep)] to-[var(--accent-2)] animate-indeterminate" />
             </div>
             <div className="flex items-center justify-between text-[11px] text-[var(--text-3)]">
-              <span className="truncate">Jumlah dan statistik dihitung saat berjalan</span>
+              <span className="truncate">{t('Jumlah dan statistik dihitung saat berjalan')}</span>
               <span className="tabular-nums shrink-0 ml-2">{formatDuration(elapsed * 1000)}</span>
             </div>
           </div>
           <button className="btn-secondary text-sm" onClick={cancelScan}>
-            <Icon name="stop" className="w-4 h-4" /> Batal Scan
+            <Icon name="stop" className="w-4 h-4" /> {t('Batal Scan')}
           </button>
         </div>
       )}
@@ -501,16 +503,16 @@ export default function OrganizeView() {
               <div>
                 <div className="flex items-center gap-2.5">
                   <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-[var(--accent-deep)] to-[var(--accent-2)] text-white grid place-items-center text-xs font-bold">3</span>
-                  <h2 className="text-lg font-semibold text-[var(--text)]">Tinjau rencana &amp; pindahkan file</h2>
+                  <h2 className="text-lg font-semibold text-[var(--text)]">{t('Tinjau rencana & pindahkan file')}</h2>
                 </div>
                 <p className="text-xs text-[var(--text-2)] mt-1.5 ml-9">
-                  Semua file menuju <code className="text-[var(--accent-strong)]">{result.organizeFolder}</code> → <b>Jenis</b> → <b>Ukuran</b>
-                  {customCount > 0 && <> · <span className="text-[var(--accent-strong)]">✨ {customCount} file mengikuti aturan kustom</span></>}.
+                  {t('Semua file menuju')} <code className="text-[var(--accent-strong)]">{result.organizeFolder}</code> → <b>{t('Jenis')}</b> → <b>{t('Ukuran')}</b>
+                  {customCount > 0 && <> · <span className="text-[var(--accent-strong)]">✨ {t('{n} file mengikuti aturan kustom', { n: customCount })}</span></>}.
                 </p>
               </div>
               <div className="flex items-center gap-2 flex-wrap ml-9 lg:ml-0">
                 <button className="btn-secondary !py-2 !px-3.5 text-xs" onClick={savePlanCSV} disabled={filteredMoves.length === 0}>
-                  <Icon name="download" className="w-3.5 h-3.5" /> Ekspor CSV
+                  <Icon name="download" className="w-3.5 h-3.5" /> {t('Ekspor CSV')}
                 </button>
               </div>
             </div>
@@ -520,10 +522,10 @@ export default function OrganizeView() {
 
             {/* Tabs */}
             <div className="flex flex-wrap gap-1.5 mb-4 mt-6">
-              <TabBtn active={tab === 'plan'} onClick={() => setTab('plan')} icon="organize" label="Rencana" count={filteredMoves.length} />
-              <TabBtn active={tab === 'duplicates'} onClick={() => setTab('duplicates')} icon="duplicate" label="Duplikat" count={dupCount} tone={dupCount > 0 ? 'amber' : undefined} />
-              <TabBtn active={tab === 'empty'} onClick={() => setTab('empty')} icon="emptyBox" label="Folder Kosong" count={emptyCount} sub={postEmptyCount} tone={emptyCount > 0 ? 'indigo' : undefined} />
-              <TabBtn active={tab === 'largest'} onClick={() => setTab('largest')} icon="chart" label="File Terbesar" count={result.largestFiles.length} />
+              <TabBtn active={tab === 'plan'} onClick={() => setTab('plan')} icon="organize" label={t('Rencana')} count={filteredMoves.length} />
+              <TabBtn active={tab === 'duplicates'} onClick={() => setTab('duplicates')} icon="duplicate" label={t('Duplikat')} count={dupCount} tone={dupCount > 0 ? 'amber' : undefined} />
+              <TabBtn active={tab === 'empty'} onClick={() => setTab('empty')} icon="emptyBox" label={t('Folder Kosong')} count={emptyCount} sub={postEmptyCount} tone={emptyCount > 0 ? 'indigo' : undefined} />
+              <TabBtn active={tab === 'largest'} onClick={() => setTab('largest')} icon="chart" label={t('File Terbesar')} count={result.largestFiles.length} />
             </div>
 
             {tab === 'plan' && (
@@ -547,13 +549,13 @@ export default function OrganizeView() {
 
             <div className="flex flex-col sm:flex-row gap-3 mt-6 pt-5 border-t border-[var(--border)]">
               <button className="btn-primary !py-3" onClick={() => setApplyConfirm(true)} disabled={result.moves.length === 0}>
-                Pindahkan {result.moves.length} file <Icon name="arrowRight" className="w-4 h-4" />
+                {t('Pindahkan {n} file', { n: result.moves.length })} <Icon name="arrowRight" className="w-4 h-4" />
               </button>
-              <button className="btn-secondary" onClick={reset}>Ulangi / Pilih Folder Lain</button>
+              <button className="btn-secondary" onClick={reset}>{t('Ulangi / Pilih Folder Lain')}</button>
             </div>
             <p className="text-xs text-[var(--text-3)] mt-3 flex items-center gap-1.5">
               <Icon name="info" className="w-3.5 h-3.5" />
-              File akan <b>dipindahkan sungguhan</b> ke <code className="text-[var(--accent-strong)]">{result.organizeFolder}</code>. Setiap pemindahan tercatat di tab Riwayat dan bisa di-Undo.
+              {t('File akan')} <b>{t('dipindahkan sungguhan')}</b> {t('ke')} <code className="text-[var(--accent-strong)]">{result.organizeFolder}</code>. {t('Setiap pemindahan tercatat di tab Riwayat dan bisa di-Undo.')}
             </p>
           </div>
         </div>
@@ -566,8 +568,8 @@ export default function OrganizeView() {
             <div className="w-14 h-14 rounded-full border-4 border-[var(--accent-border)] border-t-[var(--accent-strong)] animate-spin" />
             <span className="absolute inset-0 m-auto w-full h-full rounded-full border border-[var(--accent-border)] animate-ping-slow" />
           </div>
-          <div className="font-semibold text-[var(--text)]">Menerapkan sortir...</div>
-          <div className="text-xs text-[var(--text-2)]">Memindahkan file ke struktur rapi. Proses ini usahakan jangan ditutup.</div>
+          <div className="font-semibold text-[var(--text)]">{t('Menerapkan sortir...')}</div>
+          <div className="text-xs text-[var(--text-2)]">{t('Memindahkan file ke struktur rapi. Proses ini usahakan jangan ditutup.')}</div>
         </div>
       )}
 
@@ -580,23 +582,22 @@ export default function OrganizeView() {
             <Icon name="check" className="w-9 h-9 text-[var(--ok-strong)]" />
           </div>
         </div>
-          <h2 className="text-2xl font-bold text-[var(--text)]">Berhasil dirapikan! 🎉</h2>
+          <h2 className="text-2xl font-bold text-[var(--text)]">{t('Berhasil dirapikan! 🎉')}</h2>
           <p className="text-sm text-[var(--text-2)] mt-1.5">
-            {applyState.moved} file dipindahkan ke <code className="text-[var(--accent-strong)]">{result.organizeFolder}</code>
+            {t('{n} file dipindahkan ke', { n: applyState.moved })} <code className="text-[var(--accent-strong)]">{result.organizeFolder}</code>
           </p>
 
           <div className="grid grid-cols-3 gap-3 sm:gap-4 mt-7 w-full max-w-lg">
-            <Stat label="Dipindahkan" value={applyState.moved.toLocaleString('id-ID')} accent="#34d399" />
-            <Stat label="Total Ukuran" value={formatBytes(applyState.totalBytes)} accent="#60a5fa" />
-            <Stat label="Gagal" value={applyState.failed.toLocaleString('id-ID')} accent={applyState.failed > 0 ? '#fb7185' : '#848a94'} />
+            <Stat label={t('Dipindahkan')} value={applyState.moved.toLocaleString('id-ID')} accent="#34d399" />
+            <Stat label={t('Total Ukuran')} value={formatBytes(applyState.totalBytes)} accent="#60a5fa" />
+            <Stat label={t('Gagal')} value={applyState.failed.toLocaleString('id-ID')} accent={applyState.failed > 0 ? '#fb7185' : '#848a94'} />
           </div>
 
           {applyState.failed > 0 && (
             <div className="mt-5 rounded-xl border border-[var(--danger-border)] bg-[var(--danger-soft)] px-4 py-3 text-sm text-[var(--danger-strong)] max-w-lg flex gap-2.5 text-left">
               <Icon name="alert" className="w-4 h-4 mt-0.5 shrink-0" />
               <span>
-                <b>{applyState.failed} file gagal dipindahkan</b>. Kemungkinan file sedang dipakai program lain atau akses ditolak. Cek kembali
-                lewat tab <b>Riwayat</b> untuk melihat detail.
+                <b>{t('{n} file gagal dipindahkan', { n: applyState.failed })}</b>. {t('Kemungkinan file sedang dipakai program lain atau akses ditolak. Cek kembali lewat tab')} <b>{t('Riwayat')}</b> {t('untuk melihat detail.')}
               </span>
             </div>
           )}
@@ -605,20 +606,20 @@ export default function OrganizeView() {
             <div className="mt-6 rounded-xl border border-[var(--accent-border)] bg-[var(--accent-soft)] px-4 py-3 text-sm text-[var(--accent-strong)] max-w-lg flex gap-2.5 text-left">
               <Icon name="emptyBox" className="w-4 h-4 mt-0.5 shrink-0" />
               <span>
-                <b>{result.postMoveEmptyFolders.length} folder sumber</b> kini kosong. Gunakan <b>Scan Ulang</b> lalu buka tab <b>Folder Kosong</b> untuk menghapusnya dengan aman.
+                <b>{t('{n} folder sumber', { n: result.postMoveEmptyFolders.length })}</b> {t('kini kosong. Gunakan')} <b>{t('Scan Ulang')}</b> {t('lalu buka tab')} <b>{t('Folder Kosong')}</b> {t('untuk menghapusnya dengan aman.')}
               </span>
             </div>
           )}
 
           <div className="flex flex-wrap justify-center gap-3 mt-8">
             <button className="btn-secondary" onClick={() => openFolder(result.organizeFolder)}>
-              <Icon name="external" className="w-4 h-4" /> Buka Folder Hasil
+              <Icon name="external" className="w-4 h-4" /> {t('Buka Folder Hasil')}
             </button>
             <button className="btn-secondary" onClick={startScan}>
-              <Icon name="replay" className="w-4 h-4" /> Scan Ulang
+              <Icon name="replay" className="w-4 h-4" /> {t('Scan Ulang')}
             </button>
             <button className="btn-primary" onClick={reset}>
-              Rapihkan Folder Lain
+              {t('Rapihkan Folder Lain')}
             </button>
           </div>
         </div>
@@ -635,9 +636,9 @@ export default function OrganizeView() {
         open={applyConfirm}
         tone="primary"
         icon="organize"
-        title={`Pindahkan ${result?.moves.length ?? 0} file ke ${result ? shortName(result.organizeFolder) : ''}?`}
-        description="File akan dipindahkan sungguhan ke struktur folder yang rapi. Setiap pemindahan tercatat dan bisa di-Undo dari tab Riwayat."
-        confirmLabel="Ya, pindahkan"
+        title={t('Pindahkan {n} file ke {folder}?', { n: result?.moves.length ?? 0, folder: result ? shortName(result.organizeFolder) : '' })}
+        description={t('File akan dipindahkan sungguhan ke struktur folder yang rapi. Setiap pemindahan tercatat dan bisa di-Undo dari tab Riwayat.')}
+        confirmLabel={t('Ya, pindahkan')}
         onConfirm={() => { setApplyConfirm(false); apply(); }}
         onClose={() => setApplyConfirm(false)}
       />
@@ -673,6 +674,7 @@ function TabBtn({ active, onClick, icon, label, count, sub, tone }: {
 }
 
 function FlashBanner({ flash, onClose }: { flash: Flash; onClose: () => void }) {
+  const { t } = useI18n();
   const ok = flash.ok;
   return (
     <div className={`card p-4 border text-sm flex items-center justify-between gap-3 animate-fade-in ${ok ? 'border-[var(--ok-border)] bg-[var(--ok-soft)] text-[var(--ok-strong)]' : 'border-[var(--warn-border)] bg-[var(--warn-soft)] text-[var(--warn-strong)]'}`}>
@@ -680,18 +682,19 @@ function FlashBanner({ flash, onClose }: { flash: Flash; onClose: () => void }) 
         <Icon name={ok ? 'check' : 'info'} className={`w-4 h-4 ${ok ? 'text-[var(--ok-strong)]' : 'text-[var(--warn-strong)]'}`} />
         {flash.text}
       </span>
-      <button className="text-[var(--text-2)] hover:text-[var(--text)] shrink-0" onClick={onClose} aria-label="Tutup"><Icon name="x" className="w-4 h-4" /></button>
+      <button className="text-[var(--text-2)] hover:text-[var(--text)] shrink-0" onClick={onClose} aria-label={t('Tutup')}><Icon name="x" className="w-4 h-4" /></button>
     </div>
   );
 }
 
 function PreviewSummary({ result, onOpen }: { result: ScanResult; onOpen: () => void }) {
+  const { t } = useI18n();
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-      <InsightCard icon="folder" label="File ditemukan" value={result.summary.totalFiles.toLocaleString('id-ID')} sub={formatBytes(result.summary.totalSize)} />
-      <InsightCard icon="folderOpen" label="Subfolder" value={result.summary.totalFolders.toLocaleString('id-ID')} sub="termasuk isi nested" />
-      <InsightCard icon="chart" label="Total ukuran" value={formatBytes(result.summary.totalSize)} sub={`${result.summary.totalFiles.toLocaleString('id-ID')} file`} />
-      <InsightCard icon="organize" label="Akan dipindahkan" value={result.moves.length.toLocaleString('id-ID')} sub="ke _TerSortir" highlight onClick={onOpen} />
+      <InsightCard icon="folder" label={t('File ditemukan')} value={result.summary.totalFiles.toLocaleString('id-ID')} sub={formatBytes(result.summary.totalSize)} />
+      <InsightCard icon="folderOpen" label={t('Subfolder')} value={result.summary.totalFolders.toLocaleString('id-ID')} sub={t('termasuk isi nested')} />
+      <InsightCard icon="chart" label={t('Total ukuran')} value={formatBytes(result.summary.totalSize)} sub={t('{n} file', { n: result.summary.totalFiles.toLocaleString('id-ID') })} />
+      <InsightCard icon="organize" label={t('Akan dipindahkan')} value={result.moves.length.toLocaleString('id-ID')} sub={t('ke _TerSortir')} highlight onClick={onOpen} />
     </div>
   );
 }
@@ -699,11 +702,12 @@ function PreviewSummary({ result, onOpen }: { result: ScanResult; onOpen: () => 
 function InsightCard({ icon, label, value, sub, accent, highlight, onClick }: {
   icon: IconName; label: string; value: string; sub?: string; accent?: string; highlight?: boolean; onClick?: () => void;
 }) {
+  const { t } = useI18n();
   return (
     <div
       onClick={onClick}
       className={`card p-4 relative overflow-hidden transition-all duration-200 ${highlight ? 'border-[var(--accent-border)] bg-[var(--accent-soft)] cursor-pointer hover:bg-[var(--accent-soft)]' : 'card-hover'}`}
-      title={onClick ? 'Buka folder sumber' : undefined}
+      title={onClick ? t('Buka folder sumber') : undefined}
     >
       {highlight && <span className="absolute -right-6 -top-6 w-20 h-20 rounded-full bg-[var(--accent-soft)] blur-2xl" />}
       <div className="flex items-center justify-between">
@@ -729,6 +733,7 @@ function CategoryBar({ stats, onPick, selected }: {
   onPick: (key: string | null) => void;
   selected: string | null;
 }) {
+  const { t } = useI18n();
   const list = [...stats.entries()].map(([key, v], i) => ({ key, n: v.n, meta: groupMeta(key, i) })).filter(x => x.n > 0).sort((a, b) => b.n - a.n);
   const totalN = list.reduce((s, x) => s + x.n, 0);
   if (list.length === 0) return null;
@@ -736,12 +741,12 @@ function CategoryBar({ stats, onPick, selected }: {
   return (
     <div className="rounded-xl border border-[var(--border)] bg-[var(--overlay)] p-3.5 mt-2">
       <div className="flex items-center justify-between mb-2.5">
-        <div className="eyebrow">Komposisi Folder (akan dipindah)</div>
-        <div className="text-[11px] text-[var(--text-3)]">{totalN.toLocaleString('id-ID')} file</div>
+        <div className="eyebrow">{t('Komposisi Folder (akan dipindah)')}</div>
+        <div className="text-[11px] text-[var(--text-3)]">{t('{n} file', { n: totalN.toLocaleString('id-ID') })}</div>
       </div>
       <div className="flex h-2.5 rounded-full overflow-hidden bg-[var(--overlay)]">
         {list.map(x => (
-          <div key={x.key} title={`${x.meta.label}: ${x.n}`} style={{ width: `${(x.n / totalN) * 100}%`, backgroundColor: x.meta.color }} />
+          <div key={x.key} title={`${t(x.meta.label)}: ${x.n}`} style={{ width: `${(x.n / totalN) * 100}%`, backgroundColor: x.meta.color }} />
         ))}
       </div>
       <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-3">
@@ -752,7 +757,7 @@ function CategoryBar({ stats, onPick, selected }: {
             className={`flex items-center gap-1.5 text-xs transition ${selected === x.key ? 'text-[var(--text)]' : 'text-[var(--text-2)] hover:text-[var(--text)]'}`}
           >
             <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: x.meta.color }} />
-            {x.meta.icon} {x.meta.label}
+            {x.meta.icon} {t(x.meta.label)}
             <span className="tabular-nums text-[var(--text-3)]">{x.n}</span>
           </button>
         ))}
@@ -770,6 +775,7 @@ function PlanTab({ result, fileByPath, filteredMoves, search, setSearch, selecte
   selectedKey: string | null;
   onClearFilter: () => void;
 }) {
+  const { t } = useI18n();
   return (
     <div>
       <div className="flex items-center gap-2 mb-4">
@@ -777,30 +783,30 @@ function PlanTab({ result, fileByPath, filteredMoves, search, setSearch, selecte
           <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-3)]" />
           <input
             className="input pl-9"
-            placeholder="Cari file di dalam rencana..."
+            placeholder={t('Cari file di dalam rencana...')}
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
         </div>
         {selectedKey && (
           <button className="btn-ghost !py-2 !px-3 text-xs shrink-0" onClick={onClearFilter}>
-            Hapus filter <Icon name="x" className="w-3.5 h-3.5" />
+            {t('Hapus filter')} <Icon name="x" className="w-3.5 h-3.5" />
           </button>
         )}
       </div>
 
       <div className="border border-[var(--border)] rounded-xl overflow-hidden">
         <div className="grid grid-cols-12 gap-2 px-4 py-2.5 bg-[var(--overlay)] text-[11px] uppercase tracking-wider text-[var(--text-3)] font-semibold">
-          <div className="col-span-5 sm:col-span-4">File</div>
-          <div className="col-span-3 sm:col-span-4">Folder Tujuan</div>
-          <div className="col-span-2 sm:col-span-2">Ukuran</div>
-          <div className="col-span-2 sm:col-span-2">Kelompok</div>
+          <div className="col-span-5 sm:col-span-4">{t('File')}</div>
+          <div className="col-span-3 sm:col-span-4">{t('Folder Tujuan')}</div>
+          <div className="col-span-2 sm:col-span-2">{t('Ukuran')}</div>
+          <div className="col-span-2 sm:col-span-2">{t('Kelompok')}</div>
         </div>
         <div style={{ height: 416 }}>
           {filteredMoves.length === 0 ? (
             <div className="py-10 text-center text-sm text-[var(--text-3)] flex flex-col items-center gap-2">
               <Icon name="search" className="w-5 h-5 text-[var(--text-3)]" />
-              Tidak ada file yang cocok dengan filter.
+              {t('Tidak ada file yang cocok dengan filter.')}
             </div>
           ) : (
             <VirtualList
@@ -829,7 +835,7 @@ function PlanTab({ result, fileByPath, filteredMoves, search, setSearch, selecte
                     </div>
                     <div className="col-span-2 sm:col-span-2 text-xs text-[var(--text-2)] tabular-nums">{formatBytes(file?.size)}</div>
                     <div className="col-span-2 sm:col-span-2">
-                      {m.customFolder ? <span className="text-[10px] text-[var(--accent-strong)]">aturan kustom</span> : <span className="chip bg-[var(--overlay-2)] text-[var(--text-2)]">{file?.sizeBand}</span>}
+                      {m.customFolder ? <span className="text-[10px] text-[var(--accent-strong)]">{t('aturan kustom')}</span> : <span className="chip bg-[var(--overlay-2)] text-[var(--text-2)]">{file?.sizeBand}</span>}
                     </div>
                   </div>
                 );
@@ -839,7 +845,7 @@ function PlanTab({ result, fileByPath, filteredMoves, search, setSearch, selecte
         </div>
       </div>
       {filteredMoves.length > 0 && (
-        <p className="text-[11px] text-[var(--text-3)] mt-2">{filteredMoves.length.toLocaleString('id-ID')} file · daftar dirender secara virtual agar tetap lancar</p>
+        <p className="text-[11px] text-[var(--text-3)] mt-2">{t('{n} file · daftar dirender secara virtual agar tetap lancar', { n: filteredMoves.length.toLocaleString('id-ID') })}</p>
       )}
     </div>
   );

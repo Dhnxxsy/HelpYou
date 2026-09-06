@@ -1,3 +1,5 @@
+﻿import { tGlobal } from './i18n';
+
 export interface WindowMaxState {
   maximized: boolean;
   fullscreen: boolean;
@@ -99,7 +101,7 @@ export async function checkForUpdate(): Promise<UpdateCheckResult | null> {
 }
 
 export async function downloadUpdate(): Promise<{ ok: boolean; message?: string }> {
-  if (!isDesktop || !window.electron) return { ok: false, message: 'Perangkat tidak mendukung.' };
+  if (!isDesktop || !window.electron) return { ok: false, message: tGlobal('Perangkat tidak mendukung.') };
   return window.electron.updates.download();
 }
 
