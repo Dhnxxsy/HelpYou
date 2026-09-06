@@ -10,7 +10,8 @@ export type ToolId =
   | 'rename'
   | 'recycle'
   | 'notepad'
-  | 'vault';
+  | 'vault'
+  | 'browser';
 
 export interface ActiveTool {
   icon: IconName;
@@ -122,6 +123,16 @@ export const ACTIVE_TOOLS: ActiveTool[] = [
     tool: 'vault',
     accent: 'from-violet-500 to-purple-600',
     glow: 'shadow-violet-500/20',
+    chip: 'bg-[var(--ok-soft)] text-[var(--ok-strong)] border-[var(--ok-border)]',
+  },
+  {
+    icon: 'globe',
+    title: 'Browser Web',
+    short: 'Browser',
+    desc: 'Buka situs web langsung di dalam HelpYou tanpa perlu browser eksternal. Jelajah Shopee dan situs lain dengan mudah.',
+    tool: 'browser',
+    accent: 'from-sky-500 to-blue-600',
+    glow: 'shadow-sky-500/20',
     chip: 'bg-[var(--ok-soft)] text-[var(--ok-strong)] border-[var(--ok-border)]',
   },
 ];

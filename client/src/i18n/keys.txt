@@ -66,6 +66,7 @@ Belum ada catatan
 Belum ada riwayat
 Belum tersimpan
 Beranda
+Beranda Browser
 Berhasil dirapikan! 🎉
 Berikutnya (Enter)
 Berjalan lokal
@@ -85,14 +86,19 @@ Brankas
 Brankas Rahasia
 Brankas terenkripsi · data tidak keluar perangkat
 Brankasmu kosong
+Browser
+Browser Web
+Browser Web hanya tersedia di aplikasi desktop.
 Buat Catatan Baru
 Buat catatan baru untuk mulai menulis, atau buka file teks yang sudah ada.
 Buka
 Buka File
 Buka Folder Hasil
+Buka di browser eksternal
 Buka file teks (Ctrl+O)
 Buka folder sumber
 Buka lokasi
+Buka situs web langsung di dalam HelpYou tanpa perlu browser eksternal. Jelajah Shopee dan situs lain dengan mudah.
 Bukan folder: 
 Buku
 Butuh Admin
@@ -122,6 +128,7 @@ Cek catatan DNS untuk host ini.
 Checklist
 Coba Lagi
 Coba dengan Administrator (UAC)
+Coba lagi
 Coba muat ulang
 Cocokkan huruf besar/kecil
 Cocokkan pada
@@ -245,6 +252,7 @@ Ganti dengan:
 Ganti dengan…
 Ganti jenis huruf (monospace)
 Garis bawah (Ctrl+U)
+Halaman gagal dimuat.
 Hapus
 Hapus Permanen
 Hapus catatan
@@ -285,6 +293,7 @@ Jalankan ping untuk mengukur latensi.
 Jalankan uninstaller tanpa dialog bila memungkinkan
 Jalur penuh
 Jejak pemindahan
+Jelajah situs favoritmu langsung dari sini.
 Jendela
 Jenis
 Jika sandi terlupa, data tidak dapat dipulihkan oleh siapa pun. Simpan sandi-mu di tempat aman.
@@ -304,6 +313,7 @@ Kelola aplikasi yang berjalan otomatis saat Windows menyala — nonaktifkan atau
 Kelola program yang berjalan otomatis saat Windows menyala. Nonaktifkan atau hapus item yang tidak diperlukan.
 Kelompok
 Keluar dari layar penuh
+Kembali
 Kembali ke Beranda
 Kembalikan {n} file?
 Kemungkinan file sedang dipakai program lain atau akses ditolak. Cek kembali lewat tab
@@ -339,9 +349,11 @@ Lokasi Sampah
 Lokasi Terdeteksi
 Lokasi tidak dapat diakses.
 Lupa sandi? Ketik global
+Maju
 Maksimalkan jendela
 Masukkan Sandi untuk Memulihkan
 Masukkan URL/alamat tujuan:
+Masukkan alamat situs (contoh: shopee.co.id)
 Masukkan folder, contoh: C:\Data atau D:\
 Masukkan sandi untuk membuka isi item ini.
 Media
@@ -539,12 +551,14 @@ Semua item brankas bisa dibuka dan dipratinjau tanpa memasukkan sandi,
 Serial OS
 Serial: {serial}
 Server akan memeriksa ulang setiap folder. Folder kosong yang dihapus tidak bisa di-Undo.
+Sesi browsing berjalan lokal di aplikasi ini — tidak dikirim ke mana pun.
 Setiap pemindahan tercatat di Riwayat dan bisa dikembalikan.
 Setiap pemindahan tercatat di tab Riwayat dan bisa di-Undo.
 Simpan
 Simpan Aturan
 Simpan Sebagai
 Sistem Operasi
+Situs Pilihan
 Sortir folder terlebih dahulu di tab 
 Sortir ke folder
 Sortir otomatis
