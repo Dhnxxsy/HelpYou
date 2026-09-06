@@ -13,11 +13,15 @@ interface WvEl extends HTMLElement {
   canGoBack: () => boolean;
   canGoForward: () => boolean;
   getURL: () => string;
+  setUserAgent: (ua: string) => void;
 }
 
 const LS_URL = 'helpyou-browser-url';
 const LS_PINNED = 'helpyou-browser-pinned';
 const MAX_PINNED = 12;
+
+const BROWSER_UA =
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36';
 
 interface PinnedSite {
   name: string;
@@ -116,9 +120,17 @@ export default function BrowserView({ onBack }: { onBack: () => void }) {
     const wv = document.createElement('webview') as unknown as WvEl;
     wvRef.current = wv;
     wv.setAttribute('src', loaded);
-    wv.setAttribute('webpreferences', 'contextIsolation=yes, nodeIntegration=no');
+    wv.setAttribute('webpreferences', 'contextIsolation=yes, nodeIntegration=no, backgroundThrottling=no');
     wv.classList.add('h-full', 'w-full');
     host.appendChild(wv);
+
+    const applyUa = () => {
+      try {
+        wv.setUserAgent(BROWSER_UA);
+      } catch {
+        /* ignore */
+      }
+    };
 
     const refresh = () => {
       try {
@@ -171,6 +183,7 @@ export default function BrowserView({ onBack }: { onBack: () => void }) {
     wv.addEventListener('render-process-gone', onFail as EventListener);
     wv.addEventListener('new-window', onNewWindow as EventListener);
     wv.addEventListener('did-attach', refresh as EventListener);
+    wv.addEventListener('dom-ready', applyUa as EventListener);
     wv.addEventListener('page-title-updated', onTitle as EventListener);
 
     return () => {
@@ -188,6 +201,11 @@ export default function BrowserView({ onBack }: { onBack: () => void }) {
     const wv = wvRef.current;
     if (wv) {
       setUrlInput(u);
+      try {
+        wv.setUserAgent(BROWSER_UA);
+      } catch {
+        /* ignore */
+      }
       try {
         wv.loadURL(u);
       } catch {
