@@ -12,6 +12,7 @@ contextBridge.exposeInMainWorld('electron', {
   },
   paint: {
     savePng: (dataUrl) => ipcRenderer.invoke('paint:savePng', dataUrl),
+    saveJpg: (dataUrl) => ipcRenderer.invoke('paint:saveJpg', dataUrl),
   },
   openExternal: (url) => ipcRenderer.invoke('shell:openExternal', url),
   windowControls: {

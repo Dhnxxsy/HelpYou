@@ -73,6 +73,7 @@ export interface ElectronAPI {
   };
   paint: {
     savePng: (dataUrl: string) => Promise<PaintSaveResult>;
+    saveJpg: (dataUrl: string) => Promise<PaintSaveResult>;
   };
   windowControls: ElectronWindowControls;
   updates: {
@@ -133,4 +134,9 @@ export async function openExternal(url: string): Promise<void> {
 export async function savePngAs(dataUrl: string): Promise<PaintSaveResult> {
   if (!isDesktop || !window.electron) return { ok: false, error: 'Perangkat tidak mendukung.' };
   return window.electron.paint.savePng(dataUrl);
+}
+
+export async function saveJpgAs(dataUrl: string): Promise<PaintSaveResult> {
+  if (!isDesktop || !window.electron) return { ok: false, error: 'Perangkat tidak mendukung.' };
+  return window.electron.paint.saveJpg(dataUrl);
 }

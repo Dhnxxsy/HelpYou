@@ -45,6 +45,7 @@ Analisis dulu (drive mungkin tidak didukung)
 Aplikasi akan di-uninstall {mode}. Anda bisa membersihkan sisa file setelahnya.
 Aplikasi akan ditutup, diperbarui, dan dibuka kembali otomatis.
 Aplikasi ini tidak menyediakan uninstaller (mis. aplikasi portable).
+Arang
 Arsip
 Atur Sandi untuk Menyembunyikan
 Aturan Sortir Kustom
@@ -105,6 +106,7 @@ Buka lokasi
 Buka situs web langsung di dalam HelpYou tanpa perlu browser eksternal. Jelajah Shopee dan situs lain dengan mudah.
 Bukan folder: 
 Buku
+Bulat
 Butuh Admin
 Butuh izin administrator untuk membersihkan
 CPU (detik)
@@ -120,6 +122,7 @@ Cari nama…
 Cari program atau penerbit...
 Cari teks:
 Cari…
+Cat air
 Catat ide dan catatan penting dengan editor nyaman: auto-save, format teks, cari & ganti, dan ekspor ke file.
 Catat ide, daftar, dan catatan penting dalam editor yang nyaman — auto-save, format teks, cari & ganti, dan ekspor kapan saja.
 Catatan
@@ -137,6 +140,7 @@ Coba muat ulang
 Cocokkan huruf besar/kecil
 Cocokkan pada
 Core
+Coreng
 Coret (markdown)
 Cpu (dtk)
 DNS Lookup
@@ -146,6 +150,7 @@ Dari
 Data
 Data brankas rusak.
 Data dikirim keluar
+Datar
 Defragmentasi & Optimasi Drive
 Desain
 Detail
@@ -283,6 +288,7 @@ Hapus {n} folder kosong?
 Header brankas rusak.
 Hentikan
 Hentikan Proses
+Horisontal
 Host / Alamat
 Host: {hostname} ({user})
 Hostname
@@ -313,17 +319,20 @@ Jejak pemindahan
 Jelajah situs favoritmu langsung dari sini.
 Jendela
 Jenis
+Jenis Huruf
 Jika sandi terlupa, data tidak dapat dipulihkan oleh siapa pun. Simpan sandi-mu di tempat aman.
 Judul 1
 Judul 2
 Judul 3
 Judul catatan…
 Jumlah dan statistik dihitung saat berjalan
+Kapur
 Kartu Grafis
 Kategori
 Ke
 Kecepatan
 Kedalaman maksimum
+Keduanya
 Kehilangan koneksi ke server saat uninstall. Cek kembali programnya.
 Kekerasan
 Kelola Aturan
@@ -338,8 +347,10 @@ Kemungkinan file sedang dipakai program lain atau akses ditolak. Cek kembali lew
 Kesalahan tidak diketahui.
 Ketik / tempel path folder, mis. C:\Users\Anda\Downloads
 Ketik sandi untuk membuka…
+Ketik teks…
 Ketik ulang sandi yang sama
 Klik di bawah untuk memeriksa sisa file dan membersihkannya sampai akar.
+Klik kanvas untuk menulis teks.
 Kode
 Komposisi Folder (akan dipindah)
 Konfirmasi
@@ -364,6 +375,7 @@ Lihat aktivitas pemindahan dan kembalikan (undo) jika diperlukan.
 Lihat apa yang memakan ruang di drive atau folder. Klik folder terbesar untuk menyusuri lebih dalam.
 Lihat pratinjau file di dalam item (tanpa memulihkan)
 Lihat program yang sedang berjalan dan pemakaian memorinya, lalu hentikan proses yang macet.
+Linear
 Lokasi
 Lokasi Asal
 Lokasi Sampah
@@ -377,6 +389,7 @@ Masukkan URL/alamat tujuan:
 Masukkan alamat situs (contoh: shopee.co.id)
 Masukkan folder, contoh: C:\Data atau D:\
 Masukkan sandi untuk membuka isi item ini.
+Mati
 Media
 Melukis
 Membaca Tempat Sampah…
@@ -482,7 +495,7 @@ Perkecil
 Persegi
 Perubahan membutuhkan izin administrator
 Petakan pemakaian ruang drive secara visual dan temukan folder & file terbesar yang bisa diringkas.
-Petunjuk: B Kuas, E Penghapus, I Pipet, G Isi Warna, L Garis, R Persegi, O Elips, H Tangan. Spasi geser, Ctrl+Z urungkan, Ctrl+Shift+Z ulangi. Tahan Shift untuk garis lurus.
+Petunjuk: B Kuas, E Penghapus, I Pipet, G Isi Warna, L Garis, R Persegi, O Elips, H Tangan, S Coreng, T Teks. Shift garis lurus, [ ] ukuran, Spasi geser, Ctrl+Z urungkan, Ctrl+Shift+Z ulangi.
 Pilih Drive / Disk
 Pilih Folder
 Pilih bahasa tampilan HelpYou.
@@ -528,6 +541,7 @@ Pulihkan jendela
 Pulihkan: {n} berhasil · {m} gagal
 Pulihkan…
 RAM: {used} dari {total}
+Radial
 Rapihkan
 Rapihkan File-mu
 Rapihkan Folder Lain
@@ -575,6 +589,7 @@ Sembunyikan Folder…
 Sembunyikan Sekarang
 Sembunyikan file atau folder dengan enkripsi AES-256-GCM berkata sandi. Nama file ikut terenkripsi dan aslinya dihapus aman.
 Sembunyikan file atau folder dengan enkripsi AES-256-GCM. Konten dan nama file dienkripsi dengan sandi — tanpa sandi yang benar, isinya tidak bisa dibaca siapa pun.
+Semprot
 Semua Tools File-mu,
 Semua aturan harus punya pola (value) yang tidak kosong.
 Semua file aman — tidak ada isi yang kembar terdeteksi.
@@ -588,8 +603,10 @@ Sesi browsing berjalan lokal di aplikasi ini — tidak dikirim ke mana pun.
 Sesuaikan
 Setiap pemindahan tercatat di Riwayat dan bisa dikembalikan.
 Setiap pemindahan tercatat di tab Riwayat dan bisa di-Undo.
+Simetri
 Simpan
 Simpan Aturan
+Simpan JPEG
 Simpan PNG
 Simpan Sebagai
 Sistem Operasi
@@ -622,12 +639,15 @@ Target tidak dikenal.
 Tautan
 Tebal (Ctrl+B)
 Tekanan pena
+Teks
 Teks terpilih disalin.
+Tekstur Kuas
 Tema Tampilan
 Tema berlaku langsung dan tersimpan otomatis di perangkat ini.
 Tempat Sampah
 Tempat Sampah kosong. Semua bersih!
 Temukan file kembar dan folder menganggur, bersihkan dengan aman.
+Terapkan
 Terapkan ({n})
 Terbuka
 Terhubung · {n} ms rata-rata
@@ -682,11 +702,13 @@ Total terduga
 Total ukuran
 Traceroute
 Traceroute bisa memakan waktu. Klik Jalankan.
+Transparan
 Tulis catatan di sini…
 Turun
 Tutup
 Tutup (Esc)
 Ukuran
+Ukuran Teks
 Ukuran terduga
 Ukuran unduhan:
 Ulangi
@@ -714,9 +736,11 @@ Urut Ukuran Terbesar
 Versi
 Versi BIOS
 Versi {n}
+Vertikal
 Video
 Virtual
 Warna
+Warna Latar
 Ya, bersihkan
 Ya, hapus
 Ya, kembalikan

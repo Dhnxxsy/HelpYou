@@ -1,15 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Icon, { type IconName } from '../components/Icon';
 import PageHeader from '../components/PageHeader';
 import ConfirmDialog from '../components/ConfirmDialog';
-import { savePngAs } from '../lib/platform';
+import { savePngAs, saveJpgAs } from '../lib/platform';
 import { useI18n } from '../lib/i18n';
 
 /* ------------------------------------------------------------------ */
 /*  Types & helpers                                                    */
 /* ------------------------------------------------------------------ */
 
-type PaintTool = 'kuas' | 'penghapus' | 'pipet' | 'isi' | 'garis' | 'persegi' | 'elips' | 'tangan';
+type PaintTool = 'kuas' | 'penghapus' | 'pipet' | 'isi' | 'garis' | 'persegi' | 'elips' | 'tangan' | 'smudge' | 'teks';
+type BrushTex = 'bulat' | 'kapur' | 'arang' | 'semprot' | 'cat air';
+type SymMode = 'off' | 'horizontal' | 'vertical' | 'both';
+type FillMode = 'datar' | 'linear' | 'radial';
 
 interface Pt {
   x: number;
@@ -37,6 +41,8 @@ interface StrokeState {
   origin: Pt;
   shiftActive: boolean;
   eff: number;
+  tex: BrushTex;
+  sym: SymMode;
   ctx: CanvasRenderingContext2D | null;
   color: string;
   alpha: number;
@@ -45,6 +51,12 @@ interface StrokeState {
 interface ShapeState {
   active: boolean;
   kind: PaintTool;
+  start: Pt;
+  cur: Pt;
+}
+
+interface FillState {
+  active: boolean;
   start: Pt;
   cur: Pt;
 }
@@ -86,7 +98,32 @@ const PAINT_TOOLS: { id: PaintTool; icon: IconName; labelKey: string; kbd: strin
   { id: 'garis', icon: 'shapeLine', labelKey: 'Garis', kbd: 'L' },
   { id: 'persegi', icon: 'shapeRect', labelKey: 'Persegi', kbd: 'R' },
   { id: 'elips', icon: 'shapeCircle', labelKey: 'Elips', kbd: 'O' },
+  { id: 'smudge', icon: 'smudge', labelKey: 'Coreng', kbd: 'S' },
+  { id: 'teks', icon: 'type', labelKey: 'Teks', kbd: 'T' },
   { id: 'tangan', icon: 'handMove', labelKey: 'Tangan', kbd: 'H' },
+];
+
+const BRUSH_TEX: { id: BrushTex; labelKey: string }[] = [
+  { id: 'bulat', labelKey: 'Bulat' },
+  { id: 'kapur', labelKey: 'Kapur' },
+  { id: 'arang', labelKey: 'Arang' },
+  { id: 'semprot', labelKey: 'Semprot' },
+  { id: 'cat air', labelKey: 'Cat air' },
+];
+
+const FONT_FAMILIES = ['Arial', 'Georgia', 'Courier New', 'Times New Roman', 'Verdana', 'Impact'];
+
+const SYM_OPTIONS: { id: SymMode; labelKey: string; icon: IconName }[] = [
+  { id: 'off', labelKey: 'Mati', icon: 'symOff' },
+  { id: 'horizontal', labelKey: 'Horisontal', icon: 'flipH' },
+  { id: 'vertical', labelKey: 'Vertikal', icon: 'flipV' },
+  { id: 'both', labelKey: 'Keduanya', icon: 'symBoth' },
+];
+
+const FILL_MODES: { id: FillMode; labelKey: string }[] = [
+  { id: 'datar', labelKey: 'Datar' },
+  { id: 'linear', labelKey: 'Linear' },
+  { id: 'radial', labelKey: 'Radial' },
 ];
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
@@ -112,6 +149,13 @@ function rgbToHex(r: number, g: number, b: number): string {
   return `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
 }
 
+function hexToCssRgba(hex: string, alpha: number): string {
+  const m = /^#?([0-9a-fA-F]{6})$/.exec(hex.trim());
+  if (!m) return `rgba(0,0,0,${clamp(alpha, 0, 1)})`;
+  const n = parseInt(m[1], 16);
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${clamp(alpha, 0, 1)})`;
+}
+
 function makeLayer(w: number, h: number, name: string, fillWhite: boolean): PaintLayer {
   const canvas = document.createElement('canvas');
   canvas.width = Math.max(1, Math.round(w));
@@ -124,30 +168,77 @@ function makeLayer(w: number, h: number, name: string, fillWhite: boolean): Pain
   return { id: 0, name, visible: true, opacity: 1, canvas };
 }
 
-/* Pre-rendered brush sprites (soft/round/hard) cached per params. */
+/* Pre-rendered brush sprites (soft/round/hard/textured) cached per params. */
 const spriteCache = new Map<string, HTMLCanvasElement>();
+
+/* Deterministic PRNG so textured sprites cache stable per size. */
+function seedRand(seed: number): () => number {
+  let a = seed >>> 0;
+  return () => {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
 
 /* Scratch buffer so a stroke segment is composited once (uniform opacity; no
    dark seams where stamps overlap when alpha < 1). */
 let segScratch: HTMLCanvasElement | null = null;
 
+/* Mirror transforms for symmetry (flip across document centerlines). */
+function mirrorList(sym: SymMode, dw: number, dh: number): { sx: number; sy: number; ox: number; oy: number }[] {
+  const id = { sx: 1, sy: 1, ox: 0, oy: 0 };
+  if (sym === 'off') return [id];
+  const h = { sx: -1, sy: 1, ox: dw, oy: 0 };
+  const v = { sx: 1, sy: -1, ox: 0, oy: dh };
+  if (sym === 'horizontal') return [id, h];
+  if (sym === 'vertical') return [id, v];
+  return [id, h, v, { sx: -1, sy: -1, ox: dw, oy: dh }];
+}
+
 function paintSegment(
   draw: CanvasRenderingContext2D,
-  kind: 'kuas' | 'penghapus',
+  kind: 'kuas' | 'penghapus' | 'smudge',
   from: Pt & { s: number },
   to: Pt & { s: number },
   alpha: number,
   hardness: number,
-  color: string
+  color: string,
+  tex: BrushTex,
+  sym: SymMode,
+  dw: number,
+  dh: number
 ) {
-  const step = Math.max(0.5, ((from.s + to.s) / 2) * 0.14);
+  if (kind === 'smudge') {
+    smudgeSegment(draw, from, to, alpha, sym, dw, dh);
+    return;
+  }
+  const stepFactor = tex === 'semprot' ? 0.06 : tex === 'cat air' ? 0.1 : 0.14;
+  const step = Math.max(0.5, ((from.s + to.s) / 2) * stepFactor);
   const dist = Math.hypot(to.x - from.x, to.y - from.y);
   const n = Math.max(1, Math.ceil(dist / step));
+  const mir = mirrorList(sym, dw, dh);
   const pad = Math.max(2, (from.s + to.s) / 2);
-  const minX = Math.floor(Math.min(from.x, to.x) - pad);
-  const minY = Math.floor(Math.min(from.y, to.y) - pad);
-  const maxX = Math.ceil(Math.max(from.x, to.x) + pad);
-  const maxY = Math.ceil(Math.max(from.y, to.y) + pad);
+  let minX = Infinity,
+    minY = Infinity,
+    maxX = -Infinity,
+    maxY = -Infinity;
+  for (const m of mir) {
+    for (const p of [from, to]) {
+      const mx = m.ox + m.sx * p.x;
+      const my = m.oy + m.sy * p.y;
+      if (mx < minX) minX = mx;
+      if (my < minY) minY = my;
+      if (mx > maxX) maxX = mx;
+      if (my > maxY) maxY = my;
+    }
+  }
+  minX = Math.floor(minX - pad);
+  minY = Math.floor(minY - pad);
+  maxX = Math.ceil(maxX + pad);
+  maxY = Math.ceil(maxY + pad);
   const w = Math.max(1, maxX - minX);
   const h = Math.max(1, maxY - minY);
   if (!segScratch) segScratch = document.createElement('canvas');
@@ -168,8 +259,10 @@ function paintSegment(
     const x = from.x + (to.x - from.x) * tt;
     const y = from.y + (to.y - from.y) * tt;
     const s = from.s + (to.s - from.s) * tt;
-    const spr = spriteFor(kind, Math.max(1, s), hardness, color);
-    sg.drawImage(spr, x - s / 2, y - s / 2);
+    const spr = spriteFor(kind, Math.max(1, s), hardness, color, tex);
+    for (const m of mir) {
+      sg.drawImage(spr, m.ox + m.sx * x - s / 2, m.oy + m.sy * y - s / 2);
+    }
   }
   sg.restore();
   draw.save();
@@ -179,8 +272,8 @@ function paintSegment(
   draw.restore();
 }
 
-function spriteFor(kind: 'kuas' | 'penghapus', size: number, hardness: number, color: string): HTMLCanvasElement {
-  const key = `${kind}:${Math.round(size)}:${Math.round(hardness * 100)}:${color}`;
+function spriteFor(kind: 'kuas' | 'penghapus', size: number, hardness: number, color: string, tex: BrushTex): HTMLCanvasElement {
+  const key = `${kind}:${tex}:${Math.round(size)}:${Math.round(hardness * 100)}:${color}`;
   const hit = spriteCache.get(key);
   if (hit) return hit;
   const px = Math.max(2, Math.ceil(size));
@@ -189,26 +282,148 @@ function spriteFor(kind: 'kuas' | 'penghapus', size: number, hardness: number, c
   const g = c.getContext('2d');
   if (g) {
     const R = px / 2;
-    if (hardness >= 0.98) {
+    const rand = seedRand(Math.round(size * 131 + hardness * 10000 + color.length * 7 + color.charCodeAt(1) || 0));
+    g.translate(R, R);
+    if (tex === 'kapur') {
+      g.globalAlpha = 0.85;
+      for (let i = 0; i < 26; i++) {
+        const a = rand() * TAU;
+        const rr = Math.sqrt(rand()) * R * (0.35 + 0.65 * rand());
+        const cs = Math.max(0.8, R * 0.16 * (0.6 + rand()));
+        g.fillStyle = color;
+        g.beginPath();
+        g.arc(Math.cos(a) * rr, Math.sin(a) * rr, cs, 0, TAU);
+        g.fill();
+      }
+      g.globalAlpha = 1;
+    } else if (tex === 'arang') {
+      g.globalAlpha = 0.7;
+      for (let i = 0; i < 18; i++) {
+        const a = rand() * TAU;
+        const rr = rand() * R * 0.9;
+        const x0 = Math.cos(a) * rr;
+        const y0 = Math.sin(a) * rr;
+        const ln = R * (0.25 + 0.5 * rand());
+        const la = a + (rand() - 0.5) * 0.9;
+        g.lineCap = 'round';
+        g.lineWidth = Math.max(1, R * 0.12 * (0.6 + rand()));
+        g.strokeStyle = color;
+        g.beginPath();
+        g.moveTo(x0, y0);
+        g.lineTo(x0 + Math.cos(la) * ln, y0 + Math.sin(la) * ln);
+        g.stroke();
+      }
+      g.globalAlpha = 1;
+    } else if (tex === 'semprot') {
+      g.globalAlpha = 0.5;
+      for (let i = 0; i < 110; i++) {
+        const a = rand() * TAU;
+        const rr = Math.sqrt(rand()) * R;
+        g.fillStyle = color;
+        g.beginPath();
+        g.arc(Math.cos(a) * rr, Math.sin(a) * rr, Math.max(0.5, R * 0.05), 0, TAU);
+        g.fill();
+      }
+      g.globalAlpha = 1;
+    } else if (tex === 'cat air') {
+      for (let i = 0; i < 5; i++) {
+        const offa = rand() * TAU;
+        const offr = rand() * R * 0.3;
+        const cr = R * (0.45 + 0.35 * rand());
+        const grad = g.createRadialGradient(Math.cos(offa) * offr, Math.sin(offa) * offr, 0, Math.cos(offa) * offr, Math.sin(offa) * offr, cr);
+        grad.addColorStop(0, color);
+        grad.addColorStop(0.4, color);
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        g.fillStyle = grad;
+        g.beginPath();
+        g.arc(Math.cos(offa) * offr, Math.sin(offa) * offr, cr, 0, TAU);
+        g.fill();
+      }
+    } else if (hardness >= 0.98) {
       g.fillStyle = color;
       g.beginPath();
-      g.arc(R, R, R, 0, TAU);
+      g.arc(0, 0, R, 0, TAU);
       g.fill();
     } else {
       const core = Math.max(0.12, clamp(hardness, 0, 1));
-      const grad = g.createRadialGradient(R, R, R * core, R, R, R);
+      const grad = g.createRadialGradient(0, 0, R * core, 0, 0, R);
       grad.addColorStop(0, color);
       grad.addColorStop(Math.min(0.998, core), color);
       grad.addColorStop(1, 'rgba(0,0,0,0)');
       g.fillStyle = grad;
       g.beginPath();
-      g.arc(R, R, R, 0, TAU);
+      g.arc(0, 0, R, 0, TAU);
       g.fill();
     }
   }
   if (spriteCache.size > 800) spriteCache.clear();
   spriteCache.set(key, c);
   return c;
+}
+
+/* Smudge ("coreng") — pulls paint along the stroke like a wet finger. */
+let smudgeTmp: HTMLCanvasElement | null = null;
+let smudgeTmpSize = 0;
+
+function smudgeStamp(ctx: CanvasRenderingContext2D, sx: number, sy: number, tx: number, ty: number, size: number, strength: number) {
+  const pw = Math.max(2, Math.ceil(size + 2));
+  if (!smudgeTmp || smudgeTmpSize !== pw) {
+    smudgeTmp = document.createElement('canvas');
+    smudgeTmp.width = smudgeTmp.height = pw;
+    smudgeTmpSize = pw;
+  }
+  const tg = smudgeTmp.getContext('2d');
+  if (!tg) return;
+  tg.setTransform(1, 0, 0, 1, 0, 0);
+  tg.clearRect(0, 0, pw, pw);
+  tg.save();
+  tg.beginPath();
+  tg.arc(pw / 2, pw / 2, size / 2, 0, TAU);
+  tg.clip();
+  tg.drawImage(ctx.canvas, sx - size / 2, sy - size / 2, size, size, 0, 0, pw, pw);
+  tg.restore();
+  ctx.save();
+  ctx.globalAlpha = clamp(strength, 0.05, 1) * 0.45;
+  ctx.drawImage(smudgeTmp, tx - size / 2, ty - size / 2, size, size);
+  ctx.restore();
+}
+
+function smudgeSegment(
+  draw: CanvasRenderingContext2D,
+  from: Pt & { s: number },
+  to: Pt & { s: number },
+  strength: number,
+  sym: SymMode,
+  dw: number,
+  dh: number
+) {
+  const step = Math.max(0.5, ((from.s + to.s) / 2) * 0.22);
+  const dist = Math.hypot(to.x - from.x, to.y - from.y);
+  const n = Math.max(1, Math.ceil(dist / step));
+  const mir = mirrorList(sym, dw, dh);
+  draw.save();
+  draw.globalCompositeOperation = 'source-over';
+  for (let i = 0; i <= n; i++) {
+    const tt = i / n;
+    const x = from.x + (to.x - from.x) * tt;
+    const y = from.y + (to.y - from.y) * tt;
+    const s = from.s + (to.s - from.s) * tt;
+    const xp = i === 0 ? from.x : from.x + (to.x - from.x) * ((i - 1) / n);
+    const yp = i === 0 ? from.y : from.y + (to.y - from.y) * ((i - 1) / n);
+    let dx = x - xp;
+    let dy = y - yp;
+    const dl = Math.hypot(dx, dy);
+    if (dl > 0) {
+      dx /= dl;
+      dy /= dl;
+    }
+    for (const m of mir) {
+      const tx = m.ox + m.sx * x;
+      const ty = m.oy + m.sy * y;
+      smudgeStamp(draw, tx + m.sx * dx * (s * 0.6), ty + m.sy * dy * (s * 0.6), tx, ty, s, strength);
+    }
+  }
+  draw.restore();
 }
 
 function traceShape(g: CanvasRenderingContext2D, kind: PaintTool, a: Pt, b: Pt) {
@@ -376,14 +591,17 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
 
   const docRef = useRef({ w: DEFAULT_W, h: DEFAULT_H });
   const whiteRef = useRef(true);
+  const bgRef = useRef('#ffffff');
   const viewRef = useRef<ViewState>({ zoom: 0.6, x: 0, y: 0 });
   const layersRef = useRef<PaintLayer[]>([]);
   const activeIdRef = useRef(0);
   const nextLayerIdRef = useRef(1);
   const nextLayerNameRef = useRef(1);
 
-  const strokeRef = useRef<StrokeState>({ active: false, prev: { x: 0, y: 0 }, smooth: { x: 0, y: 0 }, origin: { x: 0, y: 0 }, shiftActive: false, eff: 1, ctx: null, color: '#000000', alpha: 1 });
+  const strokeRef = useRef<StrokeState>({ active: false, prev: { x: 0, y: 0 }, smooth: { x: 0, y: 0 }, origin: { x: 0, y: 0 }, shiftActive: false, eff: 1, tex: 'bulat', sym: 'off', ctx: null, color: '#000000', alpha: 1 });
   const shapeRef = useRef<ShapeState>({ active: false, kind: 'garis', start: { x: 0, y: 0 }, cur: { x: 0, y: 0 } });
+  const fillRef = useRef<FillState>({ active: false, start: { x: 0, y: 0 }, cur: { x: 0, y: 0 } });
+  const textAnchorRef = useRef<Pt>({ x: 24, y: 24 });
   const panRef = useRef<{ active: boolean; sx: number; sy: number; ox: number; oy: number }>({
     active: false,
     sx: 0,
@@ -409,6 +627,14 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
   const [pressureOn, setPressureOn] = useState(true);
   const [filled, setFilled] = useState(false);
   const [spaceHeld, setSpaceHeld] = useState(false);
+  const [brushTex, setBrushTex] = useState<BrushTex>('bulat');
+  const [sym, setSym] = useState<SymMode>('off');
+  const [fillMode, setFillMode] = useState<FillMode>('datar');
+  const [bgColor, setBgColor] = useState('#ffffff');
+  const [textOpen, setTextOpen] = useState(false);
+  const [textStr, setTextStr] = useState('');
+  const [textFont, setTextFont] = useState(FONT_FAMILIES[0]);
+  const [textSize, setTextSize] = useState(48);
 
   const [layers, setLayers] = useState<PaintLayer[]>([]);
   const [activeId, setActiveId] = useState(0);
@@ -429,17 +655,24 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
   const opacityRef = useRef(1);
   const pressureRef = useRef(true);
   const filledRef = useRef(false);
+  const texRef = useRef<BrushTex>('bulat');
+  const symRef = useRef<SymMode>('off');
+  const fillModeRef = useRef<FillMode>('datar');
   const confirmRef = useRef<'none' | 'newcanvas' | 'delete'>('none');
 
   toolRef.current = tool;
   colorRef.current = color;
   sizeRef.current = size;
   hardnessRef.current = hardness;
+  texRef.current = brushTex;
+  symRef.current = sym;
+  fillModeRef.current = fillMode;
   opacityRef.current = opacity;
   pressureRef.current = pressureOn;
   filledRef.current = filled;
   confirmRef.current = confirm;
   activeIdRef.current = activeId;
+  bgRef.current = whiteRef.current ? bgColor : '#000000';
 
   /* ----------------------------- core operations ----------------------------- */
 
@@ -523,6 +756,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
       w: d.w,
       h: d.h,
       white: whiteRef.current,
+      bg: bgRef.current,
       layers: layersRef.current.map((l) => {
         const g = l.canvas.getContext('2d');
         return { id: l.id, name: l.name, visible: l.visible, opacity: l.opacity, dataUrl: g ? l.canvas.toDataURL('image/png') : null };
@@ -576,7 +810,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
       g.rect(x0, y0, x1 - x0, y1 - y0);
       g.clip();
       if (whiteRef.current) {
-        g.fillStyle = '#ffffff';
+        g.fillStyle = bgRef.current === '#ffffff' ? '#ffffff' : bgRef.current;
         g.fillRect(x0, y0, x1 - x0, y1 - y0);
       } else {
         const cs = 12;
@@ -602,6 +836,30 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
       g.drawImage(l.canvas, 0, 0);
     }
     g.globalAlpha = 1;
+
+    /* Symmetry guide lines: dashed centerlines of the document. */
+    const sm = symRef.current;
+    if (sm !== 'off') {
+      const mx = d.w / 2;
+      const my = d.h / 2;
+      g.save();
+      g.setLineDash([6, 5]);
+      g.lineWidth = 1.5;
+      g.strokeStyle = 'rgba(80,80,120,0.4)';
+      if (sm === 'horizontal' || sm === 'both') {
+        g.beginPath();
+        g.moveTo(0, my);
+        g.lineTo(d.w, my);
+        g.stroke();
+      }
+      if (sm === 'vertical' || sm === 'both') {
+        g.beginPath();
+        g.moveTo(mx, 0);
+        g.lineTo(mx, d.h);
+        g.stroke();
+      }
+      g.restore();
+    }
 
     /* Shift ruler preview: dashed straight line from stroke origin, snapped to nearest 45 deg. */
     const sref = strokeRef.current;
@@ -659,11 +917,35 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
       g.restore();
     }
 
+    /* Gradient fill preview: dashed line from start to current + arrowheads. */
+    const fl = fillRef.current;
+    if (fl.active && fillModeRef.current !== 'datar') {
+      g.save();
+      g.setLineDash([6, 5]);
+      g.lineWidth = 2;
+      g.strokeStyle = 'rgba(0,0,0,0.6)';
+      g.beginPath();
+      g.moveTo(fl.start.x, fl.start.y);
+      g.lineTo(fl.cur.x, fl.cur.y);
+      g.stroke();
+      g.setLineDash([]);
+      g.fillStyle = 'rgba(255,255,255,0.9)';
+      g.strokeStyle = 'rgba(0,0,0,0.85)';
+      g.lineWidth = 1.5;
+      for (const p of [fl.start, fl.cur]) {
+        g.beginPath();
+        g.arc(p.x, p.y, 4, 0, TAU);
+        g.fill();
+        g.stroke();
+      }
+      g.restore();
+    }
+
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     /* Brush cursor: high-contrast ring + crosshair, visible on any color. */
     const cur = cursorRef.current;
-    if (cur.show && (toolRef.current === 'kuas' || toolRef.current === 'penghapus')) {
+    if (cur.show && (toolRef.current === 'kuas' || toolRef.current === 'penghapus' || toolRef.current === 'smudge')) {
       const R = Math.max(3, (sizeRef.current * v.zoom) / 2);
       g.save();
       g.globalAlpha = 0.18;
@@ -785,14 +1067,22 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
     if (!layer) return;
     const draw = layer.canvas.getContext('2d');
     if (!draw) return;
-    const kind = toolRef.current === 'penghapus' ? 'penghapus' : 'kuas';
+    const kind = toolRef.current === 'penghapus' ? 'penghapus' : toolRef.current === 'smudge' ? 'smudge' : 'kuas';
     const color = kind === 'penghapus' ? '#000000' : colorRef.current;
     const psi = e.pointerType === 'mouse' || e.pressure <= 0 ? 1 : clamp(e.pressure, 0, 1);
-    const eff = sizeRef.current * (pressureRef.current ? Math.max(0.18, psi) : 1);
-    const alpha = opacityRef.current;
+    const eff = sizeRef.current * (pressureRef.current && kind !== 'smudge' ? Math.max(0.18, psi) : 1);
+    const isSmudge = kind === 'smudge';
+    const alpha = isSmudge ? 1 : opacityRef.current;
     const hard = hardnessRef.current;
-    paintSegment(draw, kind, { x: lp.x, y: lp.y, s: eff }, { x: lp.x, y: lp.y, s: eff }, alpha, hard, color);
-    strokeRef.current = { active: true, prev: { ...lp }, smooth: { ...lp }, origin: { ...lp }, shiftActive: e.shiftKey, eff, ctx: draw, color, alpha };
+    const tex = texRef.current;
+    const sym = symRef.current;
+    const d = docRef.current;
+    if (isSmudge) {
+      smudgeSegment(draw, { x: lp.x, y: lp.y, s: eff }, { x: lp.x, y: lp.y, s: eff }, opacityRef.current, sym, d.w, d.h);
+    } else {
+      paintSegment(draw, kind, { x: lp.x, y: lp.y, s: eff }, { x: lp.x, y: lp.y, s: eff }, alpha, hard, color, tex, sym, d.w, d.h);
+    }
+    strokeRef.current = { active: true, prev: { ...lp }, smooth: { ...lp }, origin: { ...lp }, shiftActive: e.shiftKey, eff, tex, sym, ctx: draw, color, alpha };
     requestRender();
   };
 
@@ -812,9 +1102,10 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
     } else {
       s.shiftActive = false;
     }
+    const isSmudge = toolRef.current === 'smudge';
     const psi = e.pointerType === 'mouse' || e.pressure <= 0 ? 1 : clamp(e.pressure, 0, 1);
-    const eff = sizeRef.current * (pressureRef.current ? Math.max(0.18, psi) : 1);
-    const kind = toolRef.current === 'penghapus' ? 'penghapus' : 'kuas';
+    const eff = sizeRef.current * (pressureRef.current && !isSmudge ? Math.max(0.18, psi) : 1);
+    const kind = toolRef.current === 'penghapus' ? 'penghapus' : isSmudge ? 'smudge' : 'kuas';
     const distRaw = Math.hypot(cx - s.prev.x, cy - s.prev.y);
     const blend = e.pointerType === 'mouse' ? 0.45 : 0.22;
     const sm =
@@ -826,15 +1117,12 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
       const rr = cv.getBoundingClientRect();
       cursorRef.current = { x: e.clientX - rr.left, y: e.clientY - rr.top, show: true };
     }
-    paintSegment(
-      s.ctx,
-      kind,
-      { x: s.prev.x, y: s.prev.y, s: s.eff },
-      { x: sm.x, y: sm.y, s: eff },
-      s.alpha,
-      hardnessRef.current,
-      s.color
-    );
+    const d = docRef.current;
+    if (isSmudge) {
+      smudgeSegment(s.ctx, { x: s.prev.x, y: s.prev.y, s: s.eff }, { x: sm.x, y: sm.y, s: eff }, opacityRef.current, s.sym, d.w, d.h);
+    } else {
+      paintSegment(s.ctx, kind, { x: s.prev.x, y: s.prev.y, s: s.eff }, { x: sm.x, y: sm.y, s: eff }, s.alpha, hardnessRef.current, s.color, s.tex, s.sym, d.w, d.h);
+    }
     s.prev = { ...sm };
     s.smooth = { ...sm };
     s.eff = eff;
@@ -844,17 +1132,15 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
   const closeStroke = () => {
     const s = strokeRef.current;
     if (!s.active) return;
+    const isSmudge = toolRef.current === 'smudge';
     const kind = toolRef.current === 'penghapus' ? 'penghapus' : 'kuas';
     if (s.ctx) {
-      paintSegment(
-        s.ctx,
-        kind,
-        { x: s.prev.x, y: s.prev.y, s: s.eff },
-        { x: s.prev.x, y: s.prev.y, s: s.eff },
-        s.alpha,
-        hardnessRef.current,
-        s.color
-      );
+      const d = docRef.current;
+      if (isSmudge) {
+        smudgeSegment(s.ctx, { x: s.prev.x, y: s.prev.y, s: s.eff }, { x: s.prev.x, y: s.prev.y, s: s.eff }, opacityRef.current, s.sym, d.w, d.h);
+      } else {
+        paintSegment(s.ctx, kind, { x: s.prev.x, y: s.prev.y, s: s.eff }, { x: s.prev.x, y: s.prev.y, s: s.eff }, s.alpha, hardnessRef.current, s.color, s.tex, s.sym, d.w, d.h);
+      }
     }
     s.active = false;
     scheduleSave();
@@ -895,7 +1181,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
 
   /* ----------------------------- fill & pipette ----------------------------- */
 
-  const floodFill = (lp: Pt) => {
+  const floodFill = (lp: Pt, dragFrom?: Pt) => {
     if (!insideDoc(lp)) return;
     const layer = activeLayer();
     if (!layer) return;
@@ -904,6 +1190,33 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
     const d = docRef.current;
     const w = d.w;
     const h = d.h;
+    const mode = fillModeRef.current;
+    if (mode !== 'datar') {
+      pushUndo();
+      const c0 = dragFrom ? { x: dragFrom.x, y: dragFrom.y } : { x: -1, y: -1 };
+      const c1 = lp;
+      const grd =
+        mode === 'linear'
+          ? g.createLinearGradient(c0.x, c0.y, c1.x, c1.y)
+          : g.createRadialGradient(
+              c0.x < 0 || c0.x > w ? w / 2 : c0.x,
+              c0.y < 0 || c0.y > h ? h / 2 : c0.y,
+              0,
+              c0.x < 0 || c0.x > w ? w / 2 : c0.x,
+              c0.y < 0 || c0.y > h ? h / 2 : c0.y,
+              Math.hypot(c1.x - (c0.x < 0 || c0.x > w ? w / 2 : c0.x), c1.y - (c0.y < 0 || c0.y > h ? h / 2 : c0.y))
+            );
+      grd.addColorStop(0, colorRef.current);
+      grd.addColorStop(1, hexToCssRgba(bgRef.current, opacityRef.current));
+      g.save();
+      g.globalAlpha = opacityRef.current;
+      g.fillStyle = grd;
+      g.fillRect(0, 0, w, h);
+      g.restore();
+      scheduleSave();
+      render();
+      return;
+    }
     const img = g.getImageData(0, 0, w, h);
     const data = img.data;
     const tol = 24;
@@ -963,7 +1276,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
     const g = tmp.getContext('2d');
     if (!g) return;
     if (whiteRef.current) {
-      g.fillStyle = '#ffffff';
+      g.fillStyle = bgRef.current;
       g.fillRect(0, 0, d.w, d.h);
     }
     for (const l of layersRef.current) {
@@ -1010,12 +1323,23 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
       return;
     }
     if (curTool === 'isi') {
-      floodFill(lp);
+      if (fillModeRef.current === 'datar') {
+        floodFill(lp);
+      } else {
+        fillRef.current = { active: true, start: { ...lp }, cur: { ...lp } };
+      }
       return;
     }
-    if (curTool === 'kuas' || curTool === 'penghapus') {
+    if (curTool === 'smudge' || curTool === 'kuas' || curTool === 'penghapus') {
       if (!insideDoc(lp)) return;
       startStroke(lp, e);
+      return;
+    }
+    if (curTool === 'teks') {
+      if (insideDoc(lp)) {
+        textAnchorRef.current = { x: lp.x, y: lp.y };
+        setTextOpen(true);
+      }
       return;
     }
     startShape(lp);
@@ -1040,6 +1364,11 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
       requestRender();
       return;
     }
+    if (fillRef.current.active) {
+      fillRef.current.cur = lp;
+      requestRender();
+      return;
+    }
     const cv = canvasRef.current;
     if (!cv) return;
     const r = cv.getBoundingClientRect();
@@ -1056,6 +1385,11 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
       commitShape();
       return;
     }
+    if (fillRef.current.active) {
+      fillRef.current.active = false;
+      floodFill(fillRef.current.cur, fillRef.current.start);
+      return;
+    }
     closeStroke();
   };
 
@@ -1065,6 +1399,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
       return;
     }
     cancelShape();
+    fillRef.current.active = false;
     const s = strokeRef.current;
     if (s.active) {
       s.active = false;
@@ -1084,6 +1419,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
 
   const changeTool = (nt: PaintTool) => {
     cancelShape();
+    fillRef.current.active = false;
     toolRef.current = nt;
     setTool(nt);
   };
@@ -1180,10 +1516,13 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
   const doNewCanvas = () => {
     setConfirm('none');
     cancelShape();
+    fillRef.current.active = false;
     resetStacks();
     const d = { w: DEFAULT_W, h: DEFAULT_H };
     docRef.current = d;
     whiteRef.current = true;
+    bgRef.current = '#ffffff';
+    setBgColor('#ffffff');
     const l1 = makeLayer(d.w, d.h, 'Lapisan 1', true);
     l1.id = nextLayerIdRef.current++;
     nextLayerNameRef.current = 2;
@@ -1200,39 +1539,130 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
     setRedoCount(0);
   };
 
-  /* ----------------------------- save / export ----------------------------- */
+  const exportCanvas = (type: 'png' | 'jpeg') => {
+    const d = docRef.current;
+    const c = document.createElement('canvas');
+    c.width = d.w;
+    c.height = d.h;
+    const g = c.getContext('2d');
+    if (!g) return null;
+    if (whiteRef.current) {
+      g.fillStyle = bgRef.current;
+      g.fillRect(0, 0, d.w, d.h);
+    }
+    for (const l of layersRef.current) {
+      if (!l.visible) continue;
+      g.globalAlpha = l.opacity;
+      g.drawImage(l.canvas, 0, 0);
+    }
+    g.globalAlpha = 1;
+    return type === 'jpeg' ? c.toDataURL('image/jpeg', 0.92) : c.toDataURL('image/png');
+  };
+
+  const finishExport = (res: { ok: boolean; canceled?: boolean; error?: string } | null | undefined) => {
+    if (res && res.ok && !res.canceled) setOkToast(true);
+    else if (res && res.error && !res.canceled) setToast(true);
+    else if (!res) setToast(true);
+  };
 
   const savePng = async () => {
     if (savingPng) return;
     setSavingPng(true);
     try {
-      const d = docRef.current;
-      const c = document.createElement('canvas');
-      c.width = d.w;
-      c.height = d.h;
-      const g = c.getContext('2d');
-      if (!g) return;
-      if (whiteRef.current) {
-        g.fillStyle = '#ffffff';
-        g.fillRect(0, 0, d.w, d.h);
-      }
-      for (const l of layersRef.current) {
-        if (!l.visible) continue;
-        g.globalAlpha = l.opacity;
-        g.drawImage(l.canvas, 0, 0);
-      }
-      g.globalAlpha = 1;
-      const res = await savePngAs(c.toDataURL('image/png'));
-      if (res && res.ok && !res.canceled) {
-        setOkToast(true);
-      } else if (res && res.error && !res.canceled) {
-        setToast(true);
-      }
+      const dataUrl = exportCanvas('png');
+      if (!dataUrl) return;
+      const res = await savePngAs(dataUrl);
+      finishExport(res);
     } catch {
       setToast(true);
     } finally {
       setSavingPng(false);
     }
+  };
+
+  const saveJpg = async () => {
+    if (savingPng) return;
+    setSavingPng(true);
+    try {
+      const dataUrl = exportCanvas('jpeg');
+      if (!dataUrl) return;
+      const res = await saveJpgAs(dataUrl);
+      finishExport(res);
+    } catch {
+      setToast(true);
+    } finally {
+      setSavingPng(false);
+    }
+  };
+
+  const setBackground = (hex: string) => {
+    pushUndo();
+    setBgColor(hex);
+    setHexDraft(hex === '#ffffff' ? colorRef.current : hex);
+    whiteRef.current = true;
+    bgRef.current = hex;
+    const layer = activeLayer();
+    if (layer) {
+      const g = layer.canvas.getContext('2d');
+      if (g) {
+        g.save();
+        g.globalCompositeOperation = 'source-over';
+        g.fillStyle = hex;
+        g.fillRect(0, 0, docRef.current.w, docRef.current.h);
+        g.restore();
+      }
+    }
+    scheduleSave();
+    render();
+  };
+
+  /* ----------------------------- text tool ----------------------------- */
+
+  const addTextToLayer = () => {
+    const layer = activeLayer();
+    if (!layer) return;
+    const g = layer.canvas.getContext('2d');
+    if (!g) return;
+    if (!textStr.trim()) return;
+    const d = docRef.current;
+    pushUndo();
+    g.save();
+    g.globalAlpha = opacityRef.current;
+    g.fillStyle = colorRef.current;
+    g.font = `${textSize}px "${textFont}", sans-serif`;
+    g.textAlign = 'left';
+    g.textBaseline = 'alphabetic';
+    g.textRendering = 'optimizeLegibility';
+    const anchor = textAnchorRef.current;
+    const lines = textStr.split('\n');
+    const lh = textSize * 1.25;
+    let line = 0;
+    const maxW = d.w - anchor.x - 12;
+    for (const raw of lines) {
+      const words = raw.split(/\s+/).filter(Boolean);
+      let curLine = '';
+      let y = anchor.y + line * lh;
+      for (const w of words) {
+        const test = curLine ? curLine + ' ' + w : w;
+        if (g.measureText(test).width > maxW && curLine) {
+          g.fillText(curLine, anchor.x, y);
+          curLine = w;
+          y += lh;
+          line++;
+        } else {
+          curLine = test;
+        }
+      }
+      if (curLine) {
+        g.fillText(curLine, anchor.x, y);
+        line++;
+      }
+    }
+    g.restore();
+    setTextOpen(false);
+    setTextStr('');
+    scheduleSave();
+    render();
   };
 
   /* ----------------------------- keyboard ----------------------------- */
@@ -1296,8 +1726,22 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
       case 'o':
         changeTool('elips');
         break;
+      case 's':
+        changeTool('smudge');
+        break;
+      case 't':
+        changeTool('teks');
+        break;
       case 'h':
         changeTool('tangan');
+        break;
+      case '[':
+        e.preventDefault();
+        setSize((p) => Math.max(1, p - 2));
+        break;
+      case ']':
+        e.preventDefault();
+        setSize((p) => Math.min(200, p + 2));
         break;
       case '+':
       case '=':
@@ -1310,6 +1754,8 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
         break;
       case 'escape':
         cancelShape();
+        fillRef.current.active = false;
+        setTextOpen(false);
         break;
       default:
         break;
@@ -1388,7 +1834,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
     const cv = canvasRef.current;
     if (!cv) return;
     if (spaceHeld || tool === 'tangan') cv.style.cursor = 'grab';
-    else if (tool === 'kuas' || tool === 'penghapus') cv.style.cursor = 'none';
+    else if (tool === 'kuas' || tool === 'penghapus' || tool === 'smudge') cv.style.cursor = 'none';
     else cv.style.cursor = 'crosshair';
   }, [tool, spaceHeld]);
 
@@ -1396,7 +1842,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
     let alive = true;
     (async () => {
       const saved = (await idbLoad()) as
-        | { w?: number; h?: number; white?: boolean; layers?: { id: number; name: string; visible: boolean; opacity: number; dataUrl: string | null }[] }
+        | { w?: number; h?: number; white?: boolean; bg?: string; layers?: { id: number; name: string; visible: boolean; opacity: number; dataUrl: string | null }[] }
         | null;
       if (!alive) return;
       if (saved && saved.layers && saved.layers.length) {
@@ -1404,6 +1850,8 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
         const h = saved.h && saved.h > 0 ? saved.h : DEFAULT_H;
         docRef.current = { w, h };
         whiteRef.current = saved.white !== false;
+        bgRef.current = typeof saved.bg === 'string' && /^#?[0-9a-fA-F]{6}$/.test(saved.bg) ? saved.bg : '#ffffff';
+        setBgColor(bgRef.current);
         const restored: PaintLayer[] = [];
         for (const s of saved.layers) {
           const c = document.createElement('canvas');
@@ -1468,7 +1916,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
 
   const activeIdx = layers.findIndex((l) => l.id === activeId);
   const pathHint = t(
-    'Petunjuk: B Kuas, E Penghapus, I Pipet, G Isi Warna, L Garis, R Persegi, O Elips, H Tangan. Spasi untuk geser, Ctrl+Z urungkan.'
+    'Petunjuk: B Kuas, E Penghapus, I Pipet, G Isi Warna, L Garis, R Persegi, O Elips, H Tangan, S Coreng, T Teks. Shift garis lurus, [ ] ukuran, Spasi geser, Ctrl+Z urungkan, Ctrl+Shift+Z ulangi.'
   );
   const delLayerName = layers.find((l) => l.id === activeId)?.name ?? '';
 
@@ -1498,6 +1946,9 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
                 <Icon name="save" className="w-4 h-4" />
               )}
               {t('Simpan PNG')}
+            </button>
+            <button type="button" className="btn-secondary" onClick={() => void saveJpg()} disabled={savingPng}>
+              {t('Simpan JPEG')}
             </button>
           </div>
         }
@@ -1641,6 +2092,65 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
                 <span className={`h-4 w-4 rounded-full border-2 ${pressureOn ? 'bg-[var(--accent-deep)] border-[var(--accent-border)]' : 'bg-[var(--overlay-2)] border-[var(--border-2)]'}`} />
               </button>
             )}
+            {tool === 'kuas' && (
+              <div>
+                <label className="block text-[11px] font-semibold text-[var(--text-3)] mb-1.5">{t('Tekstur Kuas')}</label>
+                <select
+                  className="input !py-1.5 !px-2 w-full"
+                  value={brushTex}
+                  onChange={(e) => setBrushTex(e.target.value as BrushTex)}
+                >
+                  {BRUSH_TEX.map((tx) => (
+                    <option key={tx.id} value={tx.id}>
+                      {t(tx.labelKey)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            <div>
+              <label className="block text-[11px] font-semibold text-[var(--text-3)] mb-1.5">{t('Simetri')}</label>
+              <div className="grid grid-cols-4 gap-1">
+                {SYM_OPTIONS.map((sm) => (
+                  <button
+                    key={sm.id}
+                    type="button"
+                    onClick={() => setSym(sm.id)}
+                    aria-pressed={sym === sm.id}
+                    title={t(sm.labelKey)}
+                    className={`h-9 rounded-lg border grid place-items-center transition-colors select-none ${
+                      sym === sm.id
+                        ? 'bg-[var(--accent-soft)] text-[var(--accent-strong)] border-[var(--accent-border)]'
+                        : 'border-[var(--border)] text-[var(--text-2)] hover:bg-[var(--overlay)]'
+                    }`}
+                  >
+                    <Icon name={sm.icon} className="w-4 h-4" />
+                  </button>
+                ))}
+              </div>
+            </div>
+            {tool === 'isi' && (
+              <div>
+                <label className="block text-[11px] font-semibold text-[var(--text-3)] mb-1.5">{t('Modus Isi')}</label>
+                <div className="grid grid-cols-3 gap-1">
+                  {FILL_MODES.map((fm) => (
+                    <button
+                      key={fm.id}
+                      type="button"
+                      onClick={() => setFillMode(fm.id)}
+                      aria-pressed={fillMode === fm.id}
+                      className={`h-9 rounded-lg border px-1.5 text-[11px] font-medium transition-colors select-none ${
+                        fillMode === fm.id
+                          ? 'bg-[var(--accent-soft)] text-[var(--accent-strong)] border-[var(--accent-border)]'
+                          : 'border-[var(--border)] text-[var(--text-2)] hover:bg-[var(--overlay)]'
+                      }`}
+                    >
+                      {t(fm.labelKey)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             {(tool === 'persegi' || tool === 'elips') && (
               <button
                 type="button"
@@ -1709,6 +2219,56 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
                   style={{ background: s }}
                 />
               ))}
+            </div>
+          </section>
+
+          <section className="card p-4 space-y-3.5">
+            <h2 className="eyebrow">{t('Warna Latar')}</h2>
+            <button
+              type="button"
+              onClick={() => {
+                whiteRef.current = false;
+                bgRef.current = '#000000';
+                setBgColor('#000000');
+                render();
+              }}
+              aria-pressed={!whiteRef.current}
+              className={`w-full h-9 rounded-full border px-3.5 text-xs font-medium flex items-center justify-between gap-2 transition-colors select-none ${
+                !whiteRef.current
+                  ? 'bg-[var(--accent-soft)] text-[var(--accent-strong)] border-[var(--accent-border)]'
+                  : 'border-[var(--border)] text-[var(--text-2)] hover:bg-[var(--overlay)]'
+              }`}
+            >
+              {t('Transparan')}
+              {!whiteRef.current && <Icon name="check" className="w-3.5 h-3.5" />}
+            </button>
+            <div className="flex items-center gap-2">
+              <label className="relative shrink-0 cursor-pointer">
+                <input
+                  type="color"
+                  value={/^#[0-9a-fA-F]{6}$/.test(bgColor) ? bgColor : '#ffffff'}
+                  onChange={(e) => setBackground(e.target.value)}
+                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                />
+                <span
+                  className="block h-8 w-8 rounded-lg border-2 border-[var(--border-2)] shadow-inner"
+                  style={{ background: /^#[0-9a-fA-F]{6}$/.test(bgColor) ? bgColor : '#ffffff' }}
+                />
+              </label>
+              <div className="grid grid-cols-8 gap-1.5 flex-1">
+                {SWATCHES.slice(0, 8).map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setBackground(s)}
+                    aria-label={s}
+                    className={`h-7 rounded-lg border transition-transform hover:scale-110 select-none ${
+                      bgColor === s ? 'ring-2 ring-[var(--accent-border)] border-[var(--accent-border)]' : 'border-[var(--border-2)]'
+                    }`}
+                    style={{ background: s }}
+                  />
+                ))}
+              </div>
             </div>
           </section>
 
@@ -1791,6 +2351,52 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
           </section>
         </aside>
       </div>
+
+      {textOpen &&
+        createPortal(
+          <div className="fixed inset-0 z-50 grid place-items-center p-4" role="dialog" aria-modal="true" aria-label={t('Teks')}>
+            <div className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm" onClick={() => setTextOpen(false)} />
+            <div className="relative card p-6 w-full max-w-md border-[var(--border-2)] animate-scale-in">
+              <h3 className="text-[15px] font-semibold text-[var(--text)] mb-1">{t('Teks')}</h3>
+              <p className="text-sm text-[var(--text-2)] mb-4">{t('Klik kanvas untuk menulis teks.')}</p>
+              <textarea
+                className="input w-full h-24 resize-none"
+                value={textStr}
+                autoFocus
+                placeholder={t('Ketik teks…')}
+                onChange={(e) => setTextStr(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                    e.preventDefault();
+                    addTextToLayer();
+                  }
+                }}
+              />
+              <div className="mt-3.5 space-y-3">
+                <div>
+                  <label className="block text-[11px] font-semibold text-[var(--text-3)] mb-1.5">{t('Jenis Huruf')}</label>
+                  <select className="input !py-1.5 !px-2 w-full" value={textFont} onChange={(e) => setTextFont(e.target.value)}>
+                    {FONT_FAMILIES.map((f) => (
+                      <option key={f} value={f}>
+                        {f}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <SliderRow label={t('Ukuran Teks')} value={textSize} min={8} max={200} step={1} onChange={setTextSize} format={(v) => `${Math.round(v)}px`} />
+              </div>
+              <div className="flex justify-end gap-2.5 mt-6">
+                <button type="button" className="btn-secondary" onClick={() => setTextOpen(false)}>
+                  {t('Batal')}
+                </button>
+                <button type="button" className="btn-primary" onClick={addTextToLayer} disabled={!textStr.trim()}>
+                  {t('Terapkan')}
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
 
       <ConfirmDialog
         open={confirm === 'newcanvas'}

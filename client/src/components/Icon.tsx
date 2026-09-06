@@ -71,7 +71,14 @@ export type IconName =
   | 'plus'
   | 'shapeCircle'
   | 'shapeLine'
-  | 'shapeRect';
+  | 'shapeRect'
+  | 'type'
+  | 'smudge'
+  | 'flipH'
+  | 'flipV'
+  | 'palette'
+  | 'symOff'
+  | 'symBoth';
 
 const FILLED: IconName[] = ['trash'];
 
@@ -218,13 +225,6 @@ const P: Record<IconName, ReactNode> = {
     <rect x="3" y="11" width="18" height="10" rx="2" />
     <path d="M7 11V7a5 5 0 0 1 9.9-1" />
   </>,
-  palette: <>
-    <path d="M12 22a10 10 0 1 1 10-10c0 2.2-1.8 3-3 3h-2.3a2.7 2.7 0 0 0-2 4.5c.4.5.3 1.5-.7 1.5z" />
-    <circle cx="7.5" cy="11" r="1.2" />
-    <circle cx="10.5" cy="6.5" r="1.2" />
-    <circle cx="15" cy="6.5" r="1.2" />
-    <circle cx="18.5" cy="10" r="1.2" />
-  </>,
   sun: <>
     <circle cx="12" cy="12" r="4" />
     <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
@@ -269,6 +269,29 @@ const P: Record<IconName, ReactNode> = {
   shapeCircle: <circle cx="12" cy="12" r="10" />,
   shapeLine: <path d="M13 21h8M15 5l4 4m2.174-2.188a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />,
   shapeRect: <rect x="3" y="3" width="18" height="18" rx="2" />,
+  type: <path d="M12 4v16M4 7V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2M9 20h6" />,
+  smudge: (
+    <>
+      <path d="M18 12.5V10a2 2 0 0 0-2-2a2 2 0 0 0-2 2v1.4m0-.4V9a2 2 0 1 0-4 0v2m0-.5V5a2 2 0 1 0-4 0v9" />
+      <path d="m7 15l-1.76-1.76a2 2 0 0 0-2.83 2.82l3.6 3.6C7.5 21.14 9.2 22 12 22h2a8 8 0 0 0 8-8V7a2 2 0 1 0-4 0v5" />
+    </>
+  ),
+  flipH: <path d="m3 7 5 5-5 5zm18 0-5 5 5 5zm-9 13v2m0-8v2m0-8v2m0-8v2" />,
+  flipV: <path d="m17 3-5 5-5-5zm0 18-5-5-5 5zM4 12H2m8 0H8m8 0h-2m8 0h-2" />,
+  symOff: <circle cx="12" cy="12" r="9" strokeDasharray="3 3" />,
+  symBoth: <>
+    <path d="M3 12h18M12 3v18" />
+    <circle cx="12" cy="12" r="2" />
+  </>,
+  palette: (
+    <>
+      <path d="M12 22a1 1 0 0 1 0-20a10 9 0 0 1 10 9a5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z" />
+      <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" />
+      <circle cx="17.5" cy="10.5" r=".5" fill="currentColor" />
+      <circle cx="6.5" cy="12.5" r=".5" fill="currentColor" />
+      <circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />
+    </>
+  ),
 };
 
 export default function Icon({ name, className = 'w-4 h-4' }: { name: IconName; className?: string }) {
