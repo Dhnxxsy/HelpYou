@@ -11,7 +11,8 @@ export type ToolId =
   | 'recycle'
   | 'notepad'
   | 'vault'
-  | 'browser';
+  | 'browser'
+  | 'paint';
 
 export interface ActiveTool {
   icon: IconName;
@@ -133,6 +134,16 @@ export const ACTIVE_TOOLS: ActiveTool[] = [
     tool: 'browser',
     accent: 'from-sky-500 to-blue-600',
     glow: 'shadow-sky-500/20',
+    chip: 'bg-[var(--ok-soft)] text-[var(--ok-strong)] border-[var(--ok-border)]',
+  },
+  {
+    icon: 'brush',
+    title: 'Melukis',
+    short: 'Melukis',
+    desc: 'Melukis digital lengkap: kuas dengan tekanan, penghapus, pengisi warna, bentuk, pipet, lapisan, dan ekspor PNG.',
+    tool: 'paint',
+    accent: 'from-rose-500 to-pink-600',
+    glow: 'shadow-rose-500/20',
     chip: 'bg-[var(--ok-soft)] text-[var(--ok-strong)] border-[var(--ok-border)]',
   },
 ];

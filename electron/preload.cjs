@@ -10,6 +10,9 @@ contextBridge.exposeInMainWorld('electron', {
     openFile: () => ipcRenderer.invoke('notes:openFile'),
     saveFile: (name, content) => ipcRenderer.invoke('notes:saveFile', name, content),
   },
+  paint: {
+    savePng: (dataUrl) => ipcRenderer.invoke('paint:savePng', dataUrl),
+  },
   openExternal: (url) => ipcRenderer.invoke('shell:openExternal', url),
   windowControls: {
     minimize: () => ipcRenderer.invoke('win:minimize'),

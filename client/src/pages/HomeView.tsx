@@ -8,8 +8,8 @@ const FEATURES = [
   { icon: 'play' as const, label: 'Langsung jalan' },
 ];
 
-const STATS = [
-  { value: '10', label: 'Tools siap pakai', icon: 'grid' as const },
+const STATS = () => [
+  { value: String(ACTIVE_TOOLS.length), label: 'Tools siap pakai', icon: 'grid' as const },
   { value: '100%', label: 'Berjalan lokal', icon: 'shield' as const },
   { value: 'AES-256', label: 'Enkripsi brankas', icon: 'lock' as const },
   { value: '0', label: 'Data dikirim keluar', icon: 'eyeOff' as const },
@@ -49,7 +49,7 @@ export default function HomeView({ onOpen }: { onOpen: (tool: ToolId) => void })
 
       {/* Stat strip */}
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {STATS.map((s) => (
+        {STATS().map((s) => (
           <div key={s.label} className="card card-hover p-4 flex items-center gap-3.5">
             <span className="w-10 h-10 rounded-xl bg-[var(--overlay)] border border-[var(--border-2)] grid place-items-center text-[var(--accent-strong)] shrink-0">
               <Icon name={s.icon} className="w-5 h-5" />

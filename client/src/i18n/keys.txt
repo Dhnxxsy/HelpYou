@@ -34,6 +34,7 @@ Aksi
 Aktif
 Aktif ({n})
 Aktif — nonaktifkan
+Alat
 Alat Jaringan
 Aman: server memeriksa ulang setiap folder sebelum dihapus. Folder
 Analisis
@@ -55,6 +56,7 @@ Awali dengan
 Bagaimana ini bekerja:
 Bahasa
 Bahasa berlaku langsung dan tersimpan otomatis di perangkat ini.
+Baru
 Batal
 Batal Scan
 Batalkan
@@ -89,7 +91,9 @@ Brankasmu kosong
 Browser
 Browser Web
 Browser Web hanya tersedia di aplikasi desktop.
+Buat
 Buat Catatan Baru
+Buat Kanvas Baru?
 Buat catatan baru untuk mulai menulis, atau buka file teks yang sudah ada.
 Buka
 Buka File
@@ -159,8 +163,10 @@ Drive tidak mendukung defragmentasi (butuh NTFS/ReFS).
 Drive tidak valid. Gunakan format seperti C:\ atau D:
 Duplikat
 Duplikat & folder kosong
+Duplikat Lapisan
 Ekspor CSV
 Ekspor ke file (Ctrl+S)
+Elips
 Enkripsi brankas
 File
 File Organizer
@@ -196,6 +202,7 @@ Folder tujuan tidak valid pada aturan "{name}". Gunakan karakter aman (tanpa /\:
 Font
 Fragmentasi rendah ({pct}%) — defrag opsional
 Fragmentasi {pct}%
+Gabung ke Bawah
 Gagal
 Gagal membaca Tempat Sampah.
 Gagal membaca daftar proses.
@@ -237,12 +244,16 @@ Gagal mengubah status.
 Gagal mengunduh pembaruan.
 Gagal menyembunyikan.
 Gagal menyimpan catatan.
+Gagal menyimpan gambar.
 Gagal mulai pemindaian.
 Gagal scan
 Gagal terhubung ke server selama scan. Coba mulai analisis dari awal.
 Gagal.
 Gagal: {message}
 Gambar
+Gambar Anda tersimpan otomatis.
+Gambar bebas dengan kuas, pengisi warna, bentuk, dan lapisan. Simpan sebagai PNG.
+Gambar saat ini akan diganti.
 Ganti
 Ganti Bahasa
 Ganti Nama Massal
@@ -251,9 +262,12 @@ Ganti Tema
 Ganti dengan:
 Ganti dengan…
 Ganti jenis huruf (monospace)
+Garis
 Garis bawah (Ctrl+U)
 Halaman gagal dimuat.
 Hapus
+Hapus Lapisan
+Hapus Lapisan?
 Hapus Permanen
 Hapus catatan
 Hapus catatan "{title}"? Tindakan ini tidak bisa dibatalkan.
@@ -274,7 +288,9 @@ Hostname
 Image Disk
 Info & Laporan Sistem
 Info Sistem
+Isi Bentuk
 Isi Folder
+Isi Warna
 Item
 Item Tersembunyi
 Item berada di dalam brankas.
@@ -308,6 +324,7 @@ Ke
 Kecepatan
 Kedalaman maksimum
 Kehilangan koneksi ke server saat uninstall. Cek kembali programnya.
+Kekerasan
 Kelola Aturan
 Kelola aplikasi yang berjalan otomatis saat Windows menyala — nonaktifkan atau hapus yang tak dipakai.
 Kelola program yang berjalan otomatis saat Windows menyala. Nonaktifkan atau hapus item yang tidak diperlukan.
@@ -334,6 +351,8 @@ Kutipan
 Lainnya
 Langkah {n} dari {total}
 Langsung jalan
+Lapisan
+Lapisan "{name}" akan dihapus.
 Layar penuh
 Lengkap
 Lepas pin
@@ -358,6 +377,7 @@ Masukkan alamat situs (contoh: shopee.co.id)
 Masukkan folder, contoh: C:\Data atau D:\
 Masukkan sandi untuk membuka isi item ini.
 Media
+Melukis
 Membaca Tempat Sampah…
 Membaca daftar proses…
 Membaca informasi sistem…
@@ -374,6 +394,7 @@ Memindai…
 Memori
 Memori (RAM)
 Memproses…
+Memuat gambar tersimpan…
 Menerapkan sortir...
 Menerapkan…
 Menganalisis folder...
@@ -423,6 +444,7 @@ Nonaktif ({n})
 Nonaktif — aktifkan
 Notepad
 OS: {caption} (build {build}, {arch})
+Opacity
 Optimalkan / Defrag
 Optimasi dihentikan.
 Optimasi gagal.
@@ -447,14 +469,19 @@ Pengaturan Scan
 Pengaturan scan
 Pengelola Proses
 Pengelola Startup
+Penghapus
 Pengonsumsi Terbesar
 Penyimpanan
 Perangkat tidak mendukung.
+Perbesar
 Periksa & Bersihkan Residu
 Periksa residu
 Perintah uninstall
+Perkecil
+Persegi
 Perubahan membutuhkan izin administrator
 Petakan pemakaian ruang drive secara visual dan temukan folder & file terbesar yang bisa diringkas.
+Petunjuk: B Kuas, E Penghapus, I Pipet, G Isi Warna, L Garis, R Persegi, O Elips, H Tangan. Spasi untuk geser, Ctrl+Z urungkan.
 Pilih Drive / Disk
 Pilih Folder
 Pilih bahasa tampilan HelpYou.
@@ -467,6 +494,8 @@ Pilih lokasi sampah terlebih dahulu.
 Pilih semua
 Pilih suasana HelpYou yang kamu suka.
 Pilih tema
+Pindah ke Atas
+Pindah ke Bawah
 Pindahkan {n} duplikat
 Pindahkan {n} file
 Pindahkan {n} file duplikat?
@@ -477,6 +506,7 @@ Pindai ulang
 Ping
 Ping, traceroute, cek DNS, dan pindai port untuk mendiagnosis koneksi.
 Pintasan
+Pipet
 Pola
 Pratinjau
 Pratinjau Brankas
@@ -554,10 +584,12 @@ Serial OS
 Serial: {serial}
 Server akan memeriksa ulang setiap folder. Folder kosong yang dihapus tidak bisa di-Undo.
 Sesi browsing berjalan lokal di aplikasi ini — tidak dikirim ke mana pun.
+Sesuaikan
 Setiap pemindahan tercatat di Riwayat dan bisa dikembalikan.
 Setiap pemindahan tercatat di tab Riwayat dan bisa di-Undo.
 Simpan
 Simpan Aturan
+Simpan PNG
 Simpan Sebagai
 Sistem Operasi
 Situs Disematkan
@@ -578,13 +610,17 @@ Suite Tools Lokal untuk Windows
 Sumber tidak ditemukan
 Sumber tidak ditemukan.
 Tambah Aturan
+Tambahkan Lapisan
+Tampilkan
 Tampilkan sandi
+Tangan
 Tanggal pasang
 Tanpa iklan
 Tanpa sandi, konten tidak bisa direkayasa balik.
 Target tidak dikenal.
 Tautan
 Tebal (Ctrl+B)
+Tekanan pena
 Teks terpilih disalin.
 Tema Tampilan
 Tema berlaku langsung dan tersimpan otomatis di perangkat ini.
@@ -652,6 +688,7 @@ Tutup (Esc)
 Ukuran
 Ukuran terduga
 Ukuran unduhan:
+Ulangi
 Ulangi (Ctrl+Y)
 Ulangi / Pilih Folder Lain
 Ulangi Sandi
@@ -669,6 +706,7 @@ Update & Restart
 Update Sekarang
 Uptime
 Uptime: {days} hari
+Urungkan
 Urungkan (Ctrl+Z)
 Urut Nama (A-Z)
 Urut Ukuran Terbesar
@@ -677,6 +715,7 @@ Versi BIOS
 Versi {n}
 Video
 Virtual
+Warna
 Ya, bersihkan
 Ya, hapus
 Ya, kembalikan

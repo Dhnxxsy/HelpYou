@@ -274,6 +274,25 @@ function registerIpc() {
       return { error: e?.message || 'Gagal menyimpan file' };
     }
   });
+  ipcMain.handle('paint:savePng', async (_event, dataUrl) => {
+    if (!mainWindow) return { ok: false, error: 'Tidak ada jendela' };
+    if (typeof dataUrl !== 'string' || !/^data:image\/png;base64,/.test(dataUrl)) {
+      return { ok: false, error: 'Data gambar tidak valid' };
+    }
+    const res = await dialog.showSaveDialog(mainWindow, {
+      title: 'Simpan Gambar',
+      defaultPath: 'lukisan.png',
+      filters: [{ name: 'Gambar PNG', extensions: ['png'] }],
+    });
+    if (res.canceled || !res.filePath) return { ok: false, canceled: true };
+    try {
+      const base64 = dataUrl.slice('data:image/png;base64,'.length);
+      await fs.promises.writeFile(res.filePath, Buffer.from(base64, 'base64'));
+      return { ok: true, path: res.filePath };
+    } catch (e) {
+      return { ok: false, error: e?.message || 'Gagal menyimpan gambar' };
+    }
+  });
 }
 
 const gotLock = app.requestSingleInstanceLock();

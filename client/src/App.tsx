@@ -19,6 +19,7 @@ const RecycleBinView = lazy(() => import('./pages/RecycleBinView'));
 const NotepadView = lazy(() => import('./pages/NotepadView'));
 const VaultView = lazy(() => import('./pages/VaultView'));
 const BrowserView = lazy(() => import('./pages/BrowserView'));
+const PaintView = lazy(() => import('./pages/PaintView'));
 
 type Tool = 'home' | ToolId;
 
@@ -50,6 +51,7 @@ export default function App() {
                   {tool === 'notepad' && <NotepadView onBack={() => setTool('home')} />}
                   {tool === 'vault' && <VaultView onBack={() => setTool('home')} />}
                   {tool === 'browser' && <BrowserView onBack={() => setTool('home')} />}
+                  {tool === 'paint' && <PaintView onBack={() => setTool('home')} />}
                 </Suspense>
               )}
             </div>

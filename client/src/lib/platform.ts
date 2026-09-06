@@ -53,6 +53,13 @@ export interface NotesSaveResult {
   error?: string;
 }
 
+export interface PaintSaveResult {
+  ok: boolean;
+  path?: string;
+  canceled?: boolean;
+  error?: string;
+}
+
 export interface ElectronAPI {
   platform: string;
   pickFolder: () => Promise<string | null>;
@@ -63,6 +70,9 @@ export interface ElectronAPI {
   notes: {
     openFile: () => Promise<NotesOpenResult | null>;
     saveFile: (name: string, content: string) => Promise<NotesSaveResult | null>;
+  };
+  paint: {
+    savePng: (dataUrl: string) => Promise<PaintSaveResult>;
   };
   windowControls: ElectronWindowControls;
   updates: {
@@ -118,4 +128,9 @@ export async function openUrl(url: string): Promise<void> {
 export async function openExternal(url: string): Promise<void> {
   if (!isDesktop || !window.electron) return;
   if (/^https?:\/\//.test(url)) return window.electron.openExternal(url);
+}
+
+export async function savePngAs(dataUrl: string): Promise<PaintSaveResult> {
+  if (!isDesktop || !window.electron) return { ok: false, error: 'Perangkat tidak mendukung.' };
+  return window.electron.paint.savePng(dataUrl);
 }

@@ -58,7 +58,20 @@ export type IconName =
   | 'palette'
   | 'sun'
   | 'moon'
-  | 'globe';
+  | 'globe'
+  | 'brush'
+  | 'bucket'
+  | 'chevronDown'
+  | 'chevronUp'
+  | 'dropper'
+  | 'eraser'
+  | 'handMove'
+  | 'layers'
+  | 'mergeDown'
+  | 'plus'
+  | 'shapeCircle'
+  | 'shapeLine'
+  | 'shapeRect';
 
 const FILLED: IconName[] = ['trash'];
 
@@ -220,6 +233,77 @@ const P: Record<IconName, ReactNode> = {
     <path d="M3 12h18" />
     <path d="M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18" />
   </>,
+  brush: (
+    <>
+      <path d="M9.06 11.9 17.13 3.84a2.85 2.85 0 1 1 4.03 4.03L13.1 15.9" />
+      <path d="M7.07 14.94C5.41 14.94 4 16.35 4 17.96 4 19.29 2.5 19.48 3 19.98c1.08 1.1 2.49 2 4 2 2.2 0 4-1.8 4-4.04a3.01 3.01 0 0 0-3-3Z" />
+    </>
+  ),
+  bucket: (
+    <>
+      <path d="m19 11-8-8-8.6 8.6a2 2 0 0 0 0 2.8l5.2 5.2c.78.78 2.05.78 2.83 0L19 11Z" />
+      <path d="m5 2 5 5" />
+      <path d="M2 13h15" />
+      <path d="M22 20a2 2 0 1 1-4 0c0-1.6 1.7-2.4 2-4 .3 1.6 2 2.4 2 4Z" />
+    </>
+  ),
+  chevronDown: <path d="M6 9l6 6 6-6" />,
+  chevronUp: <path d="M18 15l-6-6-6 6" />,
+  dropper: (
+    <>
+      <circle cx="18.5" cy="18.5" r="3.5" />
+      <path d="m18 15-8-8" />
+      <path d="M10 7.5 7.5 5l-.5 2-2 2 2 .5 2.5 2.5" />
+      <path d="m15.5 15.5-2-2" />
+    </>
+  ),
+  eraser: (
+    <>
+      <path d="m7 21-4.3-4.3a2 2 0 0 1 0-2.8l9.6-9.6a2 2 0 0 1 2.8 0l5.6 5.6a2 2 0 0 1 0 2.8L13 21" />
+      <path d="M21.5 21H7" />
+      <path d="m5 11 9 9" />
+    </>
+  ),
+  handMove: (
+    <>
+      <path d="m7 8-4 4 4 4" />
+      <path d="m17 8 4 4-4 4" />
+      <path d="M12 4v16" />
+      <path d="M8 20l4 4 4-4" />
+      <path d="M8 4l4-4 4 4" />
+    </>
+  ),
+  layers: (
+    <>
+      <path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z" />
+      <path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65" />
+      <path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65" />
+    </>
+  ),
+  mergeDown: (
+    <>
+      <path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10" />
+      <path d="M16 3h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h0" />
+      <path d="m10 11 2 2 2-2" />
+      <path d="M12 13V7" />
+    </>
+  ),
+  plus: <path d="M12 5v14M5 12h14" />,
+  shapeCircle: (
+    <>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M12 3.5v17" />
+      <path d="M3.5 12h17" />
+    </>
+  ),
+  shapeLine: <path d="M5 19 19 5" />,
+  shapeRect: (
+    <>
+      <rect x="4" y="4" width="16" height="16" rx="2" />
+      <path d="M12 4v16" />
+      <path d="M4 12h16" />
+    </>
+  ),
 };
 
 export default function Icon({ name, className = 'w-4 h-4' }: { name: IconName; className?: string }) {
