@@ -23,13 +23,15 @@ import type { InstalledApp } from '../../shared/types.js';
 import { extractIconRaw, warmIcons } from '../organizer/icons.js';
 import { scanJunk, cleanJunk, cleanJunkElevated } from '../organizer/disk-cleaner.js';
 import { analyzeDirectory } from '../organizer/space-analyzer.js';
+import { listVolumes, normalizeDrive, buildAnalyzeScript, buildOptimizeScript, defragProgress, tailLines } from '../organizer/disk-defrag.js';
+import { elevatedStreamPaths, startElevatedStream, type ElevatedStreamHandles } from '../utils/powershell.js';
 import { listStartupItems, setStartupItemEnabled, deleteStartupItem } from '../organizer/startup-manager.js';
 import { getSystemInfo } from '../organizer/system-info.js';
 import { listFolderEntries, applyRenames } from '../organizer/rename-tool.js';
 import { listRecycleBin, restoreRecycleItem, emptyRecycleBin } from '../organizer/recycle-bin.js';
 import { listProcesses, killProcess } from '../organizer/process-manager.js';
 import { pingHost, traceHost, dnsLookup, scanPorts } from '../organizer/network-tools.js';
-import type { DiskScanResult, StartupItem } from '../../shared/types.js';
+import type { DiskScanResult, StartupItem, DefragAnalyzeResult, DefragJobStatus } from '../../shared/types.js';
 import { listNotes, getNote, createNote, updateNote, deleteNote } from '../organizer/notepad.js';
 import { listVaultItems, hideItems, unhideItem, deleteVaultItem, inspectItem, preparePreview, openPreviewStream } from '../organizer/vault.js';
 
@@ -590,6 +592,130 @@ api.post('/disk/analyze/:id/cancel', (req: Request, res: Response) => {
   const job = diskJobs.get(req.params.id);
   if (!job) return res.status(404).json({ error: 'not found' });
   if (job.status === 'running') job.status = 'cancelled';
+  res.json({ ok: true });
+});
+
+/* ---------------- Disk defrag / optimize tool ---------------- */
+
+interface DefragJob {
+  kind: 'analyze' | 'optimize';
+  status: 'running' | 'done' | 'cancelled' | 'error';
+  progress?: number;
+  log: string;
+  result?: DefragAnalyzeResult;
+  error?: string;
+  handle?: ElevatedStreamHandles;
+  timer?: ReturnType<typeof setTimeout>;
+}
+const defragJobs = new Map<string, DefragJob>();
+
+async function pollDefragJob(jobId: string, job: DefragJob) {
+  const handle = job.handle!;
+  const state = await handle.readState();
+  const out = await handle.readOut();
+  const err = await handle.readErr();
+  const progress = defragProgress(out);
+  const base = tailLines(out || err, 30);
+  job.progress = progress;
+  job.log = base || job.log;
+
+  if (state === 'done') {
+    if (job.kind === 'analyze') {
+      const line = out.split('\n').map((s) => s.trim()).find((s) => s.startsWith('DATA:'));
+      if (line) {
+        try {
+          job.result = JSON.parse(line.slice(5));
+        } catch {
+          /* fall through: keep log only */
+        }
+      }
+    }
+    job.status = 'done';
+    clearTimeout(job.timer);
+    await handle.cleanup();
+    return;
+  }
+  if (state === 'cancelled') {
+    job.status = 'cancelled';
+    clearTimeout(job.timer);
+    await handle.cleanup();
+    return;
+  }
+  if (state === 'error') {
+    job.status = 'error';
+    job.error = tailLines(err || out, 20).trim() || 'Gagal menjalankan optimasi.';
+    clearTimeout(job.timer);
+    await handle.cleanup();
+    return;
+  }
+  // still running → keep polling
+  job.timer = setTimeout(() => void pollDefragJob(jobId, job), 1000);
+}
+
+// GET /api/disk/defrag/volumes
+api.get('/disk/defrag/volumes', async (_req: Request, res: Response) => {
+  try {
+    res.json({ volumes: await listVolumes() });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /api/disk/defrag/analyze  body: { path: 'C:\' }
+api.post('/disk/defrag/analyze', async (req: Request, res: Response) => {
+  try {
+    const drive = normalizeDrive(req.body?.path);
+    const jobId = randomUUID();
+    const paths = elevatedStreamPaths();
+    const handle = await startElevatedStream(buildAnalyzeScript(drive, paths), paths);
+    const job: DefragJob = { kind: 'analyze', status: 'running', log: 'Menganalisis fragmentasi…', handle };
+    defragJobs.set(jobId, job);
+    void pollDefragJob(jobId, job);
+    res.json({ jobId });
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+// POST /api/disk/defrag/optimize  body: { path: 'C:\' }
+api.post('/disk/defrag/optimize', async (req: Request, res: Response) => {
+  try {
+    const drive = normalizeDrive(req.body?.path);
+    const jobId = randomUUID();
+    const paths = elevatedStreamPaths();
+    const handle = await startElevatedStream(buildOptimizeScript(drive, paths), paths);
+    const job: DefragJob = { kind: 'optimize', status: 'running', log: 'Menunggu izin administrator…', handle };
+    defragJobs.set(jobId, job);
+    void pollDefragJob(jobId, job);
+    res.json({ jobId });
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+// GET /api/disk/defrag/:id
+api.get('/disk/defrag/:id', (req: Request, res: Response) => {
+  const job = defragJobs.get(req.params.id);
+  if (!job) return res.status(404).json({ error: 'not found' });
+  const body: DefragJobStatus = {
+    status: job.status,
+    progress: job.progress,
+    log: job.log,
+  };
+  if (job.status === 'done') body.result = job.result;
+  if (job.status === 'error') body.error = job.error;
+  res.json(body);
+});
+
+// POST /api/disk/defrag/:id/cancel
+api.post('/disk/defrag/:id/cancel', (req: Request, res: Response) => {
+  const job = defragJobs.get(req.params.id);
+  if (!job) return res.status(404).json({ error: 'not found' });
+  if (job.status === 'running') {
+    void job.handle?.cancel();
+    job.status = 'cancelled';
+    job.log += '\nMenghentikan…';
+  }
   res.json({ ok: true });
 });
 

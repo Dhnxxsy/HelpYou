@@ -96,3 +96,102 @@ export async function runElevatedPowerShell(body: string, timeoutMs = 180_000): 
     }
   }
 }
+
+export interface ElevatedStreamPaths {
+  scriptPath: string;
+  wrapperPath: string;
+  outPath: string;
+  errPath: string;
+  statePath: string;
+  cancelPath: string;
+}
+
+/**
+ * Handles for a long-running elevated PowerShell job. The script is expected to:
+ *   - set its state file to 'running' early,
+ *   - write progress lines to stdout (redirected to the out file),
+ *   - finish with 'done' / 'cancelled'.
+ * Server code polls `readState()` / `readOut()` while the elevated process runs
+ * in the background (no blocking wait, no long timeout cap).
+ */
+export interface ElevatedStreamHandles {
+  statePath: string;
+  cancelPath: string;
+  outPath: string;
+  errPath: string;
+  readState(): Promise<string>;
+  readOut(): Promise<string>;
+  readErr(): Promise<string>;
+  cancel(): Promise<void>;
+  cleanup(): Promise<void>;
+}
+
+/** Create the temp files + write the elevated body script. */
+export function elevatedStreamPaths(): ElevatedStreamPaths {
+  const tmp = path.join(os.tmpdir(), `hy-ps-${process.pid}-${Date.now()}-${Math.floor(Math.random() * 1e6)}`);
+  return {
+    scriptPath: `${tmp}.ps1`,
+    wrapperPath: `${tmp}-w.ps1`,
+    outPath: `${tmp}.out`,
+    errPath: `${tmp}.err`,
+    statePath: `${tmp}.state`,
+    cancelPath: `${tmp}.cancel`,
+  };
+}
+
+function buildWrapper(scriptPath: string, outPath: string, errPath: string, statePath: string): string {
+  // If the script never managed to write a state (parse error/early crash),
+  // mark the job as failed. Otherwise the script controls 'running'/'done'/'cancelled'.
+  return (
+    `$ErrorActionPreference = 'Continue'\n` +
+    `& ${psQuote(scriptPath)} > ${psQuote(outPath)} 2> ${psQuote(errPath)}\n` +
+    `if (-not (Test-Path -LiteralPath ${psQuote(statePath)})) { Set-Content -LiteralPath ${psQuote(statePath)} -Value 'error' -NoNewline -Encoding utf8 }\n`
+  );
+}
+
+const cleanupPaths = (p: ElevatedStreamPaths) =>
+  Promise.all(
+    [p.scriptPath, p.wrapperPath, p.outPath, p.errPath, p.statePath, p.cancelPath].map((f) =>
+      fs.promises.rm(f, { force: true }).catch(() => {})
+    ),
+  );
+
+/**
+ * Launch an elevated PowerShell script in the background (UAC), without waiting
+ * for it to finish. Returns handles to poll output/state and to request cancel.
+ * Throws if the user declines the UAC prompt.
+ */
+export async function startElevatedStream(scriptBody: string, paths?: ElevatedStreamPaths): Promise<ElevatedStreamHandles> {
+  const p = paths ?? elevatedStreamPaths();
+  await fs.promises.writeFile(p.scriptPath, scriptBody, 'utf-8');
+  await fs.promises.writeFile(p.wrapperPath, buildWrapper(p.scriptPath, p.outPath, p.errPath, p.statePath), 'utf-8');
+
+  const launcher =
+    `Start-Process -FilePath 'powershell.exe' -ArgumentList @('-NoProfile','-ExecutionPolicy','Bypass','-File',${psQuote(p.wrapperPath)}) ` +
+    `-Verb RunAs -WindowStyle Hidden`;
+
+  try {
+    await runPowerShell(launcher, 20_000);
+  } catch (e: any) {
+    await cleanupPaths(p);
+    const msg = String(e?.message || e || '');
+    if (/cancel/i.test(msg)) throw new Error('Izin administrator (UAC) dibatalkan.');
+    throw new Error(msg);
+  }
+
+  return {
+    statePath: p.statePath,
+    cancelPath: p.cancelPath,
+    outPath: p.outPath,
+    errPath: p.errPath,
+    readState: () => fs.promises.readFile(p.statePath, 'utf-8').catch(() => ''),
+    readOut: () => fs.promises.readFile(p.outPath, 'utf-8').catch(() => ''),
+    readErr: () => fs.promises.readFile(p.errPath, 'utf-8').catch(() => ''),
+    cancel: async () => {
+      await fs.promises.writeFile(p.cancelPath, '1', 'utf-8').catch(() => {});
+    },
+    cleanup: async () => {
+      await cleanupPaths(p);
+    },
+  };
+}

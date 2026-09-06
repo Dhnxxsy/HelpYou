@@ -264,6 +264,42 @@ export interface DiskScanResult {
   topFiles: DiskFile[];
 }
 
+/* ------------- Disk defrag / optimize tool ------------- */
+
+export interface DiskVolumeInfo {
+  /** single letter, e.g. 'C' */
+  letter: string;
+  label: string;
+  fileSystem: string;
+  sizeBytes: number;
+  freeBytes: number;
+}
+
+export interface DefragAnalyzeResult {
+  drive: string;
+  mediaType: string;
+  fileSystem: string;
+  supported: boolean;
+  totalSpaceBytes?: number;
+  freeSpaceBytes?: number;
+  fragmentedBytes?: number;
+  fragPercent?: number;
+  totalFiles?: number;
+  fragmentedFiles?: number;
+  lastOptimized?: string;
+  report: string;
+}
+
+export interface DefragJobStatus {
+  status: 'running' | 'done' | 'cancelled' | 'error';
+  /** parsed percentage from the optimizer output (0-100) */
+  progress?: number;
+  /** last few lines of the optimizer output */
+  log: string;
+  result?: DefragAnalyzeResult;
+  error?: string;
+}
+
 /* ------------- Startup manager tool ------------- */
 
 export interface StartupItem {
