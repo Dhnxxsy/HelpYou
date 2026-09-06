@@ -621,21 +621,46 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
 
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    /* Brush cursor. */
+    /* Brush cursor: high-contrast ring + crosshair, visible on any color. */
     const cur = cursorRef.current;
     if (cur.show && (toolRef.current === 'kuas' || toolRef.current === 'penghapus')) {
-      const r = (sizeRef.current * v.zoom) / 2;
-      g.lineWidth = 1.5;
-      g.strokeStyle = toolRef.current === 'penghapus' ? 'rgba(239,68,68,0.85)' : 'rgba(255,255,255,0.9)';
+      const R = Math.max(3, (sizeRef.current * v.zoom) / 2);
+      g.lineWidth = 3;
+      g.strokeStyle = 'rgba(0,0,0,0.75)';
       g.beginPath();
-      g.arc(cur.x, cur.y, Math.max(1, r), 0, TAU);
+      g.arc(cur.x, cur.y, R + 1, 0, TAU);
       g.stroke();
+      g.lineWidth = 1.6;
+      g.strokeStyle = 'rgba(255,255,255,0.95)';
       g.beginPath();
-      g.moveTo(cur.x - 4, cur.y);
-      g.lineTo(cur.x + 4, cur.y);
-      g.moveTo(cur.x, cur.y - 4);
-      g.lineTo(cur.x, cur.y + 4);
+      g.arc(cur.x, cur.y, R, 0, TAU);
       g.stroke();
+      g.lineWidth = 1;
+      g.strokeStyle = 'rgba(0,0,0,0.55)';
+      g.beginPath();
+      g.arc(cur.x, cur.y, R - 1.5, 0, TAU);
+      g.stroke();
+      const cl = Math.max(3, R * 0.35 + 2);
+      g.lineWidth = 3;
+      g.strokeStyle = 'rgba(0,0,0,0.75)';
+      g.beginPath();
+      g.moveTo(cur.x - cl, cur.y);
+      g.lineTo(cur.x + cl, cur.y);
+      g.moveTo(cur.x, cur.y - cl);
+      g.lineTo(cur.x, cur.y + cl);
+      g.stroke();
+      g.lineWidth = 1.2;
+      g.strokeStyle = 'rgba(255,255,255,0.95)';
+      g.beginPath();
+      g.moveTo(cur.x - cl, cur.y);
+      g.lineTo(cur.x + cl, cur.y);
+      g.moveTo(cur.x, cur.y - cl);
+      g.lineTo(cur.x, cur.y + cl);
+      g.stroke();
+      g.fillStyle = 'rgba(0,0,0,0.75)';
+      g.beginPath();
+      g.arc(cur.x, cur.y, 1.4, 0, TAU);
+      g.fill();
     }
   };
 
@@ -663,12 +688,11 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
     requestRender();
   };
 
-  const fitWidth = () => {
+  const fitCover = () => {
     const wrap = canvasWrapRef.current;
     if (!wrap || wrap.clientWidth < 10 || wrap.clientHeight < 10) return;
     const d = docRef.current;
-    const pad = 24;
-    const z = clamp((wrap.clientWidth - pad) / d.w, 0.05, 16);
+    const z = clamp(Math.max(wrap.clientWidth / d.w, wrap.clientHeight / d.h), 0.05, 16);
     const v = viewRef.current;
     v.zoom = z;
     v.x = (wrap.clientWidth - d.w * z) / 2;
@@ -725,7 +749,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
     requestRender();
   };
 
-  const moveStroke = (lp: Pt, e: { pointerType: string; pressure: number }) => {
+  const moveStroke = (lp: Pt, e: { pointerType: string; pressure: number; clientX: number; clientY: number }) => {
     const s = strokeRef.current;
     if (!s.active || !s.ctx) return;
     const psi = e.pointerType === 'mouse' || e.pressure <= 0 ? 1 : clamp(e.pressure, 0, 1);
@@ -737,6 +761,11 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
       distRaw > 12
         ? { ...lp }
         : { x: s.smooth.x + (lp.x - s.smooth.x) * blend, y: s.smooth.y + (lp.y - s.smooth.y) * blend };
+    const cv = canvasRef.current;
+    if (cv) {
+      const rr = cv.getBoundingClientRect();
+      cursorRef.current = { x: e.clientX - rr.left, y: e.clientY - rr.top, show: true };
+    }
     paintSegment(
       s.ctx,
       kind,
@@ -904,12 +933,14 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
     }
     if (e.button === 1) {
       cancelShape();
+      cursorRef.current.show = false;
       panRef.current = { active: true, sx: e.clientX, sy: e.clientY, ox: viewRef.current.x, oy: viewRef.current.y };
       return;
     }
     const lp = toLogical(e);
     if (spaceHeld || toolRef.current === 'tangan') {
       cancelShape();
+      cursorRef.current.show = false;
       panRef.current = { active: true, sx: e.clientX, sy: e.clientY, ox: viewRef.current.x, oy: viewRef.current.y };
       return;
     }
@@ -952,7 +983,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
     const cv = canvasRef.current;
     if (!cv) return;
     const r = cv.getBoundingClientRect();
-    cursorRef.current = { x: e.clientX - r.left, y: e.clientY - r.top, show: insideDoc(lp) };
+    cursorRef.current = { x: e.clientX - r.left, y: e.clientY - r.top, show: true };
     requestRender();
   };
 
@@ -1098,7 +1129,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
     nextLayerNameRef.current = 2;
     applyLayers([l1]);
     selectLayer(l1.id);
-    fitZoom();
+    fitCover();
     scheduleSave();
   };
 
@@ -1232,7 +1263,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
     const ro = new ResizeObserver(() => {
       if (!didInitRef.current) {
         didInitRef.current = true;
-        fitWidth();
+        fitCover();
       } else {
         requestRender();
       }
@@ -1339,7 +1370,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
         selectLayer(l1.id);
       }
       setLoading(false);
-      fitWidth();
+      fitCover();
     })().catch(() => {
       if (!alive) return;
       setLoading(false);

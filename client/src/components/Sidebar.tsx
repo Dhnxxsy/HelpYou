@@ -6,7 +6,7 @@ import ThemePicker from './ThemePicker';
 import LanguagePicker from './LanguagePicker';
 import { useI18n } from '../lib/i18n';
 
-const VERSION = '1.0.34';
+const VERSION = '1.0.35';
 
 interface SidebarProps {
   current: string;
