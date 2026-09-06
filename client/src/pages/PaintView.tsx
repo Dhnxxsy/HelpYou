@@ -34,6 +34,7 @@ interface StrokeState {
   active: boolean;
   prev: Pt;
   smooth: Pt;
+  eff: number;
   ctx: CanvasRenderingContext2D | null;
   color: string;
   alpha: number;
@@ -56,10 +57,10 @@ interface ProjectSnapshot {
   layers: { id: number; name: string; visible: boolean; opacity: number; img: ImageData | null }[];
 }
 
-const DEFAULT_W = 1200;
-const DEFAULT_H = 800;
+const DEFAULT_W = 1600;
+const DEFAULT_H = 1200;
 const TAU = Math.PI * 2;
-const MAX_UNDO = 40;
+const MAX_UNDO = 25;
 const SWATCHES = [
   '#000000',
   '#ffffff',
@@ -114,6 +115,58 @@ function makeLayer(w: number, h: number, name: string, fillWhite: boolean): Pain
 /* Pre-rendered brush sprites (soft/round/hard) cached per params. */
 const spriteCache = new Map<string, HTMLCanvasElement>();
 
+/* Scratch buffer so a stroke segment is composited once (uniform opacity; no
+   dark seams where stamps overlap when alpha < 1). */
+let segScratch: HTMLCanvasElement | null = null;
+
+function paintSegment(
+  draw: CanvasRenderingContext2D,
+  kind: 'kuas' | 'penghapus',
+  from: Pt & { s: number },
+  to: Pt & { s: number },
+  alpha: number,
+  hardness: number,
+  color: string
+) {
+  const step = Math.max(0.5, ((from.s + to.s) / 2) * 0.16);
+  const dist = Math.hypot(to.x - from.x, to.y - from.y);
+  const n = Math.max(1, Math.ceil(dist / step));
+  const pad = Math.max(2, (from.s + to.s) / 2);
+  const minX = Math.floor(Math.min(from.x, to.x) - pad);
+  const minY = Math.floor(Math.min(from.y, to.y) - pad);
+  const maxX = Math.ceil(Math.max(from.x, to.x) + pad);
+  const maxY = Math.ceil(Math.max(from.y, to.y) + pad);
+  const w = Math.max(1, maxX - minX);
+  const h = Math.max(1, maxY - minY);
+  if (!segScratch) segScratch = document.createElement('canvas');
+  if (segScratch.width < w || segScratch.height < h) {
+    segScratch.width = Math.max(segScratch.width, w);
+    segScratch.height = Math.max(segScratch.height, h);
+  }
+  const sg = segScratch.getContext('2d');
+  if (!sg) return;
+  sg.save();
+  sg.setTransform(1, 0, 0, 1, 0, 0);
+  sg.clearRect(0, 0, segScratch.width, segScratch.height);
+  sg.setTransform(1, 0, 0, 1, -minX, -minY);
+  sg.globalCompositeOperation = 'source-over';
+  sg.globalAlpha = 1;
+  for (let i = 0; i <= n; i++) {
+    const tt = i / n;
+    const x = from.x + (to.x - from.x) * tt;
+    const y = from.y + (to.y - from.y) * tt;
+    const s = from.s + (to.s - from.s) * tt;
+    const spr = spriteFor(kind, Math.max(1, s), hardness, color);
+    sg.drawImage(spr, x - s / 2, y - s / 2);
+  }
+  sg.restore();
+  draw.save();
+  draw.globalCompositeOperation = kind === 'penghapus' ? 'destination-out' : 'source-over';
+  draw.globalAlpha = alpha;
+  draw.drawImage(segScratch, minX, minY);
+  draw.restore();
+}
+
 function spriteFor(kind: 'kuas' | 'penghapus', size: number, hardness: number, color: string): HTMLCanvasElement {
   const key = `${kind}:${Math.round(size)}:${Math.round(hardness * 100)}:${color}`;
   const hit = spriteCache.get(key);
@@ -144,24 +197,6 @@ function spriteFor(kind: 'kuas' | 'penghapus', size: number, hardness: number, c
   if (spriteCache.size > 800) spriteCache.clear();
   spriteCache.set(key, c);
   return c;
-}
-
-function stamp(
-  g: CanvasRenderingContext2D,
-  kind: 'kuas' | 'penghapus',
-  x: number,
-  y: number,
-  size: number,
-  color: string,
-  alpha: number,
-  hardness: number
-) {
-  const spr = spriteFor(kind, Math.max(1, size), hardness, color);
-  g.save();
-  g.globalCompositeOperation = kind === 'penghapus' ? 'destination-out' : 'source-over';
-  g.globalAlpha = alpha;
-  g.drawImage(spr, x - size / 2, y - size / 2);
-  g.restore();
 }
 
 function traceShape(g: CanvasRenderingContext2D, kind: PaintTool, a: Pt, b: Pt) {
@@ -325,6 +360,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
 
   const canvasWrapRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const rafRef = useRef<number | null>(null);
 
   const docRef = useRef({ w: DEFAULT_W, h: DEFAULT_H });
   const whiteRef = useRef(true);
@@ -334,7 +370,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
   const nextLayerIdRef = useRef(1);
   const nextLayerNameRef = useRef(1);
 
-  const strokeRef = useRef<StrokeState>({ active: false, prev: { x: 0, y: 0 }, smooth: { x: 0, y: 0 }, ctx: null, color: '#000000', alpha: 1 });
+  const strokeRef = useRef<StrokeState>({ active: false, prev: { x: 0, y: 0 }, smooth: { x: 0, y: 0 }, eff: 1, ctx: null, color: '#000000', alpha: 1 });
   const shapeRef = useRef<ShapeState>({ active: false, kind: 'garis', start: { x: 0, y: 0 }, cur: { x: 0, y: 0 } });
   const panRef = useRef<{ active: boolean; sx: number; sy: number; ox: number; oy: number }>({
     active: false,
@@ -355,7 +391,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
   const [tool, setTool] = useState<PaintTool>('kuas');
   const [color, setColor] = useState('#ffffff');
   const [hexDraft, setHexDraft] = useState('#ffffff');
-  const [size, setSize] = useState(18);
+  const [size, setSize] = useState(24);
   const [hardness, setHardness] = useState(0.55);
   const [opacity, setOpacity] = useState(1);
   const [pressureOn, setPressureOn] = useState(true);
@@ -375,7 +411,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
   /* Keep refs in sync for imperative handlers. */
   const toolRef = useRef<PaintTool>('kuas');
   const colorRef = useRef('#ffffff');
-  const sizeRef = useRef(18);
+  const sizeRef = useRef(24);
   const hardnessRef = useRef(0.55);
   const opacityRef = useRef(1);
   const pressureRef = useRef(true);
@@ -605,18 +641,40 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
 
   /* ----------------------------- view / zoom ----------------------------- */
 
+  const requestRender = () => {
+    if (rafRef.current != null) return;
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = null;
+      render();
+    });
+  };
+
   const fitZoom = () => {
     const wrap = canvasWrapRef.current;
     if (!wrap || wrap.clientWidth < 10 || wrap.clientHeight < 10) return;
     const d = docRef.current;
-    const pad = 36;
-    const z = clamp(Math.min((wrap.clientWidth - pad) / d.w, (wrap.clientHeight - pad) / d.h, 1), 0.05, 16);
+    const pad = 24;
+    const z = clamp(Math.min((wrap.clientWidth - pad) / d.w, (wrap.clientHeight - pad) / d.h), 0.05, 16);
     const v = viewRef.current;
     v.zoom = z;
     v.x = (wrap.clientWidth - d.w * z) / 2;
     v.y = (wrap.clientHeight - d.h * z) / 2;
     setZoomPct(Math.round(z * 100));
-    render();
+    requestRender();
+  };
+
+  const fitWidth = () => {
+    const wrap = canvasWrapRef.current;
+    if (!wrap || wrap.clientWidth < 10 || wrap.clientHeight < 10) return;
+    const d = docRef.current;
+    const pad = 24;
+    const z = clamp((wrap.clientWidth - pad) / d.w, 0.05, 16);
+    const v = viewRef.current;
+    v.zoom = z;
+    v.x = (wrap.clientWidth - d.w * z) / 2;
+    v.y = (wrap.clientHeight - d.h * z) / 2;
+    setZoomPct(Math.round(z * 100));
+    requestRender();
   };
 
   const setZoom = (nz: number) => {
@@ -660,9 +718,11 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
     const color = kind === 'penghapus' ? '#000000' : colorRef.current;
     const psi = e.pointerType === 'mouse' || e.pressure <= 0 ? 1 : clamp(e.pressure, 0, 1);
     const eff = sizeRef.current * (pressureRef.current ? Math.max(0.18, psi) : 1);
-    stamp(draw, kind, lp.x, lp.y, eff, color, opacityRef.current, hardnessRef.current);
-    strokeRef.current = { active: true, prev: { ...lp }, smooth: { ...lp }, ctx: draw, color, alpha: opacityRef.current };
-    render();
+    const alpha = opacityRef.current;
+    const hard = hardnessRef.current;
+    paintSegment(draw, kind, { x: lp.x, y: lp.y, s: eff }, { x: lp.x, y: lp.y, s: eff }, alpha, hard, color);
+    strokeRef.current = { active: true, prev: { ...lp }, smooth: { ...lp }, eff, ctx: draw, color, alpha };
+    requestRender();
   };
 
   const moveStroke = (lp: Pt, e: { pointerType: string; pressure: number }) => {
@@ -670,31 +730,46 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
     if (!s.active || !s.ctx) return;
     const psi = e.pointerType === 'mouse' || e.pressure <= 0 ? 1 : clamp(e.pressure, 0, 1);
     const eff = sizeRef.current * (pressureRef.current ? Math.max(0.18, psi) : 1);
-    const sm = { x: s.smooth.x + (lp.x - s.smooth.x) * 0.4, y: s.smooth.y + (lp.y - s.smooth.y) * 0.4 };
-    const dx = sm.x - s.prev.x;
-    const dy = sm.y - s.prev.y;
-    const dist = Math.hypot(dx, dy);
-    if (dist >= Math.max(0.6, eff * 0.22)) {
-      const steps = Math.min(240, Math.max(1, Math.ceil(dist / Math.max(0.6, eff * 0.22))));
-      const kind = toolRef.current === 'penghapus' ? 'penghapus' : 'kuas';
-      for (let i = 1; i <= steps; i++) {
-        const tt = i / steps;
-        stamp(s.ctx, kind, s.prev.x + dx * tt, s.prev.y + dy * tt, eff, s.color, opacityRef.current, hardnessRef.current);
-      }
-      s.prev = { ...sm };
-    }
-    s.smooth = sm;
-    render();
+    const kind = toolRef.current === 'penghapus' ? 'penghapus' : 'kuas';
+    const distRaw = Math.hypot(lp.x - s.prev.x, lp.y - s.prev.y);
+    const blend = e.pointerType === 'mouse' ? 0.45 : 0.22;
+    const sm =
+      distRaw > 12
+        ? { ...lp }
+        : { x: s.smooth.x + (lp.x - s.smooth.x) * blend, y: s.smooth.y + (lp.y - s.smooth.y) * blend };
+    paintSegment(
+      s.ctx,
+      kind,
+      { x: s.prev.x, y: s.prev.y, s: s.eff },
+      { x: sm.x, y: sm.y, s: eff },
+      s.alpha,
+      hardnessRef.current,
+      s.color
+    );
+    s.prev = { ...sm };
+    s.smooth = { ...sm };
+    s.eff = eff;
+    requestRender();
   };
 
   const closeStroke = () => {
     const s = strokeRef.current;
     if (!s.active) return;
     const kind = toolRef.current === 'penghapus' ? 'penghapus' : 'kuas';
-    if (s.ctx) stamp(s.ctx, kind, s.prev.x, s.prev.y, sizeRef.current, s.color, opacityRef.current, hardnessRef.current);
+    if (s.ctx) {
+      paintSegment(
+        s.ctx,
+        kind,
+        { x: s.prev.x, y: s.prev.y, s: s.eff },
+        { x: s.prev.x, y: s.prev.y, s: s.eff },
+        s.alpha,
+        hardnessRef.current,
+        s.color
+      );
+    }
     s.active = false;
     scheduleSave();
-    render();
+    requestRender();
   };
 
   /* ----------------------------- shapes ----------------------------- */
@@ -861,7 +936,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
       const v = viewRef.current;
       v.x = pan.ox + (e.clientX - pan.sx);
       v.y = pan.oy + (e.clientY - pan.sy);
-      render();
+      requestRender();
       return;
     }
     const lp = toLogical(e);
@@ -871,14 +946,14 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
     }
     if (shapeRef.current.active) {
       shapeRef.current.cur = lp;
-      render();
+      requestRender();
       return;
     }
     const cv = canvasRef.current;
     if (!cv) return;
     const r = cv.getBoundingClientRect();
     cursorRef.current = { x: e.clientX - r.left, y: e.clientY - r.top, show: insideDoc(lp) };
-    render();
+    requestRender();
   };
 
   const onPointerUp = () => {
@@ -910,7 +985,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
   const onPointerLeave = () => {
     if (!strokeRef.current.active && !panRef.current.active) {
       cursorRef.current.show = false;
-      render();
+      requestRender();
     }
   };
 
@@ -1157,9 +1232,9 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
     const ro = new ResizeObserver(() => {
       if (!didInitRef.current) {
         didInitRef.current = true;
-        fitZoom();
+        fitWidth();
       } else {
-        render();
+        requestRender();
       }
     });
     ro.observe(wrap);
@@ -1264,7 +1339,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
         selectLayer(l1.id);
       }
       setLoading(false);
-      fitZoom();
+      fitWidth();
     })().catch(() => {
       if (!alive) return;
       setLoading(false);
@@ -1283,6 +1358,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
 
   useEffect(() => {
     return () => {
+      if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
       persist();
     };
@@ -1357,7 +1433,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
 
         {/* Canvas */}
         <section className="card overflow-hidden min-w-0">
-          <div ref={canvasWrapRef} className="relative h-[560px] bg-[var(--bg-2)]">
+          <div ref={canvasWrapRef} className="relative h-[calc(100dvh-235px)] min-h-[480px] bg-[var(--bg-2)]">
             <canvas
               ref={canvasRef}
               className="absolute inset-0 w-full h-full touch-none select-none"
