@@ -786,5 +786,8 @@ const d: Record<string, string> = {
   'Jelajah situs favoritmu langsung dari sini.': 'Просматривайте любимые сайты прямо отсюда.',
   'Sesi browsing berjalan lokal di aplikasi ini — tidak dikirim ke mana pun.': 'Ваша сессия остаётся локальной в этом приложении — ничего никуда не отправляется.',
   'Browser Web hanya tersedia di aplikasi desktop.': 'Веб-браузер доступен только в настольном приложении.',
+'Sematkan': 'Закрепить',
+  'Lepas sematan': 'Открепить',
+  'Situs Disematkan': 'Закреплённые сайты',
 };
 export default d;

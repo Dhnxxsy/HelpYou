@@ -786,5 +786,8 @@ const d: Record<string, string> = {
   'Jelajah situs favoritmu langsung dari sini.': '直接从这里浏览你喜爱的网站。',
   'Sesi browsing berjalan lokal di aplikasi ini — tidak dikirim ke mana pun.': '你的浏览会话仅保存在此应用本地——不会发送到任何地方。',
   'Browser Web hanya tersedia di aplikasi desktop.': '网页浏览器仅在桌面应用中可用。',
+'Sematkan': '固定',
+  'Lepas sematan': '取消固定',
+  'Situs Disematkan': '已固定的网站',
 };
 export default d;

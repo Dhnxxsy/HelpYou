@@ -16,6 +16,13 @@ interface WvEl extends HTMLElement {
 }
 
 const LS_URL = 'helpyou-browser-url';
+const LS_PINNED = 'helpyou-browser-pinned';
+const MAX_PINNED = 12;
+
+interface PinnedSite {
+  name: string;
+  url: string;
+}
 
 const QUICK_LINKS = [
   { name: 'Shopee', url: 'https://shopee.co.id', grad: 'from-orange-500 to-amber-500' },
@@ -51,6 +58,32 @@ function storedUrl(): string {
   }
 }
 
+function hostOf(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '') || url;
+  } catch {
+    return url;
+  }
+}
+
+function readPinned(): PinnedSite[] {
+  try {
+    const v = JSON.parse(localStorage.getItem(LS_PINNED) || '[]');
+    if (Array.isArray(v)) {
+      return v
+        .filter((p) => p && typeof p === 'object' && typeof p.url === 'string' && /^https?:\/\//i.test(p.url))
+        .map((p) => ({
+          name: typeof p.name === 'string' && p.name.trim() ? p.name : hostOf(p.url),
+          url: p.url,
+        }))
+        .slice(0, MAX_PINNED);
+    }
+  } catch {
+    /* ignore */
+  }
+  return [];
+}
+
 export default function BrowserView({ onBack }: { onBack: () => void }) {
   const { t } = useI18n();
   const meta = ACTIVE_TOOLS.find((x) => x.tool === 'browser') ?? ACTIVE_TOOLS[0];
@@ -59,10 +92,21 @@ export default function BrowserView({ onBack }: { onBack: () => void }) {
 
   const [urlInput, setUrlInput] = useState(storedUrl);
   const [loaded, setLoaded] = useState<string | null>(() => storedUrl() || null);
+  const [currentUrl, setCurrentUrl] = useState<string | null>(() => storedUrl() || null);
+  const [pageTitle, setPageTitle] = useState('');
+  const [pinned, setPinned] = useState<PinnedSite[]>(readPinned);
   const [loading, setLoading] = useState(false);
   const [canGoBack, setCanGoBack] = useState(false);
   const [canGoForward, setCanGoForward] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(LS_PINNED, JSON.stringify(pinned));
+    } catch {
+      /* ignore */
+    }
+  }, [pinned]);
 
   useEffect(() => {
     if (!loaded || !isDesktop) return;
@@ -96,6 +140,7 @@ export default function BrowserView({ onBack }: { onBack: () => void }) {
       const u = e?.url || wv.getURL();
       if (/^https?:\/\//i.test(u)) {
         setUrlInput(u);
+        setCurrentUrl(u);
         try {
           localStorage.setItem(LS_URL, u);
         } catch {
@@ -103,6 +148,9 @@ export default function BrowserView({ onBack }: { onBack: () => void }) {
         }
       }
       refresh();
+    };
+    const onTitle = (e: { title?: string }) => {
+      if (typeof e?.title === 'string' && e.title) setPageTitle(e.title);
     };
     const onFail = (e: { isMainFrame?: boolean }) => {
       if (e && e.isMainFrame === false) return;
@@ -123,6 +171,7 @@ export default function BrowserView({ onBack }: { onBack: () => void }) {
     wv.addEventListener('render-process-gone', onFail as EventListener);
     wv.addEventListener('new-window', onNewWindow as EventListener);
     wv.addEventListener('did-attach', refresh as EventListener);
+    wv.addEventListener('page-title-updated', onTitle as EventListener);
 
     return () => {
       wvRef.current = null;
@@ -134,6 +183,8 @@ export default function BrowserView({ onBack }: { onBack: () => void }) {
     const u = normalizeUrl(raw);
     if (!u) return;
     setError('');
+    setPageTitle('');
+    setCurrentUrl(u);
     const wv = wvRef.current;
     if (wv) {
       setUrlInput(u);
@@ -153,6 +204,8 @@ export default function BrowserView({ onBack }: { onBack: () => void }) {
     setLoaded(null);
     setUrlInput('');
     setError('');
+    setPageTitle('');
+    setCurrentUrl(null);
     setCanGoBack(false);
     setCanGoForward(false);
     try {
@@ -160,6 +213,19 @@ export default function BrowserView({ onBack }: { onBack: () => void }) {
     } catch {
       /* ignore */
     }
+  };
+
+  const togglePin = () => {
+    const u = currentUrl;
+    if (!u) return;
+    setPinned((prev) => {
+      if (prev.some((p) => p.url === u)) return prev.filter((p) => p.url !== u);
+      return [{ name: pageTitle.trim() || hostOf(u), url: u }, ...prev].slice(0, MAX_PINNED);
+    });
+  };
+
+  const unpin = (url: string) => {
+    setPinned((prev) => prev.filter((p) => p.url !== url));
   };
 
   const back = () => {
@@ -258,6 +324,15 @@ export default function BrowserView({ onBack }: { onBack: () => void }) {
       </button>
       {urlBar}
       <button
+        onClick={togglePin}
+        disabled={!currentUrl}
+        title={pinned.some((p) => p.url === currentUrl) ? t('Lepas sematan') : t('Sematkan')}
+        aria-label={pinned.some((p) => p.url === currentUrl) ? t('Lepas sematan') : t('Sematkan')}
+        className={toolbarBtn}
+      >
+        <Icon name={pinned.some((p) => p.url === currentUrl) ? 'pinOff' : 'pin'} className="w-4 h-4" />
+      </button>
+      <button
         onClick={openCurrentExternal}
         disabled={!loaded}
         title={t('Buka di browser eksternal')}
@@ -292,6 +367,37 @@ export default function BrowserView({ onBack }: { onBack: () => void }) {
             <p className="text-sm text-[var(--text-2)] mt-1">{t('Jelajah situs favoritmu langsung dari sini.')}</p>
           </div>
           {urlBar}
+          {pinned.length > 0 && (
+            <div>
+              <div className="eyebrow mb-3">{t('Situs Disematkan')}</div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                {pinned.map((s) => (
+                  <div key={s.url} className="card card-hover p-3 flex items-center gap-3 min-w-0">
+                    <button
+                      onClick={() => navigateTo(s.url)}
+                      className="flex items-center gap-3 min-w-0 text-left flex-1"
+                    >
+                      <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 grid place-items-center text-white shadow-lg shrink-0">
+                        <Icon name="pin" className="w-4 h-4" />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block text-sm font-semibold text-[var(--text)] truncate">{s.name}</span>
+                        <span className="block text-[11px] text-[var(--text-3)] truncate">{hostOf(s.url)}</span>
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => unpin(s.url)}
+                      title={t('Lepas sematan')}
+                      aria-label={t('Lepas sematan')}
+                      className="shrink-0 w-7 h-7 grid place-items-center rounded-lg text-[var(--text-3)] hover:bg-[var(--overlay)] hover:text-[var(--warn-strong)] transition-colors"
+                    >
+                      <Icon name="pinOff" className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           <div>
             <div className="eyebrow mb-3">{t('Situs Pilihan')}</div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">

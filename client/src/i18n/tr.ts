@@ -786,5 +786,8 @@ const d: Record<string, string> = {
   'Jelajah situs favoritmu langsung dari sini.': 'Favori sitelerinde doğrudan buradan gez.',
   'Sesi browsing berjalan lokal di aplikasi ini — tidak dikirim ke mana pun.': 'Tarayıcı oturumun bu uygulamanın içinde yerel kalır — hiçbir şey dışarı gönderilmez.',
   'Browser Web hanya tersedia di aplikasi desktop.': 'Web Tarayıcı yalnızca masaüstü uygulamasında kullanılabilir.',
+'Sematkan': 'Sabitle',
+  'Lepas sematan': 'Sabitlenmeyi kaldır',
+  'Situs Disematkan': 'Sabitlenen Siteler',
 };
 export default d;

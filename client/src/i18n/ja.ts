@@ -786,5 +786,8 @@ const d: Record<string, string> = {
   'Jelajah situs favoritmu langsung dari sini.': 'お気に入りのサイトをここから直接閲覧できます。',
   'Sesi browsing berjalan lokal di aplikasi ini — tidak dikirim ke mana pun.': '閲覧セッションはこのアプリ内のローカルだけで保たれ、外部へ送信されることはありません。',
   'Browser Web hanya tersedia di aplikasi desktop.': 'Webブラウザはデスクトップアプリでのみ利用できます。',
+'Sematkan': 'ピン留め',
+  'Lepas sematan': 'ピン留めを外す',
+  'Situs Disematkan': 'ピン留めしたサイト',
 };
 export default d;

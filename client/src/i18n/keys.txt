@@ -337,6 +337,7 @@ Langsung jalan
 Layar penuh
 Lengkap
 Lepas pin
+Lepas sematan
 Lewati (biarkan)
 Lewati folder (pisah koma)
 Lihat aktivitas pemindahan dan kembalikan (undo) jika diperlukan.
@@ -535,6 +536,7 @@ Selesai
 Selesai. {done} file/folder diubah namanya.
 Selesaikan wizard uninstall (bila muncul) di layar Anda.
 Seluruh isi catatan disalin.
+Sematkan
 Sematkan di atas
 Sembunyikan
 Sembunyikan File…
@@ -558,6 +560,7 @@ Simpan
 Simpan Aturan
 Simpan Sebagai
 Sistem Operasi
+Situs Disematkan
 Situs Pilihan
 Sortir folder terlebih dahulu di tab 
 Sortir ke folder

@@ -786,5 +786,8 @@ const d: Record<string, string> = {
   'Jelajah situs favoritmu langsung dari sini.': 'Parcourez vos sites préférés directement d\'ici.',
   'Sesi browsing berjalan lokal di aplikasi ini — tidak dikirim ke mana pun.': 'Votre session de navigation reste locale dans cette application — rien n\'est envoyé ailleurs.',
   'Browser Web hanya tersedia di aplikasi desktop.': 'Le Navigateur Web n\'est disponible que dans l\'application de bureau.',
+'Sematkan': 'Épingler',
+  'Lepas sematan': 'Désépingler',
+  'Situs Disematkan': 'Sites épinglés',
 };
 export default d;

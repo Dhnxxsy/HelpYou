@@ -786,5 +786,8 @@ const d: Record<string, string> = {
   'Jelajah situs favoritmu langsung dari sini.': 'تصفح مواقعك المفضلة مباشرة من هنا.',
   'Sesi browsing berjalan lokal di aplikasi ini — tidak dikirim ke mana pun.': 'جلسة التصفح تبقى محلية داخل هذا التطبيق — لا يتم إرسال أي شيء.',
   'Browser Web hanya tersedia di aplikasi desktop.': 'متصفح الويب متاح فقط في تطبيق سطح المكتب.',
+'Sematkan': 'تثبيت',
+  'Lepas sematan': 'إلغاء التثبيت',
+  'Situs Disematkan': 'المواقع المثبتة',
 };
 export default d;

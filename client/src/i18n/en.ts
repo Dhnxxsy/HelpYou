@@ -786,5 +786,8 @@ const d: Record<string, string> = {
   'Jelajah situs favoritmu langsung dari sini.': 'Browse your favorite sites right from here.',
   'Sesi browsing berjalan lokal di aplikasi ini — tidak dikirim ke mana pun.': 'Your browsing session stays local in this app — nothing is sent anywhere.',
   'Browser Web hanya tersedia di aplikasi desktop.': 'Web Browser is only available in the desktop app.',
+'Sematkan': 'Pin',
+  'Lepas sematan': 'Unpin',
+  'Situs Disematkan': 'Pinned Sites',
 };
 export default d;

@@ -786,5 +786,8 @@ const d: Record<string, string> = {
   'Jelajah situs favoritmu langsung dari sini.': 'Blader direct vanaf hier door je favoriete sites.',
   'Sesi browsing berjalan lokal di aplikasi ini — tidak dikirim ke mana pun.': 'Je browsersessie blijft lokaal in deze app — er wordt niets verzonden.',
   'Browser Web hanya tersedia di aplikasi desktop.': 'De webbrowser is alleen beschikbaar in de desktop-app.',
+'Sematkan': 'Vastzetten',
+  'Lepas sematan': 'Losmaken',
+  'Situs Disematkan': 'Vastgezette sites',
 };
 export default d;

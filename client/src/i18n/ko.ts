@@ -786,5 +786,8 @@ const d: Record<string, string> = {
   'Jelajah situs favoritmu langsung dari sini.': '여기에서 바로 좋아하는 사이트를 탐색하세요.',
   'Sesi browsing berjalan lokal di aplikasi ini — tidak dikirim ke mana pun.': '브라우징 세션은 이 앱 내부에서만 로컬로 유지되며 어떤 곳으로도 전송되지 않습니다.',
   'Browser Web hanya tersedia di aplikasi desktop.': '웹 브라우저는 데스크톱 앱에서만 사용할 수 있습니다.',
+'Sematkan': '고정',
+  'Lepas sematan': '고정 해제',
+  'Situs Disematkan': '고정된 사이트',
 };
 export default d;
