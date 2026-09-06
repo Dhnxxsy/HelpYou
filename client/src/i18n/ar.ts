@@ -816,7 +816,7 @@ const d: Record<string, string> = {
   'Perbesar': 'تكبير',
   'Perkecil': 'تصغير',
   'Persegi': 'مستطيل',
-  'Petunjuk: B Kuas, E Penghapus, I Pipet, G Isi Warna, L Garis, R Persegi, O Elips, H Tangan. Spasi geser, Ctrl+Z urungkan, Ctrl+Shift+Z ulangi.': 'الاختصارات: B فرشاة، E ممحاة، I قطارة، G تعبئة، L خط، R مربع، O قطع ناقص، H يد. مسافة للتحريك، Ctrl+Z تراجع، Ctrl+Shift+Z إعادة.',
+  'Petunjuk: B Kuas, E Penghapus, I Pipet, G Isi Warna, L Garis, R Persegi, O Elips, H Tangan. Spasi geser, Ctrl+Z urungkan, Ctrl+Shift+Z ulangi. Tahan Shift untuk garis lurus.': 'الاختصارات: B فرشاة، E ممحاة، I قطارة، G تعبئة، L خط، R مربع، O قطع ناقص، H يد. مسافة للتحريك، Ctrl+Z تراجع، Ctrl+Shift+Z إعادة. اضغط مع الاستمرار على Shift للحصول على خطوط مستقيمة.',
   'Pindah ke Atas': 'نقل للأعلى',
   'Pindah ke Bawah': 'نقل للأسفل',
   'Pipet': 'قطارة',

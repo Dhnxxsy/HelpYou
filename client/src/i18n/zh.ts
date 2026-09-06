@@ -816,7 +816,7 @@ const d: Record<string, string> = {
   'Perbesar': '放大',
   'Perkecil': '缩小',
   'Persegi': '矩形',
-  'Petunjuk: B Kuas, E Penghapus, I Pipet, G Isi Warna, L Garis, R Persegi, O Elips, H Tangan. Spasi geser, Ctrl+Z urungkan, Ctrl+Shift+Z ulangi.': '快捷键：B 画笔、E 橡皮、I 取色、G 填充、L 直线、R 方块、O 椭圆、H 手。空格拖动，Ctrl+Z 撤销，Ctrl+Shift+Z 重做。',
+  'Petunjuk: B Kuas, E Penghapus, I Pipet, G Isi Warna, L Garis, R Persegi, O Elips, H Tangan. Spasi geser, Ctrl+Z urungkan, Ctrl+Shift+Z ulangi. Tahan Shift untuk garis lurus.': '快捷键：B 画笔、E 橡皮、I 取色、G 填充、L 直线、R 方块、O 椭圆、H 手。空格拖动，Ctrl+Z 撤销，Ctrl+Shift+Z 重做。按住 Shift 画直线。',
   'Pindah ke Atas': '上移',
   'Pindah ke Bawah': '下移',
   'Pipet': '取色器',

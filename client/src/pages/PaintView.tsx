@@ -34,6 +34,8 @@ interface StrokeState {
   active: boolean;
   prev: Pt;
   smooth: Pt;
+  origin: Pt;
+  shiftActive: boolean;
   eff: number;
   ctx: CanvasRenderingContext2D | null;
   color: string;
@@ -88,6 +90,16 @@ const PAINT_TOOLS: { id: PaintTool; icon: IconName; labelKey: string; kbd: strin
 ];
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
+
+const constrainShift = (o: Pt, p: Pt): Pt => {
+  const dx = p.x - o.x;
+  const dy = p.y - o.y;
+  if (dx === 0 && dy === 0) return { x: o.x, y: o.y };
+  const ang = Math.atan2(dy, dx);
+  const snap = Math.round(ang / (Math.PI / 4)) * (Math.PI / 4);
+  const len = Math.hypot(dx, dy);
+  return { x: o.x + Math.cos(snap) * len, y: o.y + Math.sin(snap) * len };
+};
 
 function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
   const m = /^#?([0-9a-fA-F]{6})$/.exec(hex.trim());
@@ -370,7 +382,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
   const nextLayerIdRef = useRef(1);
   const nextLayerNameRef = useRef(1);
 
-  const strokeRef = useRef<StrokeState>({ active: false, prev: { x: 0, y: 0 }, smooth: { x: 0, y: 0 }, eff: 1, ctx: null, color: '#000000', alpha: 1 });
+  const strokeRef = useRef<StrokeState>({ active: false, prev: { x: 0, y: 0 }, smooth: { x: 0, y: 0 }, origin: { x: 0, y: 0 }, shiftActive: false, eff: 1, ctx: null, color: '#000000', alpha: 1 });
   const shapeRef = useRef<ShapeState>({ active: false, kind: 'garis', start: { x: 0, y: 0 }, cur: { x: 0, y: 0 } });
   const panRef = useRef<{ active: boolean; sx: number; sy: number; ox: number; oy: number }>({
     active: false,
@@ -591,6 +603,33 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
     }
     g.globalAlpha = 1;
 
+    /* Shift ruler preview: dashed straight line from stroke origin, snapped to nearest 45 deg. */
+    const sref = strokeRef.current;
+    if (sref.active && sref.shiftActive) {
+      const a = sref.origin;
+      const b = sref.prev;
+      g.save();
+      g.lineCap = 'round';
+      if (Math.hypot(b.x - a.x, b.y - a.y) > 1) {
+        g.setLineDash([6, 5]);
+        g.lineWidth = 2;
+        g.strokeStyle = 'rgba(0,0,0,0.55)';
+        g.beginPath();
+        g.moveTo(a.x, a.y);
+        g.lineTo(b.x, b.y);
+        g.stroke();
+        g.setLineDash([]);
+      }
+      g.strokeStyle = 'rgba(0,0,0,0.85)';
+      g.lineWidth = 1.5;
+      g.fillStyle = 'rgba(255,255,255,0.92)';
+      g.beginPath();
+      g.arc(a.x, a.y, 4, 0, TAU);
+      g.fill();
+      g.stroke();
+      g.restore();
+    }
+
     /* Shape preview. */
     const sh = shapeRef.current;
     if (sh.active) {
@@ -740,7 +779,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
 
   /* ----------------------------- brush stoke ----------------------------- */
 
-  const startStroke = (lp: Pt, e: { pointerType: string; pressure: number }) => {
+  const startStroke = (lp: Pt, e: { pointerType: string; pressure: number; shiftKey: boolean }) => {
     pushUndo();
     const layer = activeLayer();
     if (!layer) return;
@@ -753,22 +792,35 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
     const alpha = opacityRef.current;
     const hard = hardnessRef.current;
     paintSegment(draw, kind, { x: lp.x, y: lp.y, s: eff }, { x: lp.x, y: lp.y, s: eff }, alpha, hard, color);
-    strokeRef.current = { active: true, prev: { ...lp }, smooth: { ...lp }, eff, ctx: draw, color, alpha };
+    strokeRef.current = { active: true, prev: { ...lp }, smooth: { ...lp }, origin: { ...lp }, shiftActive: e.shiftKey, eff, ctx: draw, color, alpha };
     requestRender();
   };
 
-  const moveStroke = (lp: Pt, e: { pointerType: string; pressure: number; clientX: number; clientY: number }) => {
+  const moveStroke = (lp: Pt, e: { pointerType: string; pressure: number; clientX: number; clientY: number; shiftKey: boolean }) => {
     const s = strokeRef.current;
     if (!s.active || !s.ctx) return;
+    let cx = lp.x;
+    let cy = lp.y;
+    if (e.shiftKey) {
+      const c = constrainShift(s.origin, lp);
+      cx = c.x;
+      cy = c.y;
+      if (!s.shiftActive) {
+        s.smooth = { x: cx, y: cy };
+        s.shiftActive = true;
+      }
+    } else {
+      s.shiftActive = false;
+    }
     const psi = e.pointerType === 'mouse' || e.pressure <= 0 ? 1 : clamp(e.pressure, 0, 1);
     const eff = sizeRef.current * (pressureRef.current ? Math.max(0.18, psi) : 1);
     const kind = toolRef.current === 'penghapus' ? 'penghapus' : 'kuas';
-    const distRaw = Math.hypot(lp.x - s.prev.x, lp.y - s.prev.y);
+    const distRaw = Math.hypot(cx - s.prev.x, cy - s.prev.y);
     const blend = e.pointerType === 'mouse' ? 0.45 : 0.22;
     const sm =
       distRaw > 12
-        ? { ...lp }
-        : { x: s.smooth.x + (lp.x - s.smooth.x) * blend, y: s.smooth.y + (lp.y - s.smooth.y) * blend };
+        ? { x: cx, y: cy }
+        : { x: s.smooth.x + (cx - s.smooth.x) * blend, y: s.smooth.y + (cy - s.smooth.y) * blend };
     const cv = canvasRef.current;
     if (cv) {
       const rr = cv.getBoundingClientRect();

@@ -816,7 +816,7 @@ const d: Record<string, string> = {
   'Perbesar': 'Zoom In',
   'Perkecil': 'Zoom Out',
   'Persegi': 'Rectangle',
-  'Petunjuk: B Kuas, E Penghapus, I Pipet, G Isi Warna, L Garis, R Persegi, O Elips, H Tangan. Spasi geser, Ctrl+Z urungkan, Ctrl+Shift+Z ulangi.': 'Shortcuts: B Brush, E Eraser, I Pipette, G Fill, L Line, R Rectangle, O Ellipse, H Hand. Space to pan, Ctrl+Z undo, Ctrl+Shift+Z redo.',
+  'Petunjuk: B Kuas, E Penghapus, I Pipet, G Isi Warna, L Garis, R Persegi, O Elips, H Tangan. Spasi geser, Ctrl+Z urungkan, Ctrl+Shift+Z ulangi. Tahan Shift untuk garis lurus.': 'Shortcuts: B Brush, E Eraser, I Pipette, G Fill, L Line, R Rectangle, O Ellipse, H Hand. Space to pan, Ctrl+Z undo, Ctrl+Shift+Z redo. Hold Shift for straight lines.',
   'Pindah ke Atas': 'Move Up',
   'Pindah ke Bawah': 'Move Down',
   'Pipet': 'Pipette',

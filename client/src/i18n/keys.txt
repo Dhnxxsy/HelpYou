@@ -482,7 +482,7 @@ Perkecil
 Persegi
 Perubahan membutuhkan izin administrator
 Petakan pemakaian ruang drive secara visual dan temukan folder & file terbesar yang bisa diringkas.
-Petunjuk: B Kuas, E Penghapus, I Pipet, G Isi Warna, L Garis, R Persegi, O Elips, H Tangan. Spasi geser, Ctrl+Z urungkan, Ctrl+Shift+Z ulangi.
+Petunjuk: B Kuas, E Penghapus, I Pipet, G Isi Warna, L Garis, R Persegi, O Elips, H Tangan. Spasi geser, Ctrl+Z urungkan, Ctrl+Shift+Z ulangi. Tahan Shift untuk garis lurus.
 Pilih Drive / Disk
 Pilih Folder
 Pilih bahasa tampilan HelpYou.

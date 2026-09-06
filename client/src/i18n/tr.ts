@@ -816,7 +816,7 @@ const d: Record<string, string> = {
   'Perbesar': 'Yakınlaştır',
   'Perkecil': 'Uzaklaştır',
   'Persegi': 'Dikdörtgen',
-  'Petunjuk: B Kuas, E Penghapus, I Pipet, G Isi Warna, L Garis, R Persegi, O Elips, H Tangan. Spasi geser, Ctrl+Z urungkan, Ctrl+Shift+Z ulangi.': 'Kısayollar: B Fırça, E Silgi, I Damlalık, G Doldurma, L Çizgi, R Kare, O Elips, H El. Taşımak için boşluk, Ctrl+Z geri al, Ctrl+Shift+Z yinele.',
+  'Petunjuk: B Kuas, E Penghapus, I Pipet, G Isi Warna, L Garis, R Persegi, O Elips, H Tangan. Spasi geser, Ctrl+Z urungkan, Ctrl+Shift+Z ulangi. Tahan Shift untuk garis lurus.': 'Kısayollar: B Fırça, E Silgi, I Damlalık, G Doldurma, L Çizgi, R Kare, O Elips, H El. Taşımak için boşluk, Ctrl+Z geri al, Ctrl+Shift+Z yinele. Düz çizgiler için Shift basılı tutun.',
   'Pindah ke Atas': 'Yukarı taşı',
   'Pindah ke Bawah': 'Aşağı taşı',
   'Pipet': 'Damlalık',

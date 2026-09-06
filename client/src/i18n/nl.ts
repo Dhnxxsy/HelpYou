@@ -816,7 +816,7 @@ const d: Record<string, string> = {
   'Perbesar': 'Inzoomen',
   'Perkecil': 'Uitzoomen',
   'Persegi': 'Rechthoek',
-  'Petunjuk: B Kuas, E Penghapus, I Pipet, G Isi Warna, L Garis, R Persegi, O Elips, H Tangan. Spasi geser, Ctrl+Z urungkan, Ctrl+Shift+Z ulangi.': 'Sneltoetsen: B Penseel, E Gum, I Pipet, G Vullen, L Lijn, R Vierkant, O Ovaal, H Hand. Spatie om te verplaatsen, Ctrl+Z ongedaan maken, Ctrl+Shift+Z opnieuw uitvoeren.',
+  'Petunjuk: B Kuas, E Penghapus, I Pipet, G Isi Warna, L Garis, R Persegi, O Elips, H Tangan. Spasi geser, Ctrl+Z urungkan, Ctrl+Shift+Z ulangi. Tahan Shift untuk garis lurus.': 'Sneltoetsen: B Penseel, E Gum, I Pipet, G Vullen, L Lijn, R Vierkant, O Ovaal, H Hand. Spatie om te verplaatsen, Ctrl+Z ongedaan maken, Ctrl+Shift+Z opnieuw uitvoeren. Houd Shift ingedrukt voor rechte lijnen.',
   'Pindah ke Atas': 'Omhoog verplaatsen',
   'Pindah ke Bawah': 'Omlaag verplaatsen',
   'Pipet': 'Pipet',
