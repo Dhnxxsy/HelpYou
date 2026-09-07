@@ -36,11 +36,13 @@ interface ViewState {
 
 interface StrokeState {
   active: boolean;
+  kind: 'kuas' | 'penghapus' | 'smudge';
   prev: Pt;
   smooth: Pt;
   origin: Pt;
   shiftActive: boolean;
   eff: number;
+  hard: number;
   tex: BrushTex;
   sym: SymMode;
   ctx: CanvasRenderingContext2D | null;
@@ -68,6 +70,7 @@ interface ShapePreview {
 }
 
 interface ProjectSnapshot {
+  activeId: number;
   layers: { id: number; name: string; visible: boolean; opacity: number; img: ImageData | null }[];
 }
 
@@ -598,7 +601,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
   const nextLayerIdRef = useRef(1);
   const nextLayerNameRef = useRef(1);
 
-  const strokeRef = useRef<StrokeState>({ active: false, prev: { x: 0, y: 0 }, smooth: { x: 0, y: 0 }, origin: { x: 0, y: 0 }, shiftActive: false, eff: 1, tex: 'bulat', sym: 'off', ctx: null, color: '#000000', alpha: 1 });
+  const strokeRef = useRef<StrokeState>({ active: false, kind: 'kuas', prev: { x: 0, y: 0 }, smooth: { x: 0, y: 0 }, origin: { x: 0, y: 0 }, shiftActive: false, eff: 1, hard: 0.55, tex: 'bulat', sym: 'off', ctx: null, color: '#000000', alpha: 1 });
   const shapeRef = useRef<ShapeState>({ active: false, kind: 'garis', start: { x: 0, y: 0 }, cur: { x: 0, y: 0 } });
   const fillRef = useRef<FillState>({ active: false, start: { x: 0, y: 0 }, cur: { x: 0, y: 0 } });
   const textAnchorRef = useRef<Pt>({ x: 24, y: 24 });
@@ -683,6 +686,9 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
   };
 
   const selectLayer = (id: number) => {
+    cancelShape();
+    fillRef.current.active = false;
+    cancelStroke();
     activeIdRef.current = id;
     setActiveId(id);
   };
@@ -691,6 +697,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
     layersRef.current.find((l) => l.id === activeIdRef.current) ?? null;
 
   const captureProject = (): ProjectSnapshot => ({
+    activeId: activeIdRef.current,
     layers: layersRef.current.map((l) => {
       const g = l.canvas.getContext('2d');
       return {
@@ -721,6 +728,13 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
     setUndoCount(undoRef.current.length);
   };
 
+  const restoreActiveId = (snap: ProjectSnapshot): number => {
+    const valid = new Set(layersRef.current.map((l) => l.id));
+    if (valid.has(snap.activeId)) return snap.activeId;
+    const fallback = layersRef.current[Math.max(0, snap.layers.length - 1)];
+    return fallback ? fallback.id : 0;
+  };
+
   const doUndo = () => {
     cancelShape();
     const u = undoRef.current;
@@ -729,7 +743,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
     const snap = u.pop() as ProjectSnapshot;
     const next = restoreLayers(snap);
     applyLayers(next);
-    selectLayer(next.length ? next[next.length - 1].id : 0);
+    selectLayer(restoreActiveId(snap));
     scheduleSave();
     setUndoCount(u.length);
     setRedoCount(redoRef.current.length);
@@ -743,7 +757,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
     const snap = r.pop() as ProjectSnapshot;
     const next = restoreLayers(snap);
     applyLayers(next);
-    selectLayer(next.length ? next[next.length - 1].id : 0);
+    selectLayer(restoreActiveId(snap));
     scheduleSave();
     setUndoCount(undoRef.current.length);
     setRedoCount(r.length);
@@ -1082,7 +1096,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
     } else {
       paintSegment(draw, kind, { x: lp.x, y: lp.y, s: eff }, { x: lp.x, y: lp.y, s: eff }, alpha, hard, color, tex, sym, d.w, d.h);
     }
-    strokeRef.current = { active: true, prev: { ...lp }, smooth: { ...lp }, origin: { ...lp }, shiftActive: e.shiftKey, eff, tex, sym, ctx: draw, color, alpha };
+    strokeRef.current = { active: true, kind, prev: { ...lp }, smooth: { ...lp }, origin: { ...lp }, shiftActive: e.shiftKey, eff, hard, tex, sym, ctx: draw, color, alpha };
     requestRender();
   };
 
@@ -1102,10 +1116,9 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
     } else {
       s.shiftActive = false;
     }
-    const isSmudge = toolRef.current === 'smudge';
+    const isSmudge = s.kind === 'smudge';
     const psi = e.pointerType === 'mouse' || e.pressure <= 0 ? 1 : clamp(e.pressure, 0, 1);
     const eff = sizeRef.current * (pressureRef.current && !isSmudge ? Math.max(0.18, psi) : 1);
-    const kind = toolRef.current === 'penghapus' ? 'penghapus' : isSmudge ? 'smudge' : 'kuas';
     const distRaw = Math.hypot(cx - s.prev.x, cy - s.prev.y);
     const blend = e.pointerType === 'mouse' ? 0.45 : 0.22;
     const sm =
@@ -1121,7 +1134,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
     if (isSmudge) {
       smudgeSegment(s.ctx, { x: s.prev.x, y: s.prev.y, s: s.eff }, { x: sm.x, y: sm.y, s: eff }, opacityRef.current, s.sym, d.w, d.h);
     } else {
-      paintSegment(s.ctx, kind, { x: s.prev.x, y: s.prev.y, s: s.eff }, { x: sm.x, y: sm.y, s: eff }, s.alpha, hardnessRef.current, s.color, s.tex, s.sym, d.w, d.h);
+      paintSegment(s.ctx, s.kind, { x: s.prev.x, y: s.prev.y, s: s.eff }, { x: sm.x, y: sm.y, s: eff }, s.alpha, s.hard, s.color, s.tex, s.sym, d.w, d.h);
     }
     s.prev = { ...sm };
     s.smooth = { ...sm };
@@ -1132,17 +1145,24 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
   const closeStroke = () => {
     const s = strokeRef.current;
     if (!s.active) return;
-    const isSmudge = toolRef.current === 'smudge';
-    const kind = toolRef.current === 'penghapus' ? 'penghapus' : 'kuas';
     if (s.ctx) {
       const d = docRef.current;
-      if (isSmudge) {
+      if (s.kind === 'smudge') {
         smudgeSegment(s.ctx, { x: s.prev.x, y: s.prev.y, s: s.eff }, { x: s.prev.x, y: s.prev.y, s: s.eff }, opacityRef.current, s.sym, d.w, d.h);
       } else {
-        paintSegment(s.ctx, kind, { x: s.prev.x, y: s.prev.y, s: s.eff }, { x: s.prev.x, y: s.prev.y, s: s.eff }, s.alpha, hardnessRef.current, s.color, s.tex, s.sym, d.w, d.h);
+        paintSegment(s.ctx, s.kind, { x: s.prev.x, y: s.prev.y, s: s.eff }, { x: s.prev.x, y: s.prev.y, s: s.eff }, s.alpha, s.hard, s.color, s.tex, s.sym, d.w, d.h);
       }
     }
     s.active = false;
+    scheduleSave();
+    requestRender();
+  };
+
+  const cancelStroke = () => {
+    const s = strokeRef.current;
+    if (!s.active) return;
+    s.active = false;
+    cursorRef.current.show = false;
     scheduleSave();
     requestRender();
   };
@@ -1400,12 +1420,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
     }
     cancelShape();
     fillRef.current.active = false;
-    const s = strokeRef.current;
-    if (s.active) {
-      s.active = false;
-      scheduleSave();
-      render();
-    }
+    cancelStroke();
   };
 
   const onPointerLeave = () => {
@@ -1420,6 +1435,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
   const changeTool = (nt: PaintTool) => {
     cancelShape();
     fillRef.current.active = false;
+    cancelStroke();
     toolRef.current = nt;
     setTool(nt);
   };
@@ -1517,6 +1533,7 @@ export default function PaintView({ onBack }: { onBack: () => void }) {
     setConfirm('none');
     cancelShape();
     fillRef.current.active = false;
+    cancelStroke();
     resetStacks();
     const d = { w: DEFAULT_W, h: DEFAULT_H };
     docRef.current = d;

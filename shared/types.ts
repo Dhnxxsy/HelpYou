@@ -377,12 +377,16 @@ export interface RenameApplyResult {
 
 export interface RecycleItem {
   name: string;
-  /** internal recycle-bin path (use for restore) */
+  /** internal recycle-bin path (source for restore) */
   origPath: string;
-  /** original location where the item was deleted from */
+  /** original location where the item lived before deletion */
+  originalPath: string;
+  /** original folder the item was deleted from */
   deletedFrom: string;
   size: number;
   deletedAt: string;
+  /** UTC ISO timestamp used for newest-first sorting */
+  deletedDt?: string;
 }
 
 export interface RecycleListResult {

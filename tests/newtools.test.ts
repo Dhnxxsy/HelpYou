@@ -33,6 +33,17 @@ describe('recycle-bin parseItems', () => {
     const withDup = dup.concat({ ...dup[0] });
     expect(parseItems(JSON.stringify(withDup)).length).toBeLessThanOrEqual(500);
   });
+
+  it('sorts items newest-first using UTC deletedDt', () => {
+    const items = parseItems(
+      JSON.stringify([
+        { name: 'old.txt', origPath: 'C:\\$R1.txt', deletedFrom: 'C:\\a', deletedAt: 'old', ts: '2026-01-02T00:00:00.0000000Z' },
+        { name: 'new.txt', origPath: 'C:\\$R2.txt', deletedFrom: 'C:\\a', deletedAt: 'new', ts: '2026-09-07T00:00:00.0000000Z' },
+        { name: 'mid.txt', origPath: 'C:\\$R3.txt', deletedFrom: 'C:\\a', deletedAt: 'mid', ts: '2026-05-05T00:00:00.0000000Z' },
+      ])
+    );
+    expect(items.map((i) => i.name)).toEqual(['new.txt', 'mid.txt', 'old.txt']);
+  });
 });
 
 describe('network parseTracert', () => {

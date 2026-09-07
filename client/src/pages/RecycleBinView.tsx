@@ -6,6 +6,11 @@ import { formatBytes } from '../lib/format';
 import { useI18n, tGlobal } from '../lib/i18n';
 import type { RecycleItem, RecycleListResult } from '@shared/types';
 
+function formatDate(s: string): string {
+  if (s.length >= 16) return s.slice(0, 16).replace('T', ' ');
+  return s;
+}
+
 export default function RecycleBinView({ onBack }: { onBack: () => void }) {
   const { t } = useI18n();
   const [data, setData] = useState<RecycleListResult | null>(null);
@@ -121,14 +126,19 @@ export default function RecycleBinView({ onBack }: { onBack: () => void }) {
                       <td className="px-4 py-2.5 max-w-[220px]">
                         <span className="flex items-center gap-2 truncate">
                           <Icon name="box" className="w-4 h-4 text-[var(--text-3)] shrink-0" />
-                          <span className="truncate text-[var(--text)]">{item.name}</span>
+                          <span className="truncate text-[var(--text)]" title={item.originalPath || ''}>{item.name}</span>
                         </span>
                       </td>
                       <td className="px-4 py-2.5 text-xs text-[var(--text-3)] truncate max-w-[220px] hidden md:table-cell">{item.deletedFrom || '—'}</td>
                       <td className="px-4 py-2.5 text-xs text-[var(--text-3)] tabular-nums text-right hidden sm:table-cell">{item.size > 0 ? formatBytes(item.size) : '—'}</td>
-                      <td className="px-4 py-2.5 text-xs text-[var(--text-3)] hidden sm:table-cell">{item.deletedAt || '—'}</td>
+                      <td className="px-4 py-2.5 text-xs text-[var(--text-3)] hidden sm:table-cell">{item.deletedDt ? formatDate(item.deletedDt) : item.deletedAt || '—'}</td>
                       <td className="px-3 py-2.5 text-right">
-                        <button className="btn-secondary !py-1.5 !px-2.5 text-xs !border-[var(--ok-border)] !text-[var(--ok-strong)]" disabled={busy === (item.origPath || item.name)} onClick={() => restore(item)}>
+                        <button
+                          className="btn-secondary !py-1.5 !px-2.5 text-xs !border-[var(--ok-border)] !text-[var(--ok-strong)]"
+                          disabled={!item.origPath || busy === (item.origPath || item.name)}
+                          title={!item.origPath ? t('Gagal memulihkan item.') : undefined}
+                          onClick={() => restore(item)}
+                        >
                           <Icon name="undo" className={`w-3.5 h-3.5 ${busy === (item.origPath || item.name) ? 'animate-spin' : ''}`} /> {t('Pulihkan')}
                         </button>
                       </td>
