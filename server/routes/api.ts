@@ -34,7 +34,7 @@ import { pingHost, traceHost, dnsLookup, scanPorts } from '../organizer/network-
 import type { DiskScanResult, StartupItem, DefragAnalyzeResult, DefragJobStatus } from '../../shared/types.js';
 import { listNotes, getNote, createNote, updateNote, deleteNote } from '../organizer/notepad.js';
 import { listVaultItems, hideItems, unhideItem, deleteVaultItem, inspectItem, preparePreview, openPreviewStream } from '../organizer/vault.js';
-import { listCatalog, launchApp, revealTarget, addCustomApp, removeCustomApp, hideApp, unhideApp } from '../organizer/apps-center.js';
+import { listCatalog, launchApp, revealTarget, addCustomApp, removeCustomApp, hideApp, unhideApp, listGamePanelKeys, setGamePanelKeys } from '../organizer/apps-center.js';
 
 export const api = Router();
 
@@ -499,6 +499,31 @@ api.get('/apps/list', async (_req: Request, res: Response) => {
   try {
     const catalog = await listCatalog(_req.query.force === '1', _req.query.showHidden === '1');
     res.json(catalog);
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// GET /api/apps/game-panel — keys of the user-curated game shelf
+api.get('/apps/game-panel', (_req: Request, res: Response) => {
+  try {
+    res.json({ keys: listGamePanelKeys() });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /api/apps/game-panel  body: { keys: string[] } — replace the whole shelf
+api.post('/apps/game-panel', (req: Request, res: Response) => {
+  try {
+    const keys = Array.isArray(req.body?.keys) ? req.body.keys : null;
+    if (!keys) {
+      res.status(400).json({ error: 'Body harus berisi array keys.' });
+      return;
+    }
+    const result = setGamePanelKeys(keys);
+    if (!result.ok) res.status(422).json({ error: result.error });
+    else res.json({ ok: true, keys: result.keys });
   } catch (e: any) {
     res.status(500).json({ error: e.message });
   }

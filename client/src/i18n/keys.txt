@@ -44,6 +44,7 @@ Analisis dibatasi pada 200.000 file & kedalaman 48 lapis — ukuran ditampilkan 
 Analisis dulu (drive mungkin tidak didukung)
 Android 11+ (Nirkabel): Setting › Opsi pengembang › Wireless debugging › Pair device dengan kode. Isi IP:port utama di kolom pertama dan kode di kolom kedua. Android lama: colok USB sekali lalu adb tcpip di komputer.
 Aplikasi
+Aplikasi Manual
 Aplikasi akan di-uninstall {mode}. Anda bisa membersihkan sisa file setelahnya.
 Aplikasi akan ditutup, diperbarui, dan dibuka kembali otomatis.
 Aplikasi dihapus.
@@ -71,7 +72,9 @@ Bekerja…
 Belum ada aplikasi terdeteksi.
 Belum ada aturan. Tambah aturan untuk menempatkan file ke folder sendiri atau melewatkan file tertentu saat scan berikutnya.
 Belum ada catatan
+Belum ada game di rak.
 Belum ada riwayat
+Belum ada yang dipilih.
 Belum tersimpan
 Beranda
 Beranda Browser
@@ -271,6 +274,7 @@ Gagal mengunduh pembaruan.
 Gagal menyembunyikan.
 Gagal menyimpan catatan.
 Gagal menyimpan gambar.
+Gagal menyimpan rak game.
 Gagal menyimpan tangkapan.
 Gagal mulai pemindaian.
 Gagal scan
@@ -356,6 +360,7 @@ Judul catatan…
 Jumlah dan statistik dihitung saat berjalan
 Kapur
 Kartu Grafis
+Katalog
 Kategori
 Ke
 Kecepatan
@@ -368,6 +373,7 @@ Kelola aplikasi yang berjalan otomatis saat Windows menyala — nonaktifkan atau
 Kelola program yang berjalan otomatis saat Windows menyala. Nonaktifkan atau hapus item yang tidak diperlukan.
 Kelompok
 Keluar dari layar penuh
+Keluarkan dari rak
 Kembali
 Kembali ke Beranda
 Kembalikan {n} file?
@@ -384,6 +390,7 @@ Klik kanvas untuk menulis teks.
 Klik perangkat untuk mulai cermin.
 Kode
 Kode Pairing (Android 11+, opsional)
+Koleksi game favoritmu dalam satu tempat.
 Komposisi Folder (akan dipindah)
 Konfirmasi
 Kosongkan
@@ -553,6 +560,8 @@ Pilih file atau folder untuk mulai menyembunyikan. Item akan terenkripsi penuh d
 Pilih folder terlebih dahulu.
 Pilih folder yang ingin dirapikan
 Pilih folder, tools mengelompokkan file jadi rapi otomatis. Dilengkapi deteksi duplikat, folder kosong, dan laporan file terbesar.
+Pilih game dari daftar untuk memulainya.
+Pilih item yang sudah ada di Pusat Aplikasi & Game.
 Pilih lokasi sampah terlebih dahulu.
 Pilih semua
 Pilih suasana HelpYou yang kamu suka.
@@ -595,6 +604,8 @@ Pusat Aplikasi & Game
 Putuskan Semua
 RAM: {used} dari {total}
 Radial
+Rak Game
+Rak game disimpan.
 Rapihkan
 Rapihkan File-mu
 Rapihkan Folder Lain
@@ -661,6 +672,7 @@ Setiap pemindahan tercatat di tab Riwayat dan bisa di-Undo.
 Siap Cermin
 Simetri
 Simpan
+Simpan ({n})
 Simpan Aturan
 Simpan JPEG
 Simpan PNG
@@ -687,7 +699,9 @@ Sumber tidak ditemukan
 Sumber tidak ditemukan.
 Tambah Aplikasi Manual
 Tambah Aturan
+Tambah Game
 Tambah Manual
+Tambah ke Rak Game
 Tambahkan Lapisan
 Tampilkan
 Tampilkan kembali
@@ -743,6 +757,7 @@ Tidak ada item aktif.
 Tidak ada item nonaktif.
 Tidak ada item startup yang terdeteksi.
 Tidak ada item untuk disembunyikan.
+Tidak ada item yang cocok.
 Tidak ada perangkat terdeteksi.
 Tidak ada program yang cocok.
 Tidak ada proses yang cocok.

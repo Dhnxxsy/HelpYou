@@ -297,3 +297,51 @@ describe('hide & unhide apps', () => {
     expect((await listCatalog(false, true)).apps.find((a) => a.exe && a.exe.toLowerCase() === exeA.toLowerCase())?.hidden).toBeUndefined();
   });
 });
+
+describe('game panel (Rak Game shelf)', () => {
+  const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hy-game-panel-'));
+  const orig = process.env.FO_DATA;
+  beforeAll(() => {
+    process.env.FO_DATA = dataDir;
+  });
+  afterAll(() => {
+    if (orig === undefined) delete process.env.FO_DATA;
+    else process.env.FO_DATA = orig;
+    fs.rmSync(dataDir, { recursive: true, force: true });
+  });
+
+  it('starts empty when no panel store exists', async () => {
+    const { listGamePanelKeys } = await import('../server/organizer/apps-center.js');
+    expect(listGamePanelKeys()).toEqual([]);
+  });
+
+  it('stores exactly the sanitized keys and persists across reads', async () => {
+    const { setGamePanelKeys, listGamePanelKeys } = await import('../server/organizer/apps-center.js');
+    const res = setGamePanelKeys(['steam:Cyberpunk 2077:C:\\Games\\Cyberpunk.exe', 'menu:Spotify:C:\\Apps\\Spotify.exe']);
+    expect(res.ok).toBe(true);
+    expect(res.keys).toHaveLength(2);
+    expect(listGamePanelKeys()).toEqual(res.keys);
+  });
+
+  it('drops malformed keys (no source/name) and dedupes', async () => {
+    const { setGamePanelKeys, listGamePanelKeys } = await import('../server/organizer/apps-center.js');
+    const res = setGamePanelKeys(['steam:Game X:C:\\G.exe', 'steam:Game X:C:\\G.exe', 'no-name-only', ':empty:']);
+    expect(res.ok).toBe(true);
+    expect(res.keys).toEqual(['steam:Game X:C:\\G.exe']);
+    expect(listGamePanelKeys()).toEqual(['steam:Game X:C:\\G.exe']);
+  });
+
+  it('rejects non-array input shape at the store level', async () => {
+    const { setGamePanelKeys } = await import('../server/organizer/apps-center.js');
+    expect(setGamePanelKeys((null as unknown) as string[]).ok).toBe(false);
+  });
+
+  it('matches the client key helper for catalog entries', async () => {
+    const { appKeyOf } = await import('../shared/appKeys.js');
+    expect(appKeyOf({ source: 'steam', name: 'Cyberpunk 2077', exe: 'C:\\Games\\Cyberpunk.exe' })).toBe(
+      'steam:Cyberpunk 2077:C:\\Games\\Cyberpunk.exe'
+    );
+    expect(appKeyOf({ source: 'menu', name: 'Spotify', cwd: 'D:\\Apps\\Spotify' })).toBe('menu:Spotify:D:\\Apps\\Spotify');
+    expect(appKeyOf({ source: 'custom', name: 'T', exe: 'relative.exe' })).toBe('custom:T:');
+  });
+});

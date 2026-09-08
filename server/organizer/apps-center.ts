@@ -497,6 +497,54 @@ export function unhideApp(input: { exe?: string; name?: string; source?: string 
   return { ok: true };
 }
 
+/* ------------------------------------------------------------------ */
+/* Game panel (user-curated collection of games/apps — "Game Shelf")   */
+/* ------------------------------------------------------------------ */
+
+export function gamePanelPath(): string {
+  return path.join(dataRoot(), 'game-panel.json');
+}
+
+export function listGamePanelKeys(): string[] {
+  try {
+    if (!fs.existsSync(gamePanelPath())) return [];
+    const data = JSON.parse(fs.readFileSync(gamePanelPath(), 'utf8'));
+    const rawKeys = data?.keys;
+    if (!Array.isArray(rawKeys)) return [];
+    return rawKeys.filter((k): k is string => typeof k === 'string');
+  } catch {
+    return [];
+  }
+}
+
+export function setGamePanelKeys(keys: string[]): { ok: boolean; error?: string; keys: string[] } {
+  if (!Array.isArray(keys)) return { ok: false, error: 'Body harus berisi array keys.', keys: [] };
+  const cleaned: string[] = [];
+  const seen = new Set<string>();
+  for (const k of keys) {
+    if (typeof k !== 'string') continue;
+    const s = k.trim();
+    if (!s || s.length > 512 || seen.has(s)) continue;
+    const parts = s.split(':');
+    if (parts.length < 3) continue;
+    if (!parts[0]) continue;
+    if (!parts[1]) continue;
+    seen.add(s);
+    cleaned.push(s);
+  }
+  if (cleaned.length > 500) {
+    return { ok: false, error: 'Terlalu banyak item di panel game.', keys: [] };
+  }
+  try {
+    const file = gamePanelPath();
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, JSON.stringify({ keys: cleaned }, null, 2), 'utf8');
+  } catch {
+    return { ok: false, error: 'Gagal menyimpan panel game.', keys: [] };
+  }
+  return { ok: true, keys: cleaned };
+}
+
 function menuRowsToEntries(rows: MenuRow[]): AppEntry[] {
   return rows
     .filter(
