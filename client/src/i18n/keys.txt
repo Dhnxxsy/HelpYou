@@ -58,6 +58,7 @@ Arsip
 Atur Sandi untuk Menyembunyikan
 Aturan Sortir Kustom
 Audio
+Audio Sistem
 Auto-simpan
 Awalan
 Awalan untuk semua nama:

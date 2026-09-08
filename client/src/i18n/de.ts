@@ -104,6 +104,7 @@ const d: Record<string, string> = {
   'aturan kustom': 'benutzerdefinierte Regeln',
   'Aturan Sortir Kustom': 'Benutzerdefinierte Sortierregeln',
   'Audio': 'Audio',
+  'Audio Sistem': 'Systemton',
   'Auto-simpan': 'Autospeichern',
   'Awalan': 'Präfix',
   'Awalan untuk semua nama:': 'Präfix für alle Namen:',

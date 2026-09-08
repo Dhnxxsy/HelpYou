@@ -41,6 +41,7 @@ contextBridge.exposeInMainWorld('electron', {
   },
   capture: {
     listSources: () => ipcRenderer.invoke('capture:listSources'),
+    setRecordSource: (id, audio) => ipcRenderer.invoke('capture:setRecordSource', id, audio),
     screenshot: (payload) => ipcRenderer.invoke('capture:screenshot', payload),
     saveData: (payload) => ipcRenderer.invoke('capture:saveData', payload),
     copyImage: (dataUrl) => ipcRenderer.invoke('capture:copyImage', dataUrl),

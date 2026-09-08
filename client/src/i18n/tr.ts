@@ -104,6 +104,7 @@ const d: Record<string, string> = {
   'aturan kustom': 'özel kurallar',
   'Aturan Sortir Kustom': 'Özel Sıralama Kuralları',
   'Audio': 'Ses',
+  'Audio Sistem': 'Sistem Sesi',
   'Auto-simpan': 'Otomatik kaydet',
   'Awalan': 'Önek',
   'Awalan untuk semua nama:': 'Tüm adlar için önek:',

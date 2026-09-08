@@ -3,6 +3,7 @@ import Icon from '../components/Icon';
 import { api } from '../lib/api';
 import { useI18n } from '../lib/i18n';
 import { isDesktop } from '../lib/platform';
+import ScreenCaptureView from '../pages/ScreenCaptureView';
 import {
   useChatStore,
   setChatModel,
@@ -27,7 +28,7 @@ interface MixerSnapshotData {
   sessions: SessionRow[];
 }
 
-type Tab = 'suara' | 'chat' | 'jelajah';
+type Tab = 'suara' | 'chat' | 'jelajah' | 'rekam';
 
 const LS_OVERLAY_URL = 'helpyou-overlay-url';
 
@@ -94,7 +95,8 @@ export default function OverlayView() {
             ['suara', 'volume', t('Suara')],
             ['chat', 'bot', t('Chat')],
             ['jelajah', 'globe', t('Jelajah')],
-          ] as [Tab, 'volume' | 'bot' | 'globe', string][]
+            ['rekam', 'monitorPlay', t('Rekam')],
+          ] as [Tab, 'volume' | 'bot' | 'globe' | 'monitorPlay', string][]
         ).map(([id, icon, label]) => (
           <button
             key={id}
@@ -112,6 +114,7 @@ export default function OverlayView() {
         {tab === 'suara' && <MixerTab />}
         {tab === 'chat' && <ChatTab />}
         {tab === 'jelajah' && <WebTab />}
+        {tab === 'rekam' && <CaptureTab />}
       </div>
     </div>
   );
@@ -646,6 +649,16 @@ function WebTab() {
         </form>
       </div>
       <div ref={hostRef} className="flex-1 min-h-0 ov-webhost" />
+    </div>
+  );
+}
+
+/* ------------------------- Screen capture (rekam) ------------------------- */
+
+function CaptureTab() {
+  return (
+    <div className="ov-scroll h-full px-3.5 pb-4 pt-2">
+      <ScreenCaptureView compact onBack={() => {}} />
     </div>
   );
 }

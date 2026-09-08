@@ -104,6 +104,7 @@ const d: Record<string, string> = {
   'aturan kustom': '사용자 규칙',
   'Aturan Sortir Kustom': '사용자 지정 정렬 규칙',
   'Audio': '오디오',
+  'Audio Sistem': '시스템 오디오',
   'Auto-simpan': '자동 저장',
   'Awalan': '접두사',
   'Awalan untuk semua nama:': '모든 이름에 대한 접두사:',

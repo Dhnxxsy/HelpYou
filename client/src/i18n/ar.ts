@@ -104,6 +104,7 @@ const d: Record<string, string> = {
   'aturan kustom': 'قواعد مخصصة',
   'Aturan Sortir Kustom': 'قواعد الفرز المخصصة',
   'Audio': 'صوتيات',
+  'Audio Sistem': 'صوت النظام',
   'Auto-simpan': 'حفظ تلقائي',
   'Awalan': 'بادئة',
   'Awalan untuk semua nama:': 'البادئة لكل الأسماء:',

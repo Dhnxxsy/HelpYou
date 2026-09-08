@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, shell, globalShortcut, desktopCapturer, clipboard, screen, nativeImage } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, shell, globalShortcut, desktopCapturer, clipboard, screen, nativeImage, session } = require('electron');
 const path = require('node:path');
 const fs = require('node:fs');
 const { pathToFileURL } = require('node:url');
@@ -12,6 +12,9 @@ let mainWindow = null;
 let server = null;
 let serverUrl = '';
 let overlayWindow = null;
+/** Screen-pick state for getDisplayMedia routing (chosen by the renderer before recording). */
+let activeRecordSourceId = '';
+let activeRecordAudio = 'none';
 
 /** Overlay toggle shortcut. Deliberately a 4-key chord to avoid conflicts. */
 const OVERLAY_SHORTCUT = 'CommandOrControl+Alt+Shift+H';
@@ -562,6 +565,39 @@ function registerIpc() {
   });
 
   /* -------------------- Screen capture (screenshot + recording save) -------------------- */
+
+  // Allow screen/mic capture from the renderer without prompting (granular OS consent is on
+  // desktopCapturer.source; getUserMedia only needs the media permission approved).
+  session.defaultSession.setPermissionRequestHandler((_wc, permission, callback) => {
+    callback(permission === 'media');
+  });
+
+  // Route getDisplayMedia() to the screen the renderer selected via capture:setRecordSource.
+  // The legacy getUserMedia({chromeMediaSource:'desktop'}) path hangs in Electron 33, so we
+  // use the supported display-media request handler instead.
+  session.defaultSession.setDisplayMediaRequestHandler(async (_request, callback) => {
+    try {
+      const sources = await desktopCapturer.getSources({ types: ['screen'] });
+      const src = sources.find((s) => s.id === activeRecordSourceId) || sources[0];
+      if (!src) {
+        callback({ video: undefined });
+        return;
+      }
+      if (activeRecordAudio === 'system') callback({ video: src, audio: 'loopback' });
+      else callback({ video: src });
+    } catch (e) {
+      logLine('displayMedia handler error', e?.stack || e);
+      try {
+        callback({ video: undefined });
+      } catch {}
+    }
+  });
+
+  ipcMain.handle('capture:setRecordSource', (_e, id, audio) => {
+    activeRecordSourceId = typeof id === 'string' ? id : '';
+    activeRecordAudio = audio === 'system' || audio === 'mic' ? audio : 'none';
+    return { ok: true };
+  });
 
   ipcMain.handle('capture:listSources', async () => {
     try {

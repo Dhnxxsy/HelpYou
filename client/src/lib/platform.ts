@@ -161,6 +161,7 @@ export interface ElectronAPI {
   };
   capture: {
     listSources: () => Promise<CaptureListResult>;
+    setRecordSource: (id: string, audio: 'none' | 'system' | 'mic') => Promise<{ ok: boolean }>;
     screenshot: (payload: { displayId: number }) => Promise<CaptureShotResult>;
     saveData: (payload: CaptureSavePayload) => Promise<CaptureSaveResult>;
     copyImage: (dataUrl: string) => Promise<{ ok: boolean; error?: string }>;
@@ -282,6 +283,14 @@ export async function mirrorLaunch(serial: string): Promise<MirLaunchResult> {
 export async function captureListSources(): Promise<CaptureListResult> {
   if (!isDesktop || !window.electron) return { ok: false, error: tGlobal('Perangkat tidak mendukung.') };
   return window.electron.capture.listSources();
+}
+
+export async function captureSetRecordSource(
+  id: string,
+  audio: 'none' | 'system' | 'mic',
+): Promise<{ ok: boolean }> {
+  if (!isDesktop || !window.electron) return { ok: false };
+  return window.electron.capture.setRecordSource(id, audio);
 }
 
 export async function captureScreenshot(payload: { displayId: number }): Promise<CaptureShotResult> {

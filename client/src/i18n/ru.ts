@@ -104,6 +104,7 @@ const d: Record<string, string> = {
   'aturan kustom': 'пользовательские правила',
   'Aturan Sortir Kustom': 'Пользовательские правила сортировки',
   'Audio': 'Аудио',
+  'Audio Sistem': 'Системный звук',
   'Auto-simpan': 'Автосохранение',
   'Awalan': 'Префикс',
   'Awalan untuk semua nama:': 'Префикс для всех имён:',

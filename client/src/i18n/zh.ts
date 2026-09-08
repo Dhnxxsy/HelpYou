@@ -104,6 +104,7 @@ const d: Record<string, string> = {
   'aturan kustom': '自定义规则',
   'Aturan Sortir Kustom': '自定义排序规则',
   'Audio': '音频',
+  'Audio Sistem': '系统音频',
   'Auto-simpan': '自动保存',
   'Awalan': '前缀',
   'Awalan untuk semua nama:': '所有名称的前缀：',

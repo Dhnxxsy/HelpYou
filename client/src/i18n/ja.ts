@@ -104,6 +104,7 @@ const d: Record<string, string> = {
   'aturan kustom': 'カスタムルール',
   'Aturan Sortir Kustom': 'カスタム整理ルール',
   'Audio': 'オーディオ',
+  'Audio Sistem': 'システム音声',
   'Auto-simpan': '自動保存',
   'Awalan': '接頭辞',
   'Awalan untuk semua nama:': '全ファイル名に追加する接頭辞:',

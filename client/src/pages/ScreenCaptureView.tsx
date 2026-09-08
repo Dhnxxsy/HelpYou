@@ -1,18 +1,19 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PageHeader from '../components/PageHeader';
 import Icon from '../components/Icon';
-import { isDesktop, captureListSources, captureScreenshot, captureSaveData, captureCopyImage, type CaptureSource } from '../lib/platform';
+import { isDesktop, captureListSources, captureSetRecordSource, captureScreenshot, captureSaveData, captureCopyImage, type CaptureSource } from '../lib/platform';
 import { useI18n } from '../lib/i18n';
 
 interface ScreenCaptureViewProps {
   onBack: () => void;
+  compact?: boolean;
 }
 
 type Mode = 'shot' | 'rec';
 type ShotFormat = 'png' | 'jpg';
 type RecFormat = 'mp4' | 'webm9' | 'webm8';
 type RecQuality = 'rendah' | 'sedang' | 'tinggi' | 'kustom';
-type RecAudio = 'none' | 'mic';
+type RecAudio = 'none' | 'system' | 'mic';
 
 interface ShotResult {
   dataUrl: string;
@@ -29,16 +30,6 @@ const QUALITY_PRESETS: { id: RecQuality; fps: number; bitrate: number }[] = [
   { id: 'sedang', fps: 30, bitrate: 4 },
   { id: 'tinggi', fps: 30, bitrate: 8 },
 ];
-
-function desktopVideoConstraints(sourceId: string, maxFps: number): MediaTrackConstraints {
-  return {
-    mandatory: {
-      chromeMediaSource: 'desktop',
-      chromeMediaSourceId: sourceId,
-      maxFrameRate: maxFps,
-    },
-  } as unknown as MediaTrackConstraints;
-}
 
 function mimeForFormat(f: RecFormat): string | null {
   const candidates: string[] =
@@ -115,7 +106,7 @@ function screenLabel(name: string): string {
   return m ? `Layar ${m[1]}` : (name || 'Layar');
 }
 
-export default function ScreenCaptureView({ onBack }: ScreenCaptureViewProps) {
+export default function ScreenCaptureView({ onBack, compact }: ScreenCaptureViewProps) {
   const { t } = useI18n();
 
   const [sources, setSources] = useState<CaptureSource[]>([]);
@@ -259,9 +250,23 @@ export default function ScreenCaptureView({ onBack }: ScreenCaptureViewProps) {
     setRecErr('');
     setRecDoneUrl(null);
     try {
-      const video = desktopVideoConstraints(selected.id, recFps);
-      const opts: MediaStreamConstraints = { video, audio: recAudio === 'mic' ? { echoCancellation: true, noiseSuppression: true } : false };
-      const stream = await navigator.mediaDevices.getUserMedia(opts);
+      // Tell main which screen (and audio mode) to hand back to getDisplayMedia().
+      await captureSetRecordSource(selected.id, recAudio);
+      const wantsSystemAudio = recAudio === 'system';
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: { frameRate: { ideal: recFps, max: recFps } },
+        audio: wantsSystemAudio,
+      });
+      if (recAudio === 'mic') {
+        try {
+          const mic = await navigator.mediaDevices.getUserMedia({
+            audio: { echoCancellation: true, noiseSuppression: true },
+          });
+          mic.getAudioTracks().forEach((tr) => stream.addTrack(tr));
+        } catch {
+          flashNotice(t('Mikrofon tidak tersedia, rekam tanpa audio.'));
+        }
+      }
       streamRef.current = stream;
 
       const mime = mimeForFormat(recFormat);
@@ -371,7 +376,16 @@ export default function ScreenCaptureView({ onBack }: ScreenCaptureViewProps) {
 
   return (
     <div className="animate-fade-in">
-      <PageHeader icon="monitorPlay" title={t('Rekam & Jepret Layar')} desc={t('Jepret tangkapan layar atau rekam layar dengan pilihan kualitas, bitrate, dan FPS. Semua diproses 100% lokal.')} onBack={onBack} />
+      {compact ? (
+        <div className="flex items-center gap-2 mb-3">
+          <span className="grid place-items-center w-6 h-6 rounded-lg text-[var(--accent-strong)]">
+            <Icon name="monitorPlay" className="w-4 h-4" />
+          </span>
+          <span className="text-[13px] font-semibold">{t('Rekam & Jepret Layar')}</span>
+        </div>
+      ) : (
+        <PageHeader icon="monitorPlay" title={t('Rekam & Jepret Layar')} desc={t('Jepret tangkapan layar atau rekam layar dengan pilihan kualitas, bitrate, dan FPS. Semua diproses 100% lokal.')} onBack={onBack} />
+      )}
 
       {notice && (
         <div className="mb-4 px-4 py-3 rounded-xl border border-[var(--ok-border)] bg-[var(--ok-soft)] text-[13px] text-[var(--ok-strong)] flex items-center gap-2 animate-fade-in">
@@ -380,7 +394,7 @@ export default function ScreenCaptureView({ onBack }: ScreenCaptureViewProps) {
         </div>
       )}
 
-      <div className="grid lg:grid-cols-[380px_1fr] gap-4 items-start">
+      <div className={compact ? 'grid gap-4 items-start' : 'grid lg:grid-cols-[380px_1fr] gap-4 items-start'}>
         {/* ------------------------------- Controls ------------------------------- */}
         <div className="space-y-4">
           <div className="card p-4 space-y-4">
@@ -415,7 +429,7 @@ export default function ScreenCaptureView({ onBack }: ScreenCaptureViewProps) {
                 </button>
               </div>
               {sourcesLoading ? (
-                <div className="grid grid-cols-3 gap-2">
+                <div className={compact ? 'grid grid-cols-2 gap-2' : 'grid grid-cols-3 gap-2'}>
                   {[0, 1, 2].map((i) => (
                     <div key={i} className="aspect-video rounded-lg bg-[var(--overlay-2)] animate-pulse" />
                   ))}
@@ -423,7 +437,7 @@ export default function ScreenCaptureView({ onBack }: ScreenCaptureViewProps) {
               ) : sources.length === 0 ? (
                 <p className="text-xs text-[var(--text-3)]">{t('Tidak ada layar terdeteksi.')}</p>
               ) : (
-                <div className="grid grid-cols-3 gap-2">
+                <div className={compact ? 'grid grid-cols-2 gap-2' : 'grid grid-cols-3 gap-2'}>
                   {sources.map((s) => {
                     const active = s.id === sourceId;
                     return (
@@ -629,6 +643,17 @@ export default function ScreenCaptureView({ onBack }: ScreenCaptureViewProps) {
                       }`}
                     >
                       {t('Tanpa Audio')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRecAudio('system')}
+                      disabled={recording}
+                      className={`flex-1 grid place-items-center gap-1 py-1.5 rounded-md text-xs font-medium transition-all ${
+                        recAudio === 'system' ? 'bg-white/[0.06] text-[var(--text)]' : 'text-[var(--text-3)] hover:text-[var(--text-2)]'
+                      }`}
+                    >
+                      <Icon name="volume" className="w-3.5 h-3.5" />
+                      {t('Audio Sistem')}
                     </button>
                     <button
                       type="button"
