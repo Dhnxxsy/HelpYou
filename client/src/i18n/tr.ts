@@ -917,5 +917,6 @@ const d: Record<string, string> = {
   'Ini adalah berkas pemasang/penghapus, bukan aplikasi utama.': 'Bu bir kurulum/kaldırma aracıdır, ana uygulama değildir.',
   'Aplikasi sudah ada di daftar.': 'Uygulama zaten listede.',
   'Berkas aplikasi tidak ditemukan.': 'Uygulama dosyası bulunamadı.',
+  "Main": "Oyna",
 };
 export default d;

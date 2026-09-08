@@ -413,6 +413,7 @@ Lokasi Terdeteksi
 Lokasi berkas (.exe)
 Lokasi tidak dapat diakses.
 Lupa sandi? Ketik global
+Main
 Maju
 Maksimalkan jendela
 Manual

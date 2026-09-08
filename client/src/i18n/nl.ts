@@ -917,5 +917,6 @@ const d: Record<string, string> = {
   'Ini adalah berkas pemasang/penghapus, bukan aplikasi utama.': 'Dit is een installatie-/verwijderprogramma, niet de hoofd-app.',
   'Aplikasi sudah ada di daftar.': 'De app staat al in de lijst.',
   'Berkas aplikasi tidak ditemukan.': 'App-bestand niet gevonden.',
+  "Main": "Spelen",
 };
 export default d;

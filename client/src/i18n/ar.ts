@@ -917,5 +917,6 @@ const d: Record<string, string> = {
   'Ini adalah berkas pemasang/penghapus, bukan aplikasi utama.': 'هذا مثبت/أداة إزالة، وليس التطبيق الرئيسي.',
   'Aplikasi sudah ada di daftar.': 'التطبيق موجود بالفعل في القائمة.',
   'Berkas aplikasi tidak ditemukan.': 'ملف التطبيق غير موجود.',
+  "Main": "تشغيل",
 };
 export default d;

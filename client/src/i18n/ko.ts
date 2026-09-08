@@ -917,5 +917,6 @@ const d: Record<string, string> = {
   'Ini adalah berkas pemasang/penghapus, bukan aplikasi utama.': '이것은 설치/제거 도구이지 기본 앱이 아닙니다.',
   'Aplikasi sudah ada di daftar.': '앱이 이미 목록에 있습니다.',
   'Berkas aplikasi tidak ditemukan.': '앱 파일을 찾을 수 없습니다.',
+  "Main": "게임",
 };
 export default d;

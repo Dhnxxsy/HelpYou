@@ -917,5 +917,6 @@ const d: Record<string, string> = {
   'Ini adalah berkas pemasang/penghapus, bukan aplikasi utama.': 'Das ist ein Installer/Deinstaller, nicht die eigentliche App.',
   'Aplikasi sudah ada di daftar.': 'Die App ist bereits in der Liste.',
   'Berkas aplikasi tidak ditemukan.': 'App-Datei nicht gefunden.',
+  "Main": "Spielen",
 };
 export default d;

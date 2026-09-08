@@ -917,5 +917,6 @@ const d: Record<string, string> = {
   'Ini adalah berkas pemasang/penghapus, bukan aplikasi utama.': 'これはインストーラー/アンインストーラーで、メインのアプリではありません。',
   'Aplikasi sudah ada di daftar.': 'アプリはすでにリストにあります。',
   'Berkas aplikasi tidak ditemukan.': 'アプリのファイルが見つかりません。',
+  "Main": "プレイ",
 };
 export default d;

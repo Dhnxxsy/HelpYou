@@ -246,7 +246,7 @@ export default function AppsCenterView({ onBack }: { onBack: () => void }) {
           />
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex rounded-xl bg-[var(--bg-soft)] border border-[var(--border)] p-0.5">
+          <div className="flex items-center h-10 rounded-xl bg-[var(--bg-soft)] border border-[var(--border)] p-0.5">
             {(['all', 'apps', 'games'] as ViewTab[]).map((v) => (
               <button
                 key={v}
@@ -265,10 +265,10 @@ export default function AppsCenterView({ onBack }: { onBack: () => void }) {
             <option value="name">{t('Urut Nama (A-Z)')}</option>
             <option value="size">{t('Urut Ukuran Terbesar')}</option>
           </select>
-          <button className="btn-accent !py-2 !px-3.5 text-xs" onClick={openAddModal}>
+          <button className="btn-primary !h-10 !px-4 text-xs" onClick={openAddModal}>
             <Icon name="plus" className="w-3.5 h-3.5" /> {t('Tambah Manual')}
           </button>
-          <button className="btn-secondary !py-2 !px-3.5 text-xs" onClick={() => load(true)} disabled={loading}>
+          <button className="btn-secondary !h-10 !px-3.5 text-xs" onClick={() => load(true)} disabled={loading}>
             <Icon name="replay" className="w-3.5 h-3.5" /> {t('Muat Ulang')}
           </button>
         </div>
@@ -325,30 +325,32 @@ export default function AppsCenterView({ onBack }: { onBack: () => void }) {
                     <span className="text-[10px] text-[var(--text-3)] shrink-0 pt-0.5">{formatBytes(e.sizeBytes)}</span>
                   )}
                 </div>
-                <div className="flex items-center gap-2 mt-auto">
+                <div className="grid grid-cols-[1fr_auto_auto] gap-1.5 mt-auto">
                   <button
-                    className="btn-accent flex-1 !py-2 !px-3 text-xs"
+                    className="btn-primary !h-9 !px-2 !pr-3 text-xs min-w-0"
                     disabled={!e.exe || busy}
                     onClick={() => openApp(e, key)}
                   >
-                    <Icon name={busy ? 'clock' : 'play'} className="w-3.5 h-3.5" />
-                    {busy ? t('Menjalankan…') : t('Buka')}
+                    <span className="w-6 h-6 rounded-full bg-white/15 grid place-items-center shrink-0">
+                      <Icon name={busy ? 'clock' : 'play'} className="w-3.5 h-3.5" />
+                    </span>
+                    <span className="truncate">{busy ? t('Menjalankan…') : e.kind === 'game' ? t('Main') : t('Buka')}</span>
                   </button>
                   <button
-                    className="btn-secondary !py-2 !px-3 text-xs"
+                    className="btn-secondary !w-9 !h-9 !p-0 grid place-items-center text-[var(--text-2)] hover:!border-[var(--accent-border)] hover:!text-[var(--accent-strong)]"
                     disabled={!e.exe && !e.cwd}
                     title={t('Buka Lokasi')}
                     onClick={() => openFolder(e)}
                   >
-                    <Icon name="folderOpen" className="w-3.5 h-3.5" />
+                    <Icon name="folderOpen" className="w-4 h-4" />
                   </button>
                   {e.source === 'custom' && (
                     <button
-                      className="btn-secondary !py-2 !px-3 text-xs !text-[var(--danger-strong)]"
+                      className="btn-secondary !w-9 !h-9 !p-0 grid place-items-center text-[var(--danger-strong)] hover:!bg-[var(--danger-soft)] hover:!border-[var(--danger-border)]"
                       title={t('Hapus dari daftar')}
                       onClick={() => removeCustom(e)}
                     >
-                      <Icon name="trash" className="w-3.5 h-3.5" />
+                      <Icon name="trash" className="w-4 h-4" />
                     </button>
                   )}
                 </div>
@@ -384,7 +386,7 @@ export default function AppsCenterView({ onBack }: { onBack: () => void }) {
                   <label className="block text-xs font-medium text-[var(--text-2)] mb-1.5">{t('Lokasi berkas (.exe)')}</label>
                   <div className="flex gap-2">
                     <input className="input flex-1" value={addExe} onChange={(e) => { setAddExe(e.target.value); setAddError(null); }} placeholder="C:\Program Files\Aplikasi\app.exe" spellCheck={false} />
-                    <button className="btn-secondary !py-2 !px-3 text-xs shrink-0" onClick={pickFile} title={t('Pilih Berkas')}>
+                    <button className="btn-secondary !h-10 !px-3 text-xs shrink-0" onClick={pickFile} title={t('Pilih Berkas')}>
                       <Icon name="folderSearch" className="w-3.5 h-3.5" /> {t('Pilih Berkas')}
                     </button>
                   </div>
@@ -395,8 +397,8 @@ export default function AppsCenterView({ onBack }: { onBack: () => void }) {
                   </div>
                 )}
                 <div className="flex justify-end gap-2 pt-1">
-                  <button className="btn-secondary !py-2 !px-4 text-xs" onClick={() => setShowAdd(false)}>{t('Batal')}</button>
-                  <button className="btn-accent !py-2 !px-4 text-xs" onClick={submitAdd} disabled={addBusy}>
+                  <button className="btn-secondary !h-10 !px-4 text-xs" onClick={() => setShowAdd(false)}>{t('Batal')}</button>
+                  <button className="btn-primary !h-10 !px-4 text-xs" onClick={submitAdd} disabled={addBusy}>
                     <Icon name={addBusy ? 'clock' : 'check'} className="w-3.5 h-3.5" /> {addBusy ? t('Menambah…') : t('Simpan')}
                   </button>
                 </div>

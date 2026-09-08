@@ -917,5 +917,6 @@ const d: Record<string, string> = {
   'Ini adalah berkas pemasang/penghapus, bukan aplikasi utama.': '这是安装/卸载工具，不是主应用。',
   'Aplikasi sudah ada di daftar.': '该应用已在列表中。',
   'Berkas aplikasi tidak ditemukan.': '未找到应用文件。',
+  "Main": "游玩",
 };
 export default d;
