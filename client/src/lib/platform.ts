@@ -122,6 +122,10 @@ export interface ElectronAPI {
     launch: (serial: string) => Promise<MirLaunchResult>;
   };
   windowControls: ElectronWindowControls;
+  overlay: {
+    toggle: () => Promise<void>;
+    hide: () => Promise<void>;
+  };
   updates: {
     check: () => Promise<UpdateCheckResult>;
     download: () => Promise<{ ok: boolean; message?: string }>;

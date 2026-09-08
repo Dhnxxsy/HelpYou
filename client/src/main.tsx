@@ -8,6 +8,11 @@ import './index.css';
 
 applyTheme(getStoredTheme());
 
+const isOverlay = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('overlay') === '1';
+if (typeof document !== 'undefined' && isOverlay) {
+  document.body.classList.add('overlay-mode');
+}
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <I18nProvider>

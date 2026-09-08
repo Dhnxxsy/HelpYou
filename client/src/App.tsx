@@ -22,11 +22,30 @@ const BrowserView = lazy(() => import('./pages/BrowserView'));
 const PaintView = lazy(() => import('./pages/PaintView'));
 const MirrorView = lazy(() => import('./pages/MirrorView'));
 const AppsCenterView = lazy(() => import('./pages/AppsCenterView'));
+const OverlayView = lazy(() => import('./overlay/OverlayView'));
 
 type Tool = 'home' | ToolId;
 
 export default function App() {
   const [tool, setTool] = useState<Tool>('home');
+  const [isOverlay] = useState(() => {
+    try {
+      return (
+        typeof window !== 'undefined' &&
+        new URLSearchParams(window.location.search).get('overlay') === '1'
+      );
+    } catch {
+      return false;
+    }
+  });
+
+  if (isOverlay) {
+    return (
+      <Suspense fallback={<div className="ov-center h-screen bg-transparent"><div className="ov-spin" /></div>}>
+        <OverlayView />
+      </Suspense>
+    );
+  }
 
   return (
     <VaultMasterProvider>

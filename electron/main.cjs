@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, shell, globalShortcut } = require('electron');
 const path = require('node:path');
 const fs = require('node:fs');
 const { pathToFileURL } = require('node:url');
@@ -10,6 +10,11 @@ const execFileP = promisify(execFile);
 
 let mainWindow = null;
 let server = null;
+let serverUrl = '';
+let overlayWindow = null;
+
+/** Overlay toggle shortcut. Deliberately a 4-key chord to avoid conflicts. */
+const OVERLAY_SHORTCUT = 'CommandOrControl+Alt+Shift+H';
 
 const appId = 'com.dhnxxsy.helpyou.app';
 app.setAppUserModelId(appId);
@@ -168,6 +173,7 @@ async function startServer() {
     data: app.getPath('userData'),
   });
   server = res.server;
+  serverUrl = res.url;
   logLine('server bound at', res.url);
   return res;
 }
@@ -226,6 +232,97 @@ function createWindow(url) {
   mainWindow.loadURL(url);
 }
 
+/* -------------------- Overlay window -------------------- */
+
+function createOverlayWindow(url) {
+  overlayWindow = new BrowserWindow({
+    width: 440,
+    height: 680,
+    minWidth: 380,
+    minHeight: 520,
+    show: false,
+    frame: false,
+    resizable: true,
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    transparent: true,
+    backgroundColor: '#00000000',
+    hasShadow: true,
+    fullscreenable: false,
+    icon: iconPath(),
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.cjs'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
+      webviewTag: true,
+      spellcheck: false,
+    },
+  });
+
+  overlayWindow.setAlwaysOnTop(true, 'floating');
+  overlayWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+
+  overlayWindow.once('ready-to-show', () => {
+    if (overlayWindow && !overlayWindow.isDestroyed()) overlayWindow.show();
+  });
+
+  overlayWindow.on('closed', () => {
+    overlayWindow = null;
+  });
+
+  // Escape hides the overlay (mirrors a quick-dismiss panel).
+  overlayWindow.webContents.on('before-input-event', (_event, input) => {
+    if (input.type === 'keyDown' && input.key === 'Escape') {
+      _event.preventDefault();
+      overlayWindow?.hide();
+    }
+  });
+
+  overlayWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  overlayWindow.webContents.on('will-navigate', (event, targetUrl) => {
+    try {
+      const host = new URL(targetUrl).hostname;
+      if (host !== '127.0.0.1' && host !== 'localhost') event.preventDefault();
+    } catch {
+      event.preventDefault();
+    }
+  });
+
+  overlayWindow.loadURL(url);
+}
+
+function ensureOverlay() {
+  if (overlayWindow && !overlayWindow.isDestroyed()) return overlayWindow;
+  if (!serverUrl) return null;
+  createOverlayWindow(`${serverUrl}?overlay=1`);
+  return overlayWindow;
+}
+
+function toggleOverlay() {
+  const win = ensureOverlay();
+  if (!win) return;
+  if (win.isVisible()) {
+    win.hide();
+  } else {
+    win.show();
+    win.focus();
+  }
+}
+
+function hideOverlay() {
+  if (overlayWindow && !overlayWindow.isDestroyed() && overlayWindow.isVisible()) overlayWindow.hide();
+}
+
+function registerOverlayShortcut() {
+  try {
+    const ok = globalShortcut.register(OVERLAY_SHORTCUT, toggleOverlay);
+    logLine('overlay shortcut', OVERLAY_SHORTCUT, ok ? 'registered' : 'FAILED');
+  } catch (e) {
+    logLine('overlay shortcut error', e?.message || e);
+  }
+}
+
 function maxState() {
   return {
     maximized: mainWindow?.isMaximized() ?? false,
@@ -250,6 +347,8 @@ function registerIpc() {
     return { fullscreen: next };
   });
   ipcMain.handle('win:close', () => mainWindow?.close());
+  ipcMain.handle('overlay:toggle', () => toggleOverlay());
+  ipcMain.handle('overlay:hide', () => hideOverlay());
   ipcMain.handle('update:check', async () => {
     try {
       const r = await autoUpdater.checkForUpdates();
@@ -482,6 +581,7 @@ if (!gotLock) {
       const res = await startServer();
       createWindow(res.url);
       logLine('window creating with url', res.url);
+      registerOverlayShortcut();
       if (app.isPackaged) {
         // Auto-check short after the window is up; electron-updater skips in dev.
         startUpdateCheck();
@@ -498,6 +598,10 @@ if (!gotLock) {
     try {
       server?.close();
     } catch {}
+  });
+
+  app.on('will-quit', () => {
+    globalShortcut.unregisterAll();
   });
 
   app.on('window-all-closed', () => {

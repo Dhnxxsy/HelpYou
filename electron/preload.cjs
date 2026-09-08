@@ -39,6 +39,10 @@ contextBridge.exposeInMainWorld('electron', {
   apps: {
     pickExe: () => ipcRenderer.invoke('apps:pickExe'),
   },
+  overlay: {
+    toggle: () => ipcRenderer.invoke('overlay:toggle'),
+    hide: () => ipcRenderer.invoke('overlay:hide'),
+  },
   updates: {
     check: () => ipcRenderer.invoke('update:check'),
     download: () => ipcRenderer.invoke('update:download'),

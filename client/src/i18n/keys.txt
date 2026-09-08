@@ -34,6 +34,8 @@ Aksi
 Aktif
 Aktif ({n})
 Aktif — nonaktifkan
+Aktifkan suara
+Alamat web
 Alat
 Alat Jaringan
 Aman: server memeriksa ulang setiap folder sebelum dihapus. Folder
@@ -97,6 +99,7 @@ Bersihkan file sampah?
 Bersihkan temp, cache, dan file sementara dengan aman. File yang sedang dipakai otomatis dilewati.
 Bersihkan {n} Lokasi
 Bisa berupa drive (C:) atau subfolder seperti
+Bisukan
 Brankas
 Brankas Rahasia
 Brankas terenkripsi · data tidak keluar perangkat
@@ -148,6 +151,7 @@ Catatan digandakan.
 Catatan tidak ditemukan
 Cek catatan DNS untuk host ini.
 Cerminkan layar HP Android ke PC, kendalikan dari jauh, nirkabel atau via USB.
+Chat
 Checklist
 Coba Lagi
 Coba dengan Administrator (UAC)
@@ -348,6 +352,7 @@ Jalankan ping untuk mengukur latensi.
 Jalankan uninstaller tanpa dialog bila memungkinkan
 Jalur penuh
 Jejak pemindahan
+Jelajah
 Jelajah situs favoritmu langsung dari sini.
 Jendela
 Jenis
@@ -442,6 +447,7 @@ Membaca isi folder…
 Membaca registri & folder Startup…
 Membersihkan…
 Membuka…
+Memeriksa…
 Memindahkan file ke struktur rapi. Proses ini usahakan jangan ditutup.
 Memindahkan...
 Memindai aplikasi & game…
@@ -452,6 +458,7 @@ Memori
 Memori (RAM)
 Memproses…
 Memuat gambar tersimpan…
+Memuat {item}…
 Menambah…
 Menerapkan sortir...
 Menerapkan…
@@ -478,14 +485,18 @@ Minimal 4 karakter
 Minimalkan
 Miring (Ctrl+I)
 Mirror HP
+Mixer
 Mode Lancar
 Mode Master aktif.
 Mode browser tidak bisa membuka dialog file. Jalankan lewat aplikasi desktop.
 Mode browser tidak bisa membuka dialog folder. Jalankan lewat aplikasi desktop.
 Mode senyap
+Model
 Muat Ulang
 Muat ulang
 Mulai Analisis Folder
+Mulai percakapan dengan model lokalmu. Privasi dan tanpa internet.
+Mundur
 Naik
 Naik ke induk
 Nama
@@ -508,6 +519,8 @@ Nonaktif ({n})
 Nonaktif — aktifkan
 Notepad
 OS: {caption} (build {build}, {arch})
+Offline
+Ollama tidak terhubung.
 Opacity
 Optimalkan / Defrag
 Optimasi dihentikan.
@@ -516,6 +529,7 @@ Optimasi selesai.
 Optimasi terakhir {v}
 Organizer
 Organizer Folder Lokal
+Overlay
 PC / Laptop
 PC: {pc}
 PID {pid} · Sesi {session}
@@ -548,6 +562,7 @@ Perintah uninstall
 Perkecil
 Persegi
 Perubahan membutuhkan izin administrator
+Pesan ke AI…
 Petakan pemakaian ruang drive secara visual dan temukan folder & file terbesar yang bisa diringkas.
 Petunjuk: B Kuas, E Penghapus, I Pipet, G Isi Warna, L Garis, R Persegi, O Elips, H Tangan, S Coreng, T Teks. Shift garis lurus, [ ] ukuran, Spasi geser, Ctrl+Z urungkan, Ctrl+Shift+Z ulangi.
 Pilih Berkas
@@ -689,6 +704,7 @@ Startup
 Status
 Status scan gagal dimuat
 Steam
+Suara
 Subfolder
 Sudah ada file di lokasi asli (dicegah agar tidak ditimpa).
 Sudah di akhir — dilanjutkan dari awal.
@@ -727,6 +743,7 @@ Temukan semua aplikasi & game terpasang di PC-mu, buka langsung dalam sekali kli
 Terapkan
 Terapkan ({n})
 Terbuka
+Terhubung
 Terhubung · {n} ms rata-rata
 Terima koneksi di HP bila diminta.
 Terjadi kesalahan
@@ -739,6 +756,7 @@ Tersimpan {time}
 Tertutup
 Thread
 Tidak ada aplikasi atau game yang cocok.
+Tidak ada aplikasi yang memutar suara.
 Tidak ada balasan
 Tidak ada balasan (timeout)
 Tidak ada catatan yang ditemukan.
@@ -822,6 +840,7 @@ Versi {n}
 Vertikal
 Video
 Virtual
+Volume sistem
 Warna
 Warna Latar
 Ya, bersihkan

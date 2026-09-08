@@ -35,6 +35,9 @@ import type { DiskScanResult, StartupItem, DefragAnalyzeResult, DefragJobStatus 
 import { listNotes, getNote, createNote, updateNote, deleteNote } from '../organizer/notepad.js';
 import { listVaultItems, hideItems, unhideItem, deleteVaultItem, inspectItem, preparePreview, openPreviewStream } from '../organizer/vault.js';
 import { listCatalog, launchApp, revealTarget, addCustomApp, removeCustomApp, hideApp, unhideApp, listGamePanelKeys, setGamePanelKeys } from '../organizer/apps-center.js';
+import { mixerSnapshot, setMasterVolume, setMasterMuted, setSessionVolume, setSessionMuted } from '../organizer/volume-mixer.js';
+import { ollamaStatus, OLLAMA_BASE } from '../organizer/ollama.js';
+import http from 'http';
 
 export const api = Router();
 
@@ -1227,4 +1230,103 @@ api.delete('/vault/items/:id', (req: Request, res: Response) => {
   } catch (e: any) {
     res.status(500).json({ error: e.message });
   }
+});
+
+/* -------------------- Overlay: per-app volume mixer -------------------- */
+
+// GET /api/mixer/snapshot
+api.get('/mixer/snapshot', async (_req, res) => {
+  try {
+    const snapshot = await mixerSnapshot();
+    res.json(snapshot);
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /api/mixer/master  body: { volume?: 0..1, muted?: boolean }
+api.post('/mixer/master', async (req: Request, res: Response) => {
+  try {
+    const hasVolume = typeof req.body?.volume === 'number' && Number.isFinite(req.body.volume);
+    const hasMuted = typeof req.body?.muted === 'boolean';
+    if (!hasVolume && !hasMuted) return res.status(400).json({ error: 'volume atau muted diperlukan' });
+    const data = hasVolume
+      ? await setMasterVolume(Number(req.body.volume))
+      : await setMasterMuted(Boolean(req.body.muted));
+    res.json(data);
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /api/mixer/session  body: { pid: number, volume?: 0..1, muted?: boolean }
+api.post('/mixer/session', async (req: Request, res: Response) => {
+  try {
+    const pid = Number(req.body?.pid);
+    const hasVolume = typeof req.body?.volume === 'number' && Number.isFinite(req.body.volume);
+    const hasMuted = typeof req.body?.muted === 'boolean';
+    if (!Number.isInteger(pid) || pid <= 0) return res.status(400).json({ error: 'pid diperlukan' });
+    if (!hasVolume && !hasMuted) return res.status(400).json({ error: 'volume atau muted diperlukan' });
+    const data = hasVolume
+      ? await setSessionVolume(pid, Number(req.body.volume))
+      : await setSessionMuted(pid, Boolean(req.body.muted));
+    res.json(data);
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+/* -------------------- Overlay: Ollama (local AI) -------------------- */
+
+// GET /api/ollama/status
+api.get('/ollama/status', async (_req, res) => {
+  const status = await ollamaStatus();
+  res.json(status);
+});
+
+// POST /api/ollama/chat  body: { model, messages }  → NDJSON stream passthrough
+api.post('/ollama/chat', (req: Request, res: Response) => {
+  const model = String(req.body?.model || '');
+  const messages = req.body?.messages;
+  if (!model || !Array.isArray(messages) || messages.length === 0) {
+    return res.status(400).json({ error: 'model dan messages diperlukan' });
+  }
+  const body = JSON.stringify({ model, messages: messages.slice(0, 40), stream: true });
+  const outReq = http.request(
+    {
+      hostname: '127.0.0.1',
+      port: 11434,
+      path: '/api/chat',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(body),
+      },
+      timeout: 60_000,
+    },
+    (outRes) => {
+      res.status(outRes.statusCode || 502);
+      res.setHeader('Content-Type', outRes.headers['content-type'] || 'application/x-ndjson');
+      res.flushHeaders();
+      outRes.pipe(res);
+    },
+  );
+  outReq.on('timeout', () => outReq.destroy(new Error('Ollama timeout.')));
+  outReq.on('error', (e: any) => {
+    if (!res.headersSent) res.status(502).json({ error: e.message || 'Gagal terhubung ke Ollama.' });
+    else {
+      try {
+        res.end();
+      } catch {
+        /* ignore */
+      }
+    }
+  });
+  outReq.write(body);
+  outReq.end();
+  // Fire only when the client actually disconnects mid-stream; res 'close' also
+  // fires after a normal end, so guard with writableEnded.
+  res.on('close', () => {
+    if (!res.writableEnded && !outReq.destroyed) outReq.destroy();
+  });
 });
