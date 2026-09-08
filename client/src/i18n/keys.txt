@@ -46,7 +46,10 @@ Android 11+ (Nirkabel): Setting › Opsi pengembang › Wireless debugging › P
 Aplikasi
 Aplikasi akan di-uninstall {mode}. Anda bisa membersihkan sisa file setelahnya.
 Aplikasi akan ditutup, diperbarui, dan dibuka kembali otomatis.
+Aplikasi dihapus.
+Aplikasi ditambahkan.
 Aplikasi ini tidak menyediakan uninstaller (mis. aplikasi portable).
+Aplikasi sudah ada di daftar.
 Arang
 Arsip
 Atur Sandi untuk Menyembunyikan
@@ -79,6 +82,7 @@ Berhenti
 Berikutnya (Enter)
 Berjalan lokal
 Berjalan…
+Berkas aplikasi tidak ditemukan.
 Berkas program (EXE) — akan dihapus ke Recycle Bin bila ditekan
 Berkas tidak ditemukan.
 Berlaku untuk scan berikutnya. Folder nama dibersihkan otomatis di sisi server.
@@ -247,10 +251,12 @@ Gagal memulai scan
 Gagal memulai uninstaller.
 Gagal memulihkan item.
 Gagal memulihkan.
+Gagal menambahkan aplikasi.
 Gagal menerapkan perubahan.
 Gagal mengenkripsi.
 Gagal menggandakan catatan.
 Gagal menghapus
+Gagal menghapus aplikasi.
 Gagal menghapus catatan.
 Gagal menghapus item brankas.
 Gagal menghapus.
@@ -292,6 +298,7 @@ Hapus Lapisan?
 Hapus Permanen
 Hapus catatan
 Hapus catatan "{title}"? Tindakan ini tidak bisa dibatalkan.
+Hapus dari daftar
 Hapus filter
 Hapus item dari brankas?
 Hapus item startup?
@@ -312,9 +319,11 @@ IP:port HP (mis. 192.168.1.5:5555)
 Image Disk
 Info & Laporan Sistem
 Info Sistem
+Ini adalah berkas pemasang/penghapus, bukan aplikasi utama.
 Isi Bentuk
 Isi Folder
 Isi Warna
+Isi otomatis dari nama berkas
 Item
 Item Tersembunyi
 Item berada di dalam brankas.
@@ -401,10 +410,12 @@ Lokasi
 Lokasi Asal
 Lokasi Sampah
 Lokasi Terdeteksi
+Lokasi berkas (.exe)
 Lokasi tidak dapat diakses.
 Lupa sandi? Ketik global
 Maju
 Maksimalkan jendela
+Manual
 Masukkan Sandi untuk Memulihkan
 Masukkan URL/alamat tujuan:
 Masukkan alamat situs (contoh: shopee.co.id)
@@ -431,6 +442,7 @@ Memori
 Memori (RAM)
 Memproses…
 Memuat gambar tersimpan…
+Menambah…
 Menerapkan sortir...
 Menerapkan…
 Mengambil layar…
@@ -467,6 +479,7 @@ Mulai Analisis Folder
 Naik
 Naik ke induk
 Nama
+Nama (opsional)
 Nama Baru
 Nama File
 Nama Lama
@@ -527,9 +540,11 @@ Persegi
 Perubahan membutuhkan izin administrator
 Petakan pemakaian ruang drive secara visual dan temukan folder & file terbesar yang bisa diringkas.
 Petunjuk: B Kuas, E Penghapus, I Pipet, G Isi Warna, L Garis, R Persegi, O Elips, H Tangan, S Coreng, T Teks. Shift garis lurus, [ ] ukuran, Spasi geser, Ctrl+Z urungkan, Ctrl+Shift+Z ulangi.
+Pilih Berkas
 Pilih Drive / Disk
 Pilih Folder
 Pilih bahasa tampilan HelpYou.
+Pilih berkas aplikasi (.exe).
 Pilih drive di atas, atau ketik folder untuk mulai menganalisis ruang disk.
 Pilih file atau folder untuk mulai menyembunyikan. Item akan terenkripsi penuh dan tidak terlihat di sini tanpa sandi.
 Pilih folder terlebih dahulu.
@@ -667,7 +682,9 @@ Suite Tools Lokal
 Suite Tools Lokal untuk Windows
 Sumber tidak ditemukan
 Sumber tidak ditemukan.
+Tambah Aplikasi Manual
 Tambah Aturan
+Tambah Manual
 Tambahkan Lapisan
 Tampilkan
 Tampilkan sandi

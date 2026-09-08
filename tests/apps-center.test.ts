@@ -10,6 +10,9 @@ import {
   dedupeEntries,
   resolveExe,
   launchApp,
+  addCustomApp,
+  removeCustomApp,
+  listCustomApps,
 } from '../server/organizer/apps-center.js';
 import type { AppEntry } from '../shared/types.js';
 
@@ -160,5 +163,68 @@ describe('launchApp validation', () => {
     const inTemp = await launchApp(temp);
     fs.unlinkSync(temp);
     expect(inTemp.ok).toBe(false);
+  });
+});
+
+describe('custom apps (manual add/remove)', () => {
+  const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hy-custom-'));
+  const appDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hy-custom-app-'));
+  const exe = path.join(appDir, 'MyTool.exe');
+  fs.writeFileSync(exe, '');
+  const namedExe = path.join(appDir, 'AnotherTool.exe');
+  fs.writeFileSync(namedExe, '');
+  const setupExe = path.join(appDir, 'setup.exe');
+  fs.writeFileSync(setupExe, '');
+
+  const orig = process.env.FO_DATA;
+  beforeAll(() => {
+    process.env.FO_DATA = dataDir;
+  });
+  afterAll(() => {
+    if (orig === undefined) delete process.env.FO_DATA;
+    else process.env.FO_DATA = orig;
+    fs.rmSync(dataDir, { recursive: true, force: true });
+    fs.rmSync(appDir, { recursive: true, force: true });
+  });
+
+  it('adds a valid custom app and defaults the name from the file', () => {
+    const res = addCustomApp({ exe });
+    expect(res.ok).toBe(true);
+    expect(res.entry).toMatchObject({ name: 'MyTool', exe, kind: 'app', source: 'custom' });
+  });
+
+  it('persists the custom app across the JSON store', () => {
+    const list = listCustomApps();
+    expect(list.some((e) => e.exe.toLowerCase() === exe.toLowerCase())).toBe(true);
+  });
+
+  it('respects an explicit name and stores in listCatalog entries', () => {
+    const res = addCustomApp({ name: 'Alat Saya', exe: namedExe, cwd: appDir });
+    expect(res.entry?.name).toBe('Alat Saya');
+  });
+
+  it('rejects duplicates by exe (case-insensitive)', () => {
+    const res = addCustomApp({ exe: exe.toLowerCase() });
+    expect(res.ok).toBe(false);
+    expect(res.error).toBe('Aplikasi sudah ada di daftar.');
+  });
+
+  it('rejects missing files, relative paths and non-exe inputs', () => {
+    expect(addCustomApp({ exe: 'C:\\No\\Such\\App.exe' }).error).toBe('Berkas aplikasi tidak ditemukan.');
+    expect(addCustomApp({ exe: 'app.exe' }).ok).toBe(false);
+    expect(addCustomApp({ exe: path.join(appDir, 'notes.txt') }).ok).toBe(false);
+    expect(addCustomApp({ exe: '' })).toEqual({ ok: false, error: 'Pilih berkas aplikasi (.exe).' });
+  });
+
+  it('rejects installer/removal executables', () => {
+    const res = addCustomApp({ exe: setupExe });
+    expect(res.ok).toBe(false);
+    expect(res.error).toBe('Ini adalah berkas pemasang/penghapus, bukan aplikasi utama.');
+  });
+
+  it('removes a custom app and reports missing ones', () => {
+    expect(removeCustomApp(exe).ok).toBe(true);
+    expect(listCustomApps().some((e) => e.exe.toLowerCase() === exe.toLowerCase())).toBe(false);
+    expect(removeCustomApp(exe).error).toBe('Aplikasi tidak ditemukan.');
   });
 });

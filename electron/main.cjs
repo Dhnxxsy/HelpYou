@@ -287,6 +287,19 @@ function registerIpc() {
     if (res.canceled || res.filePaths.length === 0) return null;
     return res.filePaths[0];
   });
+  ipcMain.handle('apps:pickExe', async () => {
+    if (!mainWindow) return null;
+    const res = await dialog.showOpenDialog(mainWindow, {
+      title: 'Pilih Berkas Aplikasi',
+      properties: ['openFile'],
+      filters: [
+        { name: 'Program (.exe)', extensions: ['exe'] },
+        { name: 'Semua File', extensions: ['*'] },
+      ],
+    });
+    if (res.canceled || res.filePaths.length === 0) return null;
+    return res.filePaths[0];
+  });
   ipcMain.handle('vault:pickFiles', async () => {
     if (!mainWindow) return null;
     const res = await dialog.showOpenDialog(mainWindow, {

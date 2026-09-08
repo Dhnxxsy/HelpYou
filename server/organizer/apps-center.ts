@@ -334,8 +334,97 @@ function scanEpicGames(): AppEntry[] {
 }
 
 /* ------------------------------------------------------------------ */
-/* Catalog assembly + cache                                            */
+/* Custom apps (manually added by the user)                            */
 /* ------------------------------------------------------------------ */
+
+interface CustomAppMeta {
+  name: string;
+  exe: string;
+  cwd?: string;
+  args?: string;
+  addedAt: number;
+}
+
+function dataRoot(): string {
+  return process.env.FO_DATA ? path.resolve(process.env.FO_DATA) : process.cwd();
+}
+
+function customAppsPath(): string {
+  return path.join(dataRoot(), 'custom-apps.json');
+}
+
+export function listCustomApps(): CustomAppMeta[] {
+  try {
+    if (!fs.existsSync(customAppsPath())) return [];
+    const data = JSON.parse(fs.readFileSync(customAppsPath(), 'utf8'));
+    if (!Array.isArray(data)) return [];
+    return data.filter((e) => e && typeof e.exe === 'string' && typeof e.name === 'string');
+  } catch {
+    return [];
+  }
+}
+
+function saveCustomApps(list: CustomAppMeta[]): void {
+  const file = customAppsPath();
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, JSON.stringify(list, null, 2), 'utf8');
+}
+
+export function addCustomApp(input: { name?: string; exe: string; args?: string; cwd?: string }): { ok: boolean; error?: string; entry?: AppEntry } {
+  const exeV = String(input?.exe || '').trim();
+  if (!exeV) return { ok: false, error: 'Pilih berkas aplikasi (.exe).' };
+  const exe = path.normalize(exeV);
+  if (!/^[a-zA-Z]:[\\/]/.test(exe)) return { ok: false, error: 'Pilih berkas aplikasi (.exe).' };
+  if (path.extname(exe).toLowerCase() !== '.exe') return { ok: false, error: 'Pilih berkas aplikasi (.exe).' };
+  try {
+    if (!fs.existsSync(exe) || !fs.statSync(exe).isFile()) return { ok: false, error: 'Berkas aplikasi tidak ditemukan.' };
+  } catch {
+    return { ok: false, error: 'Berkas aplikasi tidak ditemukan.' };
+  }
+  if (isJunkExe(path.basename(exe))) return { ok: false, error: 'Ini adalah berkas pemasang/penghapus, bukan aplikasi utama.' };
+
+  const list = listCustomApps();
+  const key = exe.toLowerCase();
+  if (list.some((e) => e.exe.toLowerCase() === key)) return { ok: false, error: 'Aplikasi sudah ada di daftar.' };
+
+  const name = (String(input?.name || '').trim() || path.basename(exe, path.extname(exe))).slice(0, 120);
+  const cwd = input?.cwd && /^[a-zA-Z]:[\\/]/.test(input.cwd) && fs.existsSync(input.cwd) ? path.normalize(input.cwd) : undefined;
+  const meta: CustomAppMeta = {
+    name,
+    exe,
+    args: (String(input?.args || '').trim() || undefined) as string | undefined,
+    cwd,
+    addedAt: Date.now(),
+  };
+  list.push(meta);
+  saveCustomApps(list);
+  catalogCache = null;
+  return { ok: true, entry: customMetaToEntry(meta) };
+}
+
+export function removeCustomApp(exe: string): { ok: boolean; error?: string } {
+  const exeV = String(exe || '').trim();
+  if (!exeV) return { ok: false, error: 'Aplikasi tidak valid.' };
+  const key = path.normalize(exeV).toLowerCase();
+  const list = listCustomApps();
+  const next = list.filter((e) => e.exe.toLowerCase() !== key);
+  if (next.length === list.length) return { ok: false, error: 'Aplikasi tidak ditemukan.' };
+  saveCustomApps(next);
+  catalogCache = null;
+  return { ok: true };
+}
+
+function customMetaToEntry(m: CustomAppMeta): AppEntry {
+  return {
+    name: m.name,
+    kind: 'app',
+    exe: m.exe,
+    icon: m.exe,
+    cwd: m.cwd,
+    args: m.args,
+    source: 'custom',
+  };
+}
 
 const CATALOG_CACHE_TTL_MS = 60_000;
 let catalogCache: { at: number; catalog: AppCatalog } | null = null;
@@ -402,6 +491,12 @@ export async function listCatalog(force = false): Promise<AppCatalog> {
   }
 
   const apps = dedupeEntries(entries.filter((e) => e.kind === 'app')).slice(0, 500);
+
+  for (const c of listCustomApps().map(customMetaToEntry)) {
+    if (!c.exe) continue;
+    const existing = apps.some((e) => e.exe && e.exe.toLowerCase() === c.exe!.toLowerCase());
+    if (!existing && apps.length < 500) apps.push(c);
+  }
 
   const games = dedupeEntries([
     ...scanSteamGames(scan.steamRoots),

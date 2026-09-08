@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Icon, { type IconName } from '../components/Icon';
 import AppIcon from '../components/AppIcon';
 import { formatBytes } from '../lib/format';
 import { useI18n } from '../lib/i18n';
+import { pickExeFile } from '../lib/platform';
 import type { AppEntry } from '@shared/types';
 
 type ViewTab = 'all' | 'apps' | 'games';
@@ -12,6 +14,7 @@ const SOURCE_ICON: Record<AppEntry['source'], IconName> = {
   registry: 'package',
   steam: 'play',
   epic: 'sparkle',
+  custom: 'pin',
 };
 
 async function api<T>(url: string, opts?: RequestInit): Promise<T> {
@@ -31,6 +34,7 @@ function sourceLabel(source: AppEntry['source']): string {
   if (source === 'menu') return 'Pintasan';
   if (source === 'registry') return 'Registri';
   if (source === 'steam') return 'Steam';
+  if (source === 'custom') return 'Manual';
   return 'Epic Games';
 }
 
@@ -44,8 +48,13 @@ export default function AppsCenterView({ onBack }: { onBack: () => void }) {
   const [tab, setTab] = useState<ViewTab>('all');
   const [sort, setSort] = useState<'name' | 'size'>('name');
   const [launching, setLaunching] = useState<string | null>(null);
-  const [okToast, setOkToast] = useState(false);
-  const [errToast, setErrToast] = useState(false);
+  const [okMsg, setOkMsg] = useState<string | null>(null);
+  const [errMsg, setErrMsg] = useState<string | null>(null);
+  const [showAdd, setShowAdd] = useState(false);
+  const [addName, setAddName] = useState('');
+  const [addExe, setAddExe] = useState('');
+  const [addBusy, setAddBusy] = useState(false);
+  const [addError, setAddError] = useState<string | null>(null);
 
   async function load(force = false) {
     setLoading(true);
@@ -79,16 +88,16 @@ export default function AppsCenterView({ onBack }: { onBack: () => void }) {
   }, []);
 
   useEffect(() => {
-    if (!okToast) return;
-    const tm = setTimeout(() => setOkToast(false), 3200);
+    if (!okMsg) return;
+    const tm = setTimeout(() => setOkMsg(null), 3200);
     return () => clearTimeout(tm);
-  }, [okToast]);
+  }, [okMsg]);
 
   useEffect(() => {
-    if (!errToast) return;
-    const tm = setTimeout(() => setErrToast(false), 4200);
+    if (!errMsg) return;
+    const tm = setTimeout(() => setErrMsg(null), 4200);
     return () => clearTimeout(tm);
-  }, [errToast]);
+  }, [errMsg]);
 
   const visible = useMemo(() => {
     let list = tab === 'apps' ? apps : tab === 'games' ? games : [...apps, ...games];
@@ -115,10 +124,10 @@ export default function AppsCenterView({ onBack }: { onBack: () => void }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ exe: e.exe, args: e.args, cwd: e.cwd }),
       });
-      if (res.ok) setOkToast(true);
-      else setErrToast(true);
+      if (res.ok) setOkMsg(t('Berhasil dibuka.'));
+      else setErrMsg(t('Gagal membuka aplikasi.'));
     } catch {
-      setErrToast(true);
+      setErrMsg(t('Gagal membuka aplikasi.'));
     } finally {
       setLaunching(null);
     }
@@ -132,10 +141,74 @@ export default function AppsCenterView({ onBack }: { onBack: () => void }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ exe: e.exe, cwd: e.cwd }),
       });
-      if (res.ok) setOkToast(true);
-      else setErrToast(true);
+      if (res.ok) setOkMsg(t('Berhasil dibuka.'));
+      else setErrMsg(t('Gagal membuka aplikasi.'));
     } catch {
-      setErrToast(true);
+      setErrMsg(t('Gagal membuka aplikasi.'));
+    }
+  }
+
+  async function pickFile() {
+    const picked = await pickExeFile();
+    if (!picked) return;
+    setAddExe(picked);
+    setAddError(null);
+    setAddName((prev) => {
+      if (prev.trim()) return prev;
+      return picked.replace(/\\/g, '/').split('/').pop()?.replace(/\.exe$/i, '') || picked;
+    });
+  }
+
+  function openAddModal() {
+    setAddName('');
+    setAddExe('');
+    setAddError(null);
+    setShowAdd(true);
+  }
+
+  async function submitAdd() {
+    if (!addExe.trim()) {
+      setAddError(t('Pilih berkas aplikasi (.exe).'));
+      return;
+    }
+    setAddBusy(true);
+    setAddError(null);
+    try {
+      const res = await api<{ ok: boolean; error?: string }>('/api/apps/custom', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: addName.trim(), exe: addExe.trim() }),
+      });
+      if (!res.ok) {
+        setAddError(res.error || t('Gagal menambahkan aplikasi.'));
+        return;
+      }
+      setShowAdd(false);
+      setOkMsg(t('Aplikasi ditambahkan.'));
+      await load(true);
+    } catch (e: any) {
+      setAddError(e.message || t('Gagal menambahkan aplikasi.'));
+    } finally {
+      setAddBusy(false);
+    }
+  }
+
+  async function removeCustom(e: AppEntry) {
+    if (!e.exe) return;
+    try {
+      const res = await api<{ ok: boolean; error?: string }>('/api/apps/custom/remove', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ exe: e.exe }),
+      });
+      if (res.ok) {
+        setOkMsg(t('Aplikasi dihapus.'));
+        await load(true);
+      } else {
+        setErrMsg(t('Gagal menghapus aplikasi.'));
+      }
+    } catch {
+      setErrMsg(t('Gagal menghapus aplikasi.'));
     }
   }
 
@@ -192,6 +265,9 @@ export default function AppsCenterView({ onBack }: { onBack: () => void }) {
             <option value="name">{t('Urut Nama (A-Z)')}</option>
             <option value="size">{t('Urut Ukuran Terbesar')}</option>
           </select>
+          <button className="btn-accent !py-2 !px-3.5 text-xs" onClick={openAddModal}>
+            <Icon name="plus" className="w-3.5 h-3.5" /> {t('Tambah Manual')}
+          </button>
           <button className="btn-secondary !py-2 !px-3.5 text-xs" onClick={() => load(true)} disabled={loading}>
             <Icon name="replay" className="w-3.5 h-3.5" /> {t('Muat Ulang')}
           </button>
@@ -266,6 +342,15 @@ export default function AppsCenterView({ onBack }: { onBack: () => void }) {
                   >
                     <Icon name="folderOpen" className="w-3.5 h-3.5" />
                   </button>
+                  {e.source === 'custom' && (
+                    <button
+                      className="btn-secondary !py-2 !px-3 text-xs !text-[var(--danger-strong)]"
+                      title={t('Hapus dari daftar')}
+                      onClick={() => removeCustom(e)}
+                    >
+                      <Icon name="trash" className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </div>
               </div>
             );
@@ -273,16 +358,64 @@ export default function AppsCenterView({ onBack }: { onBack: () => void }) {
         </div>
       )}
 
+      {/* Add-app modal */}
+      {showAdd &&
+        createPortal(
+          <div className="fixed inset-0 z-50 grid place-items-center p-4" role="dialog" aria-modal="true" aria-label={t('Tambah Aplikasi Manual')}>
+            <div className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm" onClick={() => setShowAdd(false)} />
+            <div className="relative card p-6 w-full max-w-md border-[var(--border-2)] animate-scale-in max-h-[85vh] overflow-y-auto">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-10 h-10 rounded-xl grid place-items-center shrink-0 border bg-[var(--accent-soft)] text-[var(--accent-strong)] border-[var(--accent-border)]">
+                  <Icon name="folderSearch" className="w-5 h-5" />
+                </div>
+                <h3 className="text-base font-semibold text-[var(--text)] leading-tight flex-1">
+                  {t('Tambah Aplikasi Manual')}
+                </h3>
+                <button className="btn-ghost !p-2 text-[var(--text-2)] hover:text-[var(--text)] shrink-0" onClick={() => setShowAdd(false)} title={t('Tutup')}>
+                  <Icon name="x" className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-medium text-[var(--text-2)] mb-1.5">{t('Nama (opsional)')}</label>
+                  <input className="input" value={addName} onChange={(e) => setAddName(e.target.value)} placeholder={t('Isi otomatis dari nama berkas')} />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[var(--text-2)] mb-1.5">{t('Lokasi berkas (.exe)')}</label>
+                  <div className="flex gap-2">
+                    <input className="input flex-1" value={addExe} onChange={(e) => { setAddExe(e.target.value); setAddError(null); }} placeholder="C:\Program Files\Aplikasi\app.exe" spellCheck={false} />
+                    <button className="btn-secondary !py-2 !px-3 text-xs shrink-0" onClick={pickFile} title={t('Pilih Berkas')}>
+                      <Icon name="folderSearch" className="w-3.5 h-3.5" /> {t('Pilih Berkas')}
+                    </button>
+                  </div>
+                </div>
+                {addError && (
+                  <div className="text-xs text-[var(--danger-strong)] bg-[var(--danger-soft)] border border-[var(--danger-border)] rounded-lg px-3 py-2 flex items-center gap-2">
+                    <Icon name="alert" className="w-3.5 h-3.5 shrink-0" /> {addError}
+                  </div>
+                )}
+                <div className="flex justify-end gap-2 pt-1">
+                  <button className="btn-secondary !py-2 !px-4 text-xs" onClick={() => setShowAdd(false)}>{t('Batal')}</button>
+                  <button className="btn-accent !py-2 !px-4 text-xs" onClick={submitAdd} disabled={addBusy}>
+                    <Icon name={addBusy ? 'clock' : 'check'} className="w-3.5 h-3.5" /> {addBusy ? t('Menambah…') : t('Simpan')}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
+
       {/* Toasts */}
       <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 space-y-2 w-[92%] max-w-sm">
-        {okToast && (
+        {okMsg && (
           <div className="card !bg-[var(--ok-soft)] border-[var(--ok-border)] text-[var(--ok-strong)] px-4 py-3 text-sm flex items-center gap-2.5 shadow-lg animate-fade-in">
-            <Icon name="check" className="w-4 h-4 shrink-0" /> {t('Berhasil dibuka.')}
+            <Icon name="check" className="w-4 h-4 shrink-0" /> {okMsg}
           </div>
         )}
-        {errToast && (
+        {errMsg && (
           <div className="card !bg-[var(--danger-soft)] border-[var(--danger-border)] text-[var(--danger-strong)] px-4 py-3 text-sm flex items-center gap-2.5 shadow-lg animate-fade-in">
-            <Icon name="alert" className="w-4 h-4 shrink-0" /> {t('Gagal membuka aplikasi.')}
+            <Icon name="alert" className="w-4 h-4 shrink-0" /> {errMsg}
           </div>
         )}
       </div>

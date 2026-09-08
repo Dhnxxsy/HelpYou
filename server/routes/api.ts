@@ -34,7 +34,7 @@ import { pingHost, traceHost, dnsLookup, scanPorts } from '../organizer/network-
 import type { DiskScanResult, StartupItem, DefragAnalyzeResult, DefragJobStatus } from '../../shared/types.js';
 import { listNotes, getNote, createNote, updateNote, deleteNote } from '../organizer/notepad.js';
 import { listVaultItems, hideItems, unhideItem, deleteVaultItem, inspectItem, preparePreview, openPreviewStream } from '../organizer/vault.js';
-import { listCatalog, launchApp, revealTarget } from '../organizer/apps-center.js';
+import { listCatalog, launchApp, revealTarget, addCustomApp, removeCustomApp } from '../organizer/apps-center.js';
 
 export const api = Router();
 
@@ -519,6 +519,30 @@ api.post('/apps/open-folder', async (req: Request, res: Response) => {
   try {
     const { exe, cwd } = req.body || {};
     res.json(await revealTarget(exe ? String(exe) : undefined, cwd ? String(cwd) : undefined));
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /api/apps/custom  body: { name?, exe, args?, cwd? } — add a manually-chosen app
+api.post('/apps/custom', async (req: Request, res: Response) => {
+  try {
+    const { name, exe, args, cwd } = req.body || {};
+    const result = addCustomApp({ name, exe, args, cwd });
+    if (!result.ok) res.status(422).json({ error: result.error });
+    else res.json({ ok: true, entry: result.entry });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /api/apps/custom/remove  body: { exe } — remove a manually-added app
+api.post('/apps/custom/remove', async (req: Request, res: Response) => {
+  try {
+    const { exe } = req.body || {};
+    const result = removeCustomApp(String(exe || ''));
+    if (!result.ok) res.status(422).json({ error: result.error });
+    else res.json({ ok: true });
   } catch (e: any) {
     res.status(500).json({ error: e.message });
   }

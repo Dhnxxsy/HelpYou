@@ -100,6 +100,9 @@ export interface ElectronAPI {
   vault: {
     pickFiles: () => Promise<string[] | null>;
   };
+  apps: {
+    pickExe: () => Promise<string | null>;
+  };
   openExternal: (url: string) => Promise<void>;
   notes: {
     openFile: () => Promise<NotesOpenResult | null>;
@@ -147,6 +150,11 @@ export async function pickFolder(): Promise<string | null> {
 export async function pickVaultFiles(): Promise<string[] | null> {
   if (!isDesktop || !window.electron) return null;
   return window.electron.vault.pickFiles();
+}
+
+export async function pickExeFile(): Promise<string | null> {
+  if (!isDesktop || !window.electron) return null;
+  return window.electron.apps.pickExe();
 }
 
 export async function checkForUpdate(): Promise<UpdateCheckResult | null> {

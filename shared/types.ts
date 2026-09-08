@@ -218,7 +218,7 @@ export interface AppEntry {
   version?: string;
   sizeBytes?: number;
   /** where the entry was discovered */
-  source: 'menu' | 'registry' | 'steam' | 'epic';
+  source: 'menu' | 'registry' | 'steam' | 'epic' | 'custom';
 }
 
 export interface AppCatalog {

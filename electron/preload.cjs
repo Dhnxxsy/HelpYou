@@ -36,6 +36,9 @@ contextBridge.exposeInMainWorld('electron', {
       return () => ipcRenderer.removeListener('window:maxstate', listener);
     },
   },
+  apps: {
+    pickExe: () => ipcRenderer.invoke('apps:pickExe'),
+  },
   updates: {
     check: () => ipcRenderer.invoke('update:check'),
     download: () => ipcRenderer.invoke('update:download'),

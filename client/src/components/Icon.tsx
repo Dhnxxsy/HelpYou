@@ -82,16 +82,23 @@ export type IconName =
   | 'phone'
   | 'cast'
   | 'apps'
-  | 'gamepad';
+  | 'gamepad'
+  | 'folderSearch';
 
 const FILLED: IconName[] = ['trash'];
 
 const P: Record<IconName, ReactNode> = {
   folder: (
-    <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" />
+    <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
   ),
   folderOpen: (
-    <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v1H3.5V7Z" />
+    <path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2" />
+  ),
+  folderSearch: (
+    <>
+      <path d="M10.7 20H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H20a2 2 0 0 1 2 2v4.1M21 21l-1.9-1.9" />
+      <circle cx="17" cy="17" r="3" />
+    </>
   ),
   drive: <><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="3.5" /></>,
   scan: <><circle cx="12" cy="12" r="2.5" /><path d="M12 3v4M12 17v4M3 12h4M17 12h4" /></>,
@@ -151,7 +158,7 @@ const P: Record<IconName, ReactNode> = {
     <rect x="13.5" y="13.5" width="7" height="7" rx="1.5" />
   </>,
   chevronRight: <path d="M9 6l6 6-6 6" />,
-  play: <><circle cx="12" cy="12" r="9" /><path d="M10 8.5l5 3.5-5 3.5z" /></>,
+  play: <path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" />,
   box: <>
     <path d="M21 8l-9-5-9 5v8l9 5 9-5V8z" />
     <path d="M3 8l9 5 9-5" />
@@ -308,11 +315,7 @@ const P: Record<IconName, ReactNode> = {
     </>
   ),
   gamepad: (
-    <>
-      <path d="M6 12h4M8 10v4" />
-      <path d="M15 12h.01M17.5 13.5h.01" />
-      <path d="M18 7H6a4 4 0 0 0-4 4v1a4 4 0 0 0 2.2 3.6l1.55.78A3 3 0 0 0 7.3 16h0a1.8 1.8 0 0 1 2.5.7L10.5 17.8A2 2 0 0 0 12.24 18.5h0a2 2 0 0 0 1.72-.82l.56-.76a3.4 3.4 0 0 1 2.7-1.4H17a4 4 0 0 0 4-4v-1a4 4 0 0 0-3-3.9z" />
-    </>
+    <path d="M6 11h4M8 9v4m7-1h.01M18 10h.01m-.69-5H6.68a4 4 0 0 0-3.978 3.59l-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258q-.01-.075-.017-.151A4 4 0 0 0 17.32 5" />
   ),
 };
 
