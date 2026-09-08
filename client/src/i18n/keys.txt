@@ -172,7 +172,9 @@ Deteksi file duplikat (berdasarkan isi file)
 Di jalankan sebagai administrator.
 Dihapus
 Dipindahkan
+Disembunyikan.
 Disembunyikan: {n} berhasil · {m} gagal
+Ditampilkan kembali.
 Dokumen
 Drive Lokal
 Drive Sistem
@@ -688,7 +690,9 @@ Tambah Aturan
 Tambah Manual
 Tambahkan Lapisan
 Tampilkan
+Tampilkan kembali
 Tampilkan sandi
+Tampilkan tersembunyi
 Tangan
 Tanggal pasang
 Tanpa iklan
@@ -715,6 +719,7 @@ Terjadi kesalahan
 Terkini
 Terlalu banyak nama duplikat
 Terlalu besar (maks 512 MB per item).
+Tersembunyi
 Tersimpan di {path}
 Tersimpan {time}
 Tertutup

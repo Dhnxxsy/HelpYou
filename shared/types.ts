@@ -219,6 +219,8 @@ export interface AppEntry {
   sizeBytes?: number;
   /** where the entry was discovered */
   source: 'menu' | 'registry' | 'steam' | 'epic' | 'custom';
+  /** true when the entry is hidden by the user (only present with showHidden=1) */
+  hidden?: boolean;
 }
 
 export interface AppCatalog {

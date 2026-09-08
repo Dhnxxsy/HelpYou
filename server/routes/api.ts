@@ -34,7 +34,7 @@ import { pingHost, traceHost, dnsLookup, scanPorts } from '../organizer/network-
 import type { DiskScanResult, StartupItem, DefragAnalyzeResult, DefragJobStatus } from '../../shared/types.js';
 import { listNotes, getNote, createNote, updateNote, deleteNote } from '../organizer/notepad.js';
 import { listVaultItems, hideItems, unhideItem, deleteVaultItem, inspectItem, preparePreview, openPreviewStream } from '../organizer/vault.js';
-import { listCatalog, launchApp, revealTarget, addCustomApp, removeCustomApp } from '../organizer/apps-center.js';
+import { listCatalog, launchApp, revealTarget, addCustomApp, removeCustomApp, hideApp, unhideApp } from '../organizer/apps-center.js';
 
 export const api = Router();
 
@@ -494,11 +494,35 @@ api.post('/uninstaller/icons', async (req: Request, res: Response) => {
 
 /* ---------------- Apps & Games Center tool ---------------- */
 
-// GET /api/apps/list?force=1  — categorized catalog of installed apps & games
+// GET /api/apps/list?force=1&showHidden=1 — categorized catalog of installed apps & games
 api.get('/apps/list', async (_req: Request, res: Response) => {
   try {
-    const catalog = await listCatalog(_req.query.force === '1');
+    const catalog = await listCatalog(_req.query.force === '1', _req.query.showHidden === '1');
     res.json(catalog);
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /api/apps/hide  body: { exe?, name?, source? } — hide an entry from the menu (not uninstall)
+api.post('/apps/hide', (req: Request, res: Response) => {
+  try {
+    const { exe, name, source } = req.body || {};
+    const result = hideApp({ exe, name, source });
+    if (!result.ok) res.status(422).json({ error: result.error });
+    else res.json({ ok: true });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /api/apps/unhide  body: { exe?, name?, source? } — bring a hidden entry back
+api.post('/apps/unhide', (req: Request, res: Response) => {
+  try {
+    const { exe, name, source } = req.body || {};
+    const result = unhideApp({ exe, name, source });
+    if (!result.ok) res.status(422).json({ error: result.error });
+    else res.json({ ok: true });
   } catch (e: any) {
     res.status(500).json({ error: e.message });
   }

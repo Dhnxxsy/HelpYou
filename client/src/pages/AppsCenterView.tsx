@@ -47,6 +47,7 @@ export default function AppsCenterView({ onBack }: { onBack: () => void }) {
   const [search, setSearch] = useState('');
   const [tab, setTab] = useState<ViewTab>('all');
   const [sort, setSort] = useState<'name' | 'size'>('name');
+  const [showHidden, setShowHidden] = useState(false);
   const [launching, setLaunching] = useState<string | null>(null);
   const [okMsg, setOkMsg] = useState<string | null>(null);
   const [errMsg, setErrMsg] = useState<string | null>(null);
@@ -56,11 +57,15 @@ export default function AppsCenterView({ onBack }: { onBack: () => void }) {
   const [addBusy, setAddBusy] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
 
-  async function load(force = false) {
+  async function load(force = false, includeHidden = showHidden) {
     setLoading(true);
     setError(null);
     try {
-      const data = await api<{ apps: AppEntry[]; games: AppEntry[] }>(`/api/apps/list${force ? '?force=1' : ''}`);
+      const qs = new URLSearchParams();
+      if (force) qs.set('force', '1');
+      if (includeHidden) qs.set('showHidden', '1');
+      const suffix = qs.toString() ? `?${qs.toString()}` : '';
+      const data = await api<{ apps: AppEntry[]; games: AppEntry[] }>(`/api/apps/list${suffix}`);
       const a = data.apps || [];
       const g = data.games || [];
       setApps(a);
@@ -212,6 +217,31 @@ export default function AppsCenterView({ onBack }: { onBack: () => void }) {
     }
   }
 
+  async function toggleHidden(e: AppEntry) {
+    const hiding = !e.hidden;
+    try {
+      const res = await api<{ ok: boolean; error?: string }>(`/api/apps/${hiding ? 'hide' : 'unhide'}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ exe: e.exe, name: e.name, source: e.source }),
+      });
+      if (res.ok) {
+        setOkMsg(hiding ? t('Disembunyikan.') : t('Ditampilkan kembali.'));
+        await load(true);
+      } else {
+        setErrMsg(t('Gagal mengubah status.'));
+      }
+    } catch {
+      setErrMsg(t('Gagal mengubah status.'));
+    }
+  }
+
+  function toggleShowHidden() {
+    const next = !showHidden;
+    setShowHidden(next);
+    void load(false, next);
+  }
+
   const countAll = apps.length + games.length;
 
   return (
@@ -265,7 +295,10 @@ export default function AppsCenterView({ onBack }: { onBack: () => void }) {
             <option value="name">{t('Urut Nama (A-Z)')}</option>
             <option value="size">{t('Urut Ukuran Terbesar')}</option>
           </select>
-          <button className="btn-primary !h-10 !px-4 text-xs" onClick={openAddModal}>
+          <button className="btn-soft !h-10 !px-4 text-xs" onClick={toggleShowHidden}>
+            <Icon name={showHidden ? 'eye' : 'eyeOff'} className="w-3.5 h-3.5" /> {t('Tampilkan tersembunyi')}
+          </button>
+          <button className="btn-soft !h-10 !px-4 text-xs" onClick={openAddModal}>
             <Icon name="plus" className="w-3.5 h-3.5" /> {t('Tambah Manual')}
           </button>
           <button className="btn-secondary !h-10 !px-3.5 text-xs" onClick={() => load(true)} disabled={loading}>
@@ -303,7 +336,9 @@ export default function AppsCenterView({ onBack }: { onBack: () => void }) {
             return (
               <div
                 key={key}
-                className="card p-3.5 flex flex-col gap-3 hover:border-[var(--accent-border)] transition-colors group"
+                className={`card p-3.5 flex flex-col gap-3 transition-colors group ${
+                  e.hidden ? 'opacity-60 border-dashed' : 'hover:border-[var(--accent-border)]'
+                }`}
               >
                 <div className="flex items-start gap-3">
                   <AppIcon
@@ -320,20 +355,36 @@ export default function AppsCenterView({ onBack }: { onBack: () => void }) {
                       <Icon name={SOURCE_ICON[e.source]} className="w-3 h-3 shrink-0" />
                       {subtitle(e)}
                     </p>
+                    {e.hidden && (
+                      <p className="text-[10px] font-medium text-[var(--accent-strong)] mt-0.5 flex items-center gap-1">
+                        <Icon name="eyeOff" className="w-3 h-3" /> {t('Tersembunyi')}
+                      </p>
+                    )}
                   </div>
-                  {e.sizeBytes !== undefined && e.sizeBytes > 0 && (
-                    <span className="text-[10px] text-[var(--text-3)] shrink-0 pt-0.5">{formatBytes(e.sizeBytes)}</span>
-                  )}
+                  <div className="flex items-start gap-1 shrink-0">
+                    {e.sizeBytes !== undefined && e.sizeBytes > 0 && (
+                      <span className="text-[10px] text-[var(--text-3)] pt-0.5">{formatBytes(e.sizeBytes)}</span>
+                    )}
+                    <button
+                      className={`grid place-items-center w-6 h-6 rounded-lg transition-all ${
+                        e.hidden
+                          ? 'text-[var(--accent-strong)] bg-[var(--accent-soft)]'
+                          : 'text-[var(--text-3)] opacity-0 group-hover:opacity-100 hover:text-[var(--danger-strong)]'
+                      }`}
+                      title={e.hidden ? t('Tampilkan kembali') : t('Sembunyikan')}
+                      onClick={() => void toggleHidden(e)}
+                    >
+                      <Icon name={e.hidden ? 'eye' : 'eyeOff'} className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
                 <div className="grid grid-cols-[1fr_auto_auto] gap-1.5 mt-auto">
                   <button
-                    className="btn-primary !h-9 !px-2 !pr-3 text-xs min-w-0"
+                    className="btn-soft !h-9 text-xs min-w-0"
                     disabled={!e.exe || busy}
                     onClick={() => openApp(e, key)}
                   >
-                    <span className="w-6 h-6 rounded-full bg-white/15 grid place-items-center shrink-0">
-                      <Icon name={busy ? 'clock' : 'play'} className="w-3.5 h-3.5" />
-                    </span>
+                    <Icon name={busy ? 'clock' : 'play'} className="w-3.5 h-3.5 shrink-0" />
                     <span className="truncate">{busy ? t('Menjalankan…') : e.kind === 'game' ? t('Main') : t('Buka')}</span>
                   </button>
                   <button
@@ -398,7 +449,7 @@ export default function AppsCenterView({ onBack }: { onBack: () => void }) {
                 )}
                 <div className="flex justify-end gap-2 pt-1">
                   <button className="btn-secondary !h-10 !px-4 text-xs" onClick={() => setShowAdd(false)}>{t('Batal')}</button>
-                  <button className="btn-primary !h-10 !px-4 text-xs" onClick={submitAdd} disabled={addBusy}>
+                  <button className="btn-soft !h-10 !px-4 text-xs" onClick={submitAdd} disabled={addBusy}>
                     <Icon name={addBusy ? 'clock' : 'check'} className="w-3.5 h-3.5" /> {addBusy ? t('Menambah…') : t('Simpan')}
                   </button>
                 </div>

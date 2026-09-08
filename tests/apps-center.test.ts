@@ -228,3 +228,59 @@ describe('custom apps (manual add/remove)', () => {
     expect(removeCustomApp(exe).error).toBe('Aplikasi tidak ditemukan.');
   });
 });
+
+describe('hide & unhide apps', () => {
+  const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hy-hidden-'));
+  const appDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hy-hidden-app-'));
+  const exeA = path.join(appDir, 'AlphaApp.exe');
+  const exeB = path.join(appDir, 'BetaGame.exe');
+  fs.writeFileSync(exeA, '');
+  fs.writeFileSync(exeB, '');
+
+  const orig = process.env.FO_DATA;
+  beforeAll(() => {
+    process.env.FO_DATA = dataDir;
+  });
+  afterAll(() => {
+    if (orig === undefined) delete process.env.FO_DATA;
+    else process.env.FO_DATA = orig;
+    fs.rmSync(dataDir, { recursive: true, force: true });
+    fs.rmSync(appDir, { recursive: true, force: true });
+  });
+
+  it('computes stable hidden keys (case-insensitive exe, name+source)', async () => {
+    const { hiddenKeyOf } = await import('../server/organizer/apps-center.js');
+    expect(hiddenKeyOf({ exePath: undefined, exe: exeA })).toBe('x:' + path.normalize(exeA).toLowerCase());
+    expect(hiddenKeyOf({ exe: exeA.toUpperCase() })).toBe(hiddenKeyOf({ exe: exeA }));
+    expect(hiddenKeyOf({ name: 'Spotify', source: 'menu' })).toBe('n:menu:spotify');
+    expect(hiddenKeyOf({ name: '  ', source: 'menu' })).toBeNull();
+  });
+
+  it('hides, filters, flags with showHidden, and unhides an entry', async () => {
+    const { addCustomApp, hideApp, unhideApp, listCatalog, listHiddenApps } = await import('../server/organizer/apps-center.js');
+    addCustomApp({ name: 'AlphaApp', exe: exeA });
+    addCustomApp({ name: 'BetaGame', exe: exeB });
+
+    expect(hideApp({ exe: exeA }).ok).toBe(true);
+    expect(listHiddenApps()).toContain('x:' + path.normalize(exeA).toLowerCase());
+    expect(hideApp({ exe: exeA }).ok).toBe(true);
+
+    const filtered = await listCatalog(true, false);
+    expect(filtered.apps.some((e) => e.exe && e.exe.toLowerCase() === exeA.toLowerCase())).toBe(false);
+    expect(filtered.apps.some((e) => e.exe && e.exe.toLowerCase() === exeB.toLowerCase())).toBe(true);
+
+    const shown = await listCatalog(true, true);
+    const hiddenEntry = shown.apps.find((e) => e.exe && e.exe.toLowerCase() === exeA.toLowerCase());
+    expect(hiddenEntry?.hidden).toBe(true);
+
+    expect(unhideApp({ exe: exeA }).ok).toBe(true);
+    expect(listHiddenApps()).toHaveLength(0);
+    const restored = await listCatalog(true, false);
+    expect(restored.apps.some((e) => e.exe && e.exe.toLowerCase() === exeA.toLowerCase())).toBe(true);
+  }, 30_000);
+
+  it('rejects hiding entries without a resolvable key', async () => {
+    const { hideApp } = await import('../server/organizer/apps-center.js');
+    expect(hideApp({ name: '', source: '' })).toEqual({ ok: false, error: 'Aplikasi tidak valid.' });
+  });
+});

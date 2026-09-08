@@ -429,6 +429,64 @@ function customMetaToEntry(m: CustomAppMeta): AppEntry {
 const CATALOG_CACHE_TTL_MS = 60_000;
 let catalogCache: { at: number; catalog: AppCatalog } | null = null;
 
+/* ------------------------------------------------------------------ */
+/* Hidden apps (user hides entries from the menu — NOT uninstall)      */
+/* ------------------------------------------------------------------ */
+
+export function hiddenAppsPath(): string {
+  return path.join(dataRoot(), 'hidden-apps.json');
+}
+
+export function listHiddenApps(): string[] {
+  try {
+    if (!fs.existsSync(hiddenAppsPath())) return [];
+    const data = JSON.parse(fs.readFileSync(hiddenAppsPath(), 'utf8'));
+    if (!Array.isArray(data)) return [];
+    return data.filter((k) => typeof k === 'string');
+  } catch {
+    return [];
+  }
+}
+
+function saveHiddenApps(keys: string[]): void {
+  const file = hiddenAppsPath();
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, JSON.stringify(keys, null, 2), 'utf8');
+}
+
+export function hiddenKeyOf(input: { exe?: string; name?: string; source?: string }): string | null {
+  const exe = input?.exe && /^[a-zA-Z]:[\\/]/.test(String(input.exe)) ? path.normalize(String(input.exe)) : '';
+  if (exe) return 'x:' + exe.toLowerCase();
+  const name = String(input?.name || '').trim();
+  const source = String(input?.source || '').trim();
+  if (!name) return null;
+  return 'n:' + source.toLowerCase() + ':' + normKey(name);
+}
+
+export function hideApp(input: { exe?: string; name?: string; source?: string }): { ok: boolean; error?: string } {
+  const key = hiddenKeyOf(input);
+  if (!key) return { ok: false, error: 'Aplikasi tidak valid.' };
+  const list = listHiddenApps();
+  if (!list.includes(key)) {
+    list.push(key);
+    saveHiddenApps(list);
+    catalogCache = null;
+  }
+  return { ok: true };
+}
+
+export function unhideApp(input: { exe?: string; name?: string; source?: string }): { ok: boolean; error?: string } {
+  const key = hiddenKeyOf(input);
+  if (!key) return { ok: false, error: 'Aplikasi tidak valid.' };
+  const list = listHiddenApps();
+  const next = list.filter((k) => k !== key);
+  if (next.length !== list.length) {
+    saveHiddenApps(next);
+    catalogCache = null;
+  }
+  return { ok: true };
+}
+
 function menuRowsToEntries(rows: MenuRow[]): AppEntry[] {
   return rows
     .filter(
@@ -448,10 +506,16 @@ function menuRowsToEntries(rows: MenuRow[]): AppEntry[] {
     }));
 }
 
-export async function listCatalog(force = false): Promise<AppCatalog> {
-  if (!force && catalogCache && Date.now() - catalogCache.at < CATALOG_CACHE_TTL_MS) {
+export async function listCatalog(force = false, showHidden = false): Promise<AppCatalog> {
+  if (!force && !showHidden && catalogCache && Date.now() - catalogCache.at < CATALOG_CACHE_TTL_MS) {
     return catalogCache.catalog;
   }
+
+  const hiddenSet = new Set(listHiddenApps());
+  const applyHidden = (entries: AppEntry[]): AppEntry[] =>
+    showHidden
+      ? entries.map((e) => (hiddenSet.has(hiddenKeyOf(e) ?? '') ? { ...e, hidden: true } : e))
+      : entries.filter((e) => !hiddenSet.has(hiddenKeyOf(e) ?? ''));
 
   const raw = await runPowerShell(MENU_SCRIPT, 90_000);
   let scan: SteamScanOut | null = null;
@@ -490,18 +554,21 @@ export async function listCatalog(force = false): Promise<AppCatalog> {
     }
   }
 
-  const apps = dedupeEntries(entries.filter((e) => e.kind === 'app')).slice(0, 500);
+  const apps = applyHidden(dedupeEntries(entries.filter((e) => e.kind === 'app')).slice(0, 500));
 
   for (const c of listCustomApps().map(customMetaToEntry)) {
     if (!c.exe) continue;
+    if (!showHidden && hiddenSet.has(hiddenKeyOf(c) ?? '')) continue;
     const existing = apps.some((e) => e.exe && e.exe.toLowerCase() === c.exe!.toLowerCase());
-    if (!existing && apps.length < 500) apps.push(c);
+    if (!existing && apps.length < 500) {
+      apps.push(showHidden && hiddenSet.has(hiddenKeyOf(c) ?? '') ? { ...c, hidden: true } : c);
+    }
   }
 
-  const games = dedupeEntries([
+  const games = applyHidden(dedupeEntries([
     ...scanSteamGames(scan.steamRoots),
     ...scanEpicGames(),
-  ]).slice(0, 500);
+  ]).slice(0, 500));
 
   for (const app of installed) {
     if (categorizeInstalledApp(app) !== 'game') continue;
