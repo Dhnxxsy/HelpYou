@@ -13,7 +13,8 @@ export type ToolId =
   | 'vault'
   | 'browser'
   | 'paint'
-  | 'mirror';
+  | 'mirror'
+  | 'apps';
 
 export interface ActiveTool {
   icon: IconName;
@@ -155,6 +156,16 @@ export const ACTIVE_TOOLS: ActiveTool[] = [
     tool: 'mirror',
     accent: 'from-teal-500 to-emerald-600',
     glow: 'shadow-teal-500/20',
+    chip: 'bg-[var(--ok-soft)] text-[var(--ok-strong)] border-[var(--ok-border)]',
+  },
+  {
+    icon: 'gamepad',
+    title: 'Pusat Aplikasi & Game',
+    short: 'Apps & Game',
+    desc: 'Katalog semua aplikasi dan game terpasang di PC-mu — buka langsung dalam sekali klik atau telusuri lokasi berkasnya.',
+    tool: 'apps',
+    accent: 'from-sky-500 to-violet-600',
+    glow: 'shadow-sky-500/20',
     chip: 'bg-[var(--ok-soft)] text-[var(--ok-strong)] border-[var(--ok-border)]',
   },
 ];

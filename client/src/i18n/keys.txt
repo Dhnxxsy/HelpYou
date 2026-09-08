@@ -43,6 +43,7 @@ Analisis Ruang Disk
 Analisis dibatasi pada 200.000 file & kedalaman 48 lapis — ukuran ditampilkan bisa lebih kecil dari sebenarnya.
 Analisis dulu (drive mungkin tidak didukung)
 Android 11+ (Nirkabel): Setting › Opsi pengembang › Wireless debugging › Pair device dengan kode. Isi IP:port utama di kolom pertama dan kode di kolom kedua. Android lama: colok USB sekali lalu adb tcpip di komputer.
+Aplikasi
 Aplikasi akan di-uninstall {mode}. Anda bisa membersihkan sisa file setelahnya.
 Aplikasi akan ditutup, diperbarui, dan dibuka kembali otomatis.
 Aplikasi ini tidak menyediakan uninstaller (mis. aplikasi portable).
@@ -71,6 +72,7 @@ Belum ada riwayat
 Belum tersimpan
 Beranda
 Beranda Browser
+Berhasil dibuka.
 Berhasil dirapikan! 🎉
 Berhasil terhubung.
 Berhenti
@@ -102,6 +104,7 @@ Buat catatan baru untuk mulai menulis, atau buka file teks yang sudah ada.
 Buka
 Buka File
 Buka Folder Hasil
+Buka Lokasi
 Buka Mode Lancar (scrcpy)
 Buka di browser eksternal
 Buka file teks (Ctrl+O)
@@ -120,6 +123,7 @@ Cari & Ganti
 Cari & ganti (Ctrl+F)
 Cari catatan…
 Cari di Tempat Sampah…
+Cari di seluruh aplikasi & game…
 Cari file di dalam rencana...
 Cari nama / PID / jendela…
 Cari nama…
@@ -152,6 +156,7 @@ DNS Lookup
 Daftar bernomor
 Daftar berpoin
 Dari
+Dari: {source}
 Data
 Data brankas rusak.
 Data dikirim keluar
@@ -178,6 +183,7 @@ Ekspor CSV
 Ekspor ke file (Ctrl+S)
 Elips
 Enkripsi brankas
+Epic Games
 File
 File Organizer
 File Size
@@ -222,7 +228,9 @@ Gagal membaca informasi sistem.
 Gagal membersihkan residu.
 Gagal membersihkan.
 Gagal membuat catatan.
+Gagal membuka aplikasi.
 Gagal membuka isi berkas.
+Gagal membuka lokasi.
 Gagal memeriksa pembaruan.
 Gagal memindahkan berkas.
 Gagal memindahkan duplikat
@@ -266,6 +274,7 @@ Gambar Anda tersimpan otomatis.
 Gambar bebas dengan kuas, pengisi warna, bentuk, dan lapisan. Simpan sebagai PNG.
 Gambar disimpan.
 Gambar saat ini akan diganti.
+Game
 Ganti
 Ganti Bahasa
 Ganti Nama Massal
@@ -414,6 +423,7 @@ Membersihkan…
 Membuka…
 Memindahkan file ke struktur rapi. Proses ini usahakan jangan ditutup.
 Memindahkan...
+Memindai aplikasi & game…
 Memindai sisa file… ini bisa beberapa saat.
 Memindai...
 Memindai…
@@ -434,6 +444,7 @@ Menghubungkan…
 Mengoptimalkan drive…
 Mengunduh pembaruan {version}…
 Menjalankan optimizer bawaan Windows (Optimize-Volume / defrag.exe). HDD di-defrag, SSD/NVMe di-retrim. Butuh izin administrator (UAC).
+Menjalankan…
 Menyegarkan…
 Menyiapkan pemindaian…
 Menyiapkan tools…
@@ -562,6 +573,7 @@ Pulihkan file/folder yang terhapus, atau kosongkan isi Tempat Sampah semuanya.
 Pulihkan jendela
 Pulihkan: {n} berhasil · {m} gagal
 Pulihkan…
+Pusat Aplikasi & Game
 Putuskan Semua
 RAM: {used} dari {total}
 Radial
@@ -573,6 +585,7 @@ Rapikan file, bersihkan sampah, kelola startup, hingga kunci data pribadi — se
 Recycle Bin
 Regex
 Regex tidak valid pada aturan "{name}".
+Registri
 Rename Massal
 Rename banyak file sekaligus dengan pola — cari & ganti, awalan/akhiran, atau penomoran. Nama asli tidak ditimpa.
 Rename banyak file sekaligus: cari & ganti teks, awalan/akhiran, atau penomoran otomatis. Aman tanpa menimpa.
@@ -613,6 +626,7 @@ Sembunyikan Sekarang
 Sembunyikan file atau folder dengan enkripsi AES-256-GCM berkata sandi. Nama file ikut terenkripsi dan aslinya dihapus aman.
 Sembunyikan file atau folder dengan enkripsi AES-256-GCM. Konten dan nama file dienkripsi dengan sandi — tanpa sandi yang benar, isinya tidak bisa dibaca siapa pun.
 Semprot
+Semua
 Semua Tools File-mu,
 Semua aturan harus punya pola (value) yang tidak kosong.
 Semua file aman — tidak ada isi yang kembar terdeteksi.
@@ -644,6 +658,7 @@ Sortir {n} file
 Startup
 Status
 Status scan gagal dimuat
+Steam
 Subfolder
 Sudah ada file di lokasi asli (dicegah agar tidak ditimpa).
 Sudah di akhir — dilanjutkan dari awal.
@@ -672,6 +687,7 @@ Tema berlaku langsung dan tersimpan otomatis di perangkat ini.
 Tempat Sampah
 Tempat Sampah kosong. Semua bersih!
 Temukan file kembar dan folder menganggur, bersihkan dengan aman.
+Temukan semua aplikasi & game terpasang di PC-mu, buka langsung dalam sekali klik, atau telusuri lokasi berkasnya.
 Terapkan
 Terapkan ({n})
 Terbuka
@@ -685,6 +701,7 @@ Tersimpan di {path}
 Tersimpan {time}
 Tertutup
 Thread
+Tidak ada aplikasi atau game yang cocok.
 Tidak ada balasan
 Tidak ada balasan (timeout)
 Tidak ada catatan yang ditemukan.

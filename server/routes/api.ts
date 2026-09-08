@@ -34,6 +34,7 @@ import { pingHost, traceHost, dnsLookup, scanPorts } from '../organizer/network-
 import type { DiskScanResult, StartupItem, DefragAnalyzeResult, DefragJobStatus } from '../../shared/types.js';
 import { listNotes, getNote, createNote, updateNote, deleteNote } from '../organizer/notepad.js';
 import { listVaultItems, hideItems, unhideItem, deleteVaultItem, inspectItem, preparePreview, openPreviewStream } from '../organizer/vault.js';
+import { listCatalog, launchApp, revealTarget } from '../organizer/apps-center.js';
 
 export const api = Router();
 
@@ -489,6 +490,38 @@ api.post('/uninstaller/icons', async (req: Request, res: Response) => {
   const paths = Array.isArray(req.body?.paths) ? req.body.paths.map((p: any) => String(p)) : [];
   const cached = await warmIcons(paths);
   res.json({ paths: paths.length, cached });
+});
+
+/* ---------------- Apps & Games Center tool ---------------- */
+
+// GET /api/apps/list?force=1  — categorized catalog of installed apps & games
+api.get('/apps/list', async (_req: Request, res: Response) => {
+  try {
+    const catalog = await listCatalog(_req.query.force === '1');
+    res.json(catalog);
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /api/apps/launch  body: { exe, args?, cwd? }
+api.post('/apps/launch', async (req: Request, res: Response) => {
+  try {
+    const { exe, args, cwd } = req.body || {};
+    res.json(await launchApp(String(exe || ''), args ? String(args) : undefined, cwd ? String(cwd) : undefined));
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /api/apps/open-folder  body: { exe?, cwd? }
+api.post('/apps/open-folder', async (req: Request, res: Response) => {
+  try {
+    const { exe, cwd } = req.body || {};
+    res.json(await revealTarget(exe ? String(exe) : undefined, cwd ? String(cwd) : undefined));
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 /* ---------------- Junk cleaner tool ---------------- */

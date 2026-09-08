@@ -200,6 +200,34 @@ export interface ResidueEntry {
   sizeBytes: number;
 }
 
+/* ------------- Apps & Games Center tool ------------- */
+
+export interface AppEntry {
+  /** display name */
+  name: string;
+  kind: 'app' | 'game';
+  /** executable to launch (absolute path); only when resolvable */
+  exe?: string;
+  /** extra launch arguments (from shortcuts) */
+  args?: string;
+  /** working directory for launch (shortcut WorkingDirectory or install location) */
+  cwd?: string;
+  /** icon source file (DisplayIcon / exe); serves via /api/uninstaller/icon */
+  icon?: string;
+  publisher?: string;
+  version?: string;
+  sizeBytes?: number;
+  /** where the entry was discovered */
+  source: 'menu' | 'registry' | 'steam' | 'epic';
+}
+
+export interface AppCatalog {
+  apps: AppEntry[];
+  games: AppEntry[];
+  total: number;
+  scannedAt: number;
+}
+
 /* ------------- Junk cleaner tool ------------- */
 
 export type JunkScope = 'standard' | 'admin';

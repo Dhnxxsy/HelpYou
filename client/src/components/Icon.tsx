@@ -80,7 +80,9 @@ export type IconName =
   | 'symOff'
   | 'symBoth'
   | 'phone'
-  | 'cast';
+  | 'cast'
+  | 'apps'
+  | 'gamepad';
 
 const FILLED: IconName[] = ['trash'];
 
@@ -294,6 +296,22 @@ const P: Record<IconName, ReactNode> = {
       <circle cx="17.5" cy="10.5" r=".5" fill="currentColor" />
       <circle cx="6.5" cy="12.5" r=".5" fill="currentColor" />
       <circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />
+    </>
+  ),
+  apps: (
+    <>
+      <rect x="3.5" y="3.5" width="7" height="7" rx="1.8" />
+      <rect x="13.5" y="3.5" width="7" height="7" rx="1.8" />
+      <rect x="3.5" y="13.5" width="7" height="7" rx="1.8" />
+      <rect x="13.5" y="13.5" width="7" height="7" rx="1.8" />
+      <circle cx="17" cy="17" r="1.1" fill="currentColor" stroke="none" />
+    </>
+  ),
+  gamepad: (
+    <>
+      <path d="M6 12h4M8 10v4" />
+      <path d="M15 12h.01M17.5 13.5h.01" />
+      <path d="M18 7H6a4 4 0 0 0-4 4v1a4 4 0 0 0 2.2 3.6l1.55.78A3 3 0 0 0 7.3 16h0a1.8 1.8 0 0 1 2.5.7L10.5 17.8A2 2 0 0 0 12.24 18.5h0a2 2 0 0 0 1.72-.82l.56-.76a3.4 3.4 0 0 1 2.7-1.4H17a4 4 0 0 0 4-4v-1a4 4 0 0 0-3-3.9z" />
     </>
   ),
 };
