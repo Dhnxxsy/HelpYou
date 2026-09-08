@@ -227,7 +227,7 @@ export default function AppsCenterView({ onBack }: { onBack: () => void }) {
       });
       if (res.ok) {
         setOkMsg(hiding ? t('Disembunyikan.') : t('Ditampilkan kembali.'));
-        await load(true);
+        await load();
       } else {
         setErrMsg(t('Gagal mengubah status.'));
       }

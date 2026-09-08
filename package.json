@@ -18,6 +18,9 @@
     "start": "node dist-server/server/index.js",
     "test": "vitest run",
     "typecheck": "tsc --noEmit -p tsconfig.json",
+    "i18n": "node scripts/check-langs.mjs",
+    "i18n:sync": "node scripts/check-langs.mjs --sync",
+    "i18n:add": "node scripts/i18n-add-keys.mjs",
     "icons": "node scripts/make-icon.mjs",
     "app": "npm run build && electron .",
     "dist:win": "npm run build && npm run icons && electron-builder --win"

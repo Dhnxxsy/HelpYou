@@ -42,5 +42,5 @@ function secondArgIsOnlyVars(full) {
 }
 
 const list = [...keys].sort((a, b) => a.localeCompare(b, 'id'));
-fs.writeFileSync(OUT, list.join('\n') + '\n');
+fs.writeFileSync(OUT, list.join('\r\n') + '\r\n');
 console.log(`files=${files.length} uniqueKeys=${list.length} -> ${OUT}`);

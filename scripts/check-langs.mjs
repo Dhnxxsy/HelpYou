@@ -4,6 +4,9 @@ import path from 'node:path';
 const dir = 'client/src/i18n';
 const CODES = ['es', 'fr', 'de', 'pt', 'it', 'nl', 'ru', 'ar', 'tr', 'zh', 'ja', 'ko', 'id'];
 
+/** Sync keys.txt when SYNC_KEYS=1 OR the --sync flag is passed (cross-platform). */
+const SYNC = process.env.SYNC_KEYS === '1' || process.argv.includes('--sync');
+
 function load(file) {
   let src = fs.readFileSync(file, 'utf8');
   src = src.replace(/\/\*[\s\S]*?\*\//g, '');
@@ -16,7 +19,7 @@ function load(file) {
 const en = load(path.join(dir, 'en.ts'));
 const enKeys = Object.keys(en);
 console.log('en keys:', enKeys.length);
-if (process.env.SYNC_KEYS === '1') {
+if (SYNC) {
   fs.writeFileSync(path.join(dir, 'keys.txt'), [...enKeys].sort().join('\r\n') + '\r\n', 'utf8');
   console.log('keys.txt synced (' + enKeys.length + ' keys)');
 }

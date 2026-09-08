@@ -250,7 +250,7 @@ describe('hide & unhide apps', () => {
 
   it('computes stable hidden keys (case-insensitive exe, name+source)', async () => {
     const { hiddenKeyOf } = await import('../server/organizer/apps-center.js');
-    expect(hiddenKeyOf({ exePath: undefined, exe: exeA })).toBe('x:' + path.normalize(exeA).toLowerCase());
+    expect(hiddenKeyOf({ exe: exeA })).toBe('x:' + path.normalize(exeA).toLowerCase());
     expect(hiddenKeyOf({ exe: exeA.toUpperCase() })).toBe(hiddenKeyOf({ exe: exeA }));
     expect(hiddenKeyOf({ name: 'Spotify', source: 'menu' })).toBe('n:menu:spotify');
     expect(hiddenKeyOf({ name: '  ', source: 'menu' })).toBeNull();
@@ -282,5 +282,18 @@ describe('hide & unhide apps', () => {
   it('rejects hiding entries without a resolvable key', async () => {
     const { hideApp } = await import('../server/organizer/apps-center.js');
     expect(hideApp({ name: '', source: '' })).toEqual({ ok: false, error: 'Aplikasi tidak valid.' });
+  });
+
+  it('applies hide/unhide instantly from the dynamic cache (no forced rescan)', async () => {
+    const { hideApp, unhideApp, listCatalog } = await import('../server/organizer/apps-center.js');
+    await listCatalog(true, false);
+    const has = (apps: AppEntry[]) => apps.some((a) => a.exe && a.exe.toLowerCase() === exeA.toLowerCase());
+
+    hideApp({ exe: exeA });
+    expect(has((await listCatalog(false, false)).apps)).toBe(false);
+
+    unhideApp({ exe: exeA });
+    expect(has((await listCatalog(false, false)).apps)).toBe(true);
+    expect((await listCatalog(false, true)).apps.find((a) => a.exe && a.exe.toLowerCase() === exeA.toLowerCase())?.hidden).toBeUndefined();
   });
 });

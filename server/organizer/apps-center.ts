@@ -398,7 +398,7 @@ export function addCustomApp(input: { name?: string; exe: string; args?: string;
   };
   list.push(meta);
   saveCustomApps(list);
-  catalogCache = null;
+  invalidateCatalogCache();
   return { ok: true, entry: customMetaToEntry(meta) };
 }
 
@@ -410,7 +410,7 @@ export function removeCustomApp(exe: string): { ok: boolean; error?: string } {
   const next = list.filter((e) => e.exe.toLowerCase() !== key);
   if (next.length === list.length) return { ok: false, error: 'Aplikasi tidak ditemukan.' };
   saveCustomApps(next);
-  catalogCache = null;
+  invalidateCatalogCache();
   return { ok: true };
 }
 
@@ -427,7 +427,19 @@ function customMetaToEntry(m: CustomAppMeta): AppEntry {
 }
 
 const CATALOG_CACHE_TTL_MS = 60_000;
-let catalogCache: { at: number; catalog: AppCatalog } | null = null;
+/**
+ * Raw (pre-hidden-filter) catalog cache. Hidden state is read from disk on
+ * every request and applied dynamically, so hiding/unhiding an entry never
+ * forces a full registry/Start-Menu rescan.
+ */
+type RawCatalog = { at: number; apps: AppEntry[]; games: AppEntry[] };
+let rawCache: RawCatalog | null = null;
+let rawPromise: Promise<RawCatalog> | null = null;
+
+function invalidateCatalogCache(): void {
+  rawCache = null;
+  rawPromise = null;
+}
 
 /* ------------------------------------------------------------------ */
 /* Hidden apps (user hides entries from the menu — NOT uninstall)      */
@@ -470,7 +482,6 @@ export function hideApp(input: { exe?: string; name?: string; source?: string })
   if (!list.includes(key)) {
     list.push(key);
     saveHiddenApps(list);
-    catalogCache = null;
   }
   return { ok: true };
 }
@@ -482,7 +493,6 @@ export function unhideApp(input: { exe?: string; name?: string; source?: string 
   const next = list.filter((k) => k !== key);
   if (next.length !== list.length) {
     saveHiddenApps(next);
-    catalogCache = null;
   }
   return { ok: true };
 }
@@ -507,16 +517,32 @@ function menuRowsToEntries(rows: MenuRow[]): AppEntry[] {
 }
 
 export async function listCatalog(force = false, showHidden = false): Promise<AppCatalog> {
-  if (!force && !showHidden && catalogCache && Date.now() - catalogCache.at < CATALOG_CACHE_TTL_MS) {
-    return catalogCache.catalog;
-  }
-
   const hiddenSet = new Set(listHiddenApps());
   const applyHidden = (entries: AppEntry[]): AppEntry[] =>
     showHidden
       ? entries.map((e) => (hiddenSet.has(hiddenKeyOf(e) ?? '') ? { ...e, hidden: true } : e))
       : entries.filter((e) => !hiddenSet.has(hiddenKeyOf(e) ?? ''));
 
+  let raw =
+    !force && rawCache && Date.now() - rawCache.at < CATALOG_CACHE_TTL_MS
+      ? rawCache
+      : null;
+  if (!raw) {
+    if (!rawPromise) {
+      rawPromise = buildRawCatalog(force).finally(() => {
+        rawPromise = null;
+      });
+    }
+    raw = await rawPromise;
+    rawCache = raw;
+  }
+
+  const apps = applyHidden(raw.apps);
+  const games = applyHidden(raw.games);
+  return { apps, games, total: apps.length + games.length, scannedAt: raw.at };
+}
+
+export async function buildRawCatalog(force = false): Promise<RawCatalog> {
   const raw = await runPowerShell(MENU_SCRIPT, 90_000);
   let scan: SteamScanOut | null = null;
   try {
@@ -554,21 +580,18 @@ export async function listCatalog(force = false, showHidden = false): Promise<Ap
     }
   }
 
-  const apps = applyHidden(dedupeEntries(entries.filter((e) => e.kind === 'app')).slice(0, 500));
+  const apps = dedupeEntries(entries.filter((e) => e.kind === 'app')).slice(0, 500);
 
   for (const c of listCustomApps().map(customMetaToEntry)) {
     if (!c.exe) continue;
-    if (!showHidden && hiddenSet.has(hiddenKeyOf(c) ?? '')) continue;
     const existing = apps.some((e) => e.exe && e.exe.toLowerCase() === c.exe!.toLowerCase());
-    if (!existing && apps.length < 500) {
-      apps.push(showHidden && hiddenSet.has(hiddenKeyOf(c) ?? '') ? { ...c, hidden: true } : c);
-    }
+    if (!existing && apps.length < 500) apps.push(c);
   }
 
-  const games = applyHidden(dedupeEntries([
+  const games = dedupeEntries([
     ...scanSteamGames(scan.steamRoots),
     ...scanEpicGames(),
-  ]).slice(0, 500));
+  ]).slice(0, 500);
 
   for (const app of installed) {
     if (categorizeInstalledApp(app) !== 'game') continue;
@@ -613,9 +636,7 @@ export async function listCatalog(force = false, showHidden = false): Promise<Ap
   games.sort((a, b) => a.name.localeCompare(b.name, 'id'));
   apps.sort((a, b) => a.name.localeCompare(b.name, 'id'));
 
-  const catalog: AppCatalog = { apps, games, total: apps.length + games.length, scannedAt: Date.now() };
-  catalogCache = { at: Date.now(), catalog };
-  return catalog;
+  return { at: Date.now(), apps, games };
 }
 
 /* ------------------------------------------------------------------ */
