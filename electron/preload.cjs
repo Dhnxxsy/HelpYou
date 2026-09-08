@@ -39,6 +39,12 @@ contextBridge.exposeInMainWorld('electron', {
   apps: {
     pickExe: () => ipcRenderer.invoke('apps:pickExe'),
   },
+  capture: {
+    listSources: () => ipcRenderer.invoke('capture:listSources'),
+    screenshot: (payload) => ipcRenderer.invoke('capture:screenshot', payload),
+    saveData: (payload) => ipcRenderer.invoke('capture:saveData', payload),
+    copyImage: (dataUrl) => ipcRenderer.invoke('capture:copyImage', dataUrl),
+  },
   overlay: {
     toggle: () => ipcRenderer.invoke('overlay:toggle'),
     hide: () => ipcRenderer.invoke('overlay:hide'),

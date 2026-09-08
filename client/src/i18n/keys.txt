@@ -84,6 +84,7 @@ Berhasil dibuka.
 Berhasil dirapikan! 🎉
 Berhasil terhubung.
 Berhenti
+Berhenti & Simpan
 Berikutnya (Enter)
 Berjalan lokal
 Berjalan…
@@ -96,10 +97,12 @@ Bersih! Tidak ditemukan sisa file
 Bersihkan Semua
 Bersihkan cache, temp, dan file sementara dengan aman. File yang dipakai Windows otomatis dilewati.
 Bersihkan file sampah?
+Bersihkan percakapan
 Bersihkan temp, cache, dan file sementara dengan aman. File yang sedang dipakai otomatis dilewati.
 Bersihkan {n} Lokasi
 Bisa berupa drive (C:) atau subfolder seperti
 Bisukan
+Bitrate
 Brankas
 Brankas Rahasia
 Brankas terenkripsi · data tidak keluar perangkat
@@ -197,6 +200,7 @@ Ekspor ke file (Ctrl+S)
 Elips
 Enkripsi brankas
 Epic Games
+FPS
 File
 File Organizer
 File Size
@@ -214,6 +218,7 @@ File tidak ditemukan
 File tidak ditemukan.
 File yang sedang dipakai Windows tidak akan bisa dihapus dan otomatis dilewati. Selalu aman.
 File-nya TIDAK akan dipulihkan. Item terenkripsi ini akan dihapus permanen dan tidak bisa dikembalikan. Lanjutkan?
+Fitur ini berjalan di aplikasi desktop HelpYou.
 Folder
 Folder & data aplikasi sudah bersih dari {name}.
 Folder Kosong
@@ -229,6 +234,8 @@ Folder tidak ditemukan:
 Folder tujuan (di dalam _TerSortir)
 Folder tujuan tidak valid pada aturan "{name}". Gunakan karakter aman (tanpa /\:*?"<>|).
 Font
+Format
+Format video tidak didukung. Coba WebM.
 Fragmentasi rendah ({pct}%) — defrag opsional
 Fragmentasi {pct}%
 Gabung ke Bawah
@@ -262,6 +269,8 @@ Gagal memulihkan item.
 Gagal memulihkan.
 Gagal menambahkan aplikasi.
 Gagal menerapkan perubahan.
+Gagal mengambil gambar.
+Gagal mengambil gambar: {msg}
 Gagal mengenkripsi.
 Gagal menggandakan catatan.
 Gagal menghapus
@@ -275,11 +284,15 @@ Gagal mengosongkan Tempat Sampah.
 Gagal mengubah pin.
 Gagal mengubah status.
 Gagal mengunduh pembaruan.
+Gagal menyalin gambar.
 Gagal menyembunyikan.
 Gagal menyimpan catatan.
 Gagal menyimpan gambar.
 Gagal menyimpan rak game.
 Gagal menyimpan tangkapan.
+Gagal menyimpan.
+Gagal menyimpan: {msg}
+Gagal merekam: {msg}
 Gagal mulai pemindaian.
 Gagal scan
 Gagal terhubung ke server selama scan. Coba mulai analisis dari awal.
@@ -287,7 +300,10 @@ Gagal.
 Gagal: {message}
 Gambar
 Gambar Anda tersimpan otomatis.
+Gambar JPEG
+Gambar PNG
 Gambar bebas dengan kuas, pengisi warna, bentuk, dan lapisan. Simpan sebagai PNG.
+Gambar disalin ke papan klip.
 Gambar disimpan.
 Gambar saat ini akan diganti.
 Game
@@ -317,6 +333,7 @@ Hapus pasang program dengan cepat, tenang, dan bersih sampai ke akar — termasu
 Hapus permanen tanpa memulihkan
 Hapus {n} folder kosong
 Hapus {n} folder kosong?
+Hasil rekaman kosong.
 Header brankas rusak.
 Hentikan
 Hentikan Proses
@@ -347,6 +364,7 @@ Item tidak ditemukan
 Item tidak ditemukan di brankas.
 Item tidak valid.
 Izin administrator (UAC) dibatalkan.
+JPG berkualitas {q}%
 Jalankan
 Jalankan ping untuk mengukur latensi.
 Jalankan uninstaller tanpa dialog bila memungkinkan
@@ -357,6 +375,10 @@ Jelajah situs favoritmu langsung dari sini.
 Jendela
 Jenis
 Jenis Huruf
+Jepret
+Jepret Lagi
+Jepret Layar
+Jepret tangkapan layar atau rekam layar dengan pilihan kualitas, bitrate, dan FPS. Semua diproses 100% lokal.
 Jika sandi terlupa, data tidak dapat dipulihkan oleh siapa pun. Simpan sandi-mu di tempat aman.
 Judul 1
 Judul 2
@@ -393,6 +415,7 @@ Kirim
 Klik di bawah untuk memeriksa sisa file dan membersihkannya sampai akar.
 Klik kanvas untuk menulis teks.
 Klik perangkat untuk mulai cermin.
+Klik “Jepret Layar” untuk mengambil gambar dari layar yang dipilih.
 Kode
 Kode Pairing (Android 11+, opsional)
 Koleksi game favoritmu dalam satu tempat.
@@ -400,9 +423,12 @@ Komposisi Folder (akan dipindah)
 Konfirmasi
 Kosongkan
 Kosongkan seluruh isi Tempat Sampah? Tindakan ini tidak dapat dibatalkan.
+Kualitas
+Kualitas JPG
 Kunci lagi
 Kunci rahasia rusak.
 Kunci rahasia tidak tersedia untuk item ini.
+Kustom
 Kutipan
 Lainnya
 Langkah {n} dari {total}
@@ -462,6 +488,7 @@ Memuat {item}…
 Menambah…
 Menerapkan sortir...
 Menerapkan…
+Mengambil gambar…
 Mengambil layar…
 Menganalisis folder...
 Menganalisis fragmentasi…
@@ -480,6 +507,7 @@ Menyiapkan tools…
 Menyiapkan uninstaller…
 Menyimpan…
 Metadata brankas rusak.
+Mikrofon
 Min. ukuran file (KB)
 Minimal 4 karakter
 Minimalkan
@@ -495,6 +523,7 @@ Model
 Muat Ulang
 Muat ulang
 Mulai Analisis Folder
+Mulai Rekam
 Mulai percakapan dengan model lokalmu. Privasi dan tanpa internet.
 Mundur
 Naik
@@ -568,6 +597,7 @@ Petunjuk: B Kuas, E Penghapus, I Pipet, G Isi Warna, L Garis, R Persegi, O Elips
 Pilih Berkas
 Pilih Drive / Disk
 Pilih Folder
+Pilih Layar
 Pilih bahasa tampilan HelpYou.
 Pilih berkas aplikasi (.exe).
 Pilih drive di atas, atau ketik folder untuk mulai menganalisis ruang disk.
@@ -577,6 +607,7 @@ Pilih folder yang ingin dirapikan
 Pilih folder, tools mengelompokkan file jadi rapi otomatis. Dilengkapi deteksi duplikat, folder kosong, dan laporan file terbesar.
 Pilih game dari daftar untuk memulainya.
 Pilih item yang sudah ada di Pusat Aplikasi & Game.
+Pilih layar dan atur kualitas, lalu klik “Mulai Rekam”.
 Pilih lokasi sampah terlebih dahulu.
 Pilih semua
 Pilih suasana HelpYou yang kamu suka.
@@ -630,10 +661,15 @@ Recycle Bin
 Regex
 Regex tidak valid pada aturan "{name}".
 Registri
+Rekam
+Rekam & Jepret Layar
+Rekam Lagi
+Rekam Layar
 Rename Massal
 Rename banyak file sekaligus dengan pola — cari & ganti, awalan/akhiran, atau penomoran. Nama asli tidak ditimpa.
 Rename banyak file sekaligus: cari & ganti teks, awalan/akhiran, atau penomoran otomatis. Aman tanpa menimpa.
 Rencana
+Rendah
 Reset
 Residu: {name}
 Respons server tidak dikenali.
@@ -643,6 +679,7 @@ Riwayat
 Riwayat Sortir
 Ruang Disk
 Ruang terfragmentasi {v}
+Salin
 Salin Ringkasan
 Salin teks
 Sandi
@@ -655,6 +692,7 @@ Scan Port
 Scan Ulang
 Scan dibatalkan.
 Sebelumnya (Shift+Enter)
+Sedang
 Sedikit terfragmentasi — tidak perlu defrag
 Selalu bisa di-Undo
 Selesai
@@ -671,6 +709,7 @@ Sembunyikan file atau folder dengan enkripsi AES-256-GCM berkata sandi. Nama fil
 Sembunyikan file atau folder dengan enkripsi AES-256-GCM. Konten dan nama file dienkripsi dengan sandi — tanpa sandi yang benar, isinya tidak bisa dibaca siapa pun.
 Semprot
 Semua
+Semua File
 Semua Tools File-mu,
 Semua aturan harus punya pola (value) yang tidak kosong.
 Semua file aman — tidak ada isi yang kembar terdeteksi.
@@ -696,6 +735,7 @@ Simpan Tangkapan
 Sistem Operasi
 Situs Disematkan
 Situs Pilihan
+Skala
 Sortir folder terlebih dahulu di tab 
 Sortir ke folder
 Sortir otomatis
@@ -725,6 +765,7 @@ Tampilkan sandi
 Tampilkan tersembunyi
 Tangan
 Tanggal pasang
+Tanpa Audio
 Tanpa iklan
 Tanpa sandi, konten tidak bisa direkayasa balik.
 Target tidak dikenal.
@@ -752,6 +793,7 @@ Terlalu banyak nama duplikat
 Terlalu besar (maks 512 MB per item).
 Tersembunyi
 Tersimpan di {path}
+Tersimpan ke {path}
 Tersimpan {time}
 Tertutup
 Thread
@@ -776,6 +818,7 @@ Tidak ada item nonaktif.
 Tidak ada item startup yang terdeteksi.
 Tidak ada item untuk disembunyikan.
 Tidak ada item yang cocok.
+Tidak ada layar terdeteksi.
 Tidak ada perangkat terdeteksi.
 Tidak ada program yang cocok.
 Tidak ada proses yang cocok.
@@ -785,6 +828,7 @@ Tidak dapat membaca folder:
 Tidak ditemukan
 Tidak punya uninstaller
 Tidak tersedia
+Tinggi
 Tinjau rencana & pindahkan file
 Tipe
 Tipe file tidak bisa dipratinjau.
@@ -839,6 +883,8 @@ Versi BIOS
 Versi {n}
 Vertikal
 Video
+Video MP4
+Video WebM
 Virtual
 Volume sistem
 Warna

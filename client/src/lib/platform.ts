@@ -94,6 +94,44 @@ export interface MirLaunchResult {
   error?: string;
 }
 
+export interface CaptureSource {
+  id: string;
+  name: string;
+  displayId: number;
+  width: number;
+  height: number;
+  x: number;
+  y: number;
+  thumb: string;
+}
+
+export interface CaptureListResult {
+  ok: boolean;
+  sources?: CaptureSource[];
+  error?: string;
+}
+
+export interface CaptureShotResult {
+  ok: boolean;
+  dataUrl?: string;
+  width?: number;
+  height?: number;
+  error?: string;
+}
+
+export interface CaptureSaveResult {
+  ok: boolean;
+  path?: string;
+  canceled?: boolean;
+  error?: string;
+}
+
+export interface CaptureSavePayload {
+  dataUrl: string;
+  defaultName?: string;
+  filters?: { name: string; extensions: string[] }[];
+}
+
 export interface ElectronAPI {
   platform: string;
   pickFolder: () => Promise<string | null>;
@@ -120,6 +158,12 @@ export interface ElectronAPI {
     screencap: (serial: string) => Promise<MirScreencapResult>;
     input: (serial: string, kind: string, payload: Record<string, unknown>) => Promise<MirCommandResult>;
     launch: (serial: string) => Promise<MirLaunchResult>;
+  };
+  capture: {
+    listSources: () => Promise<CaptureListResult>;
+    screenshot: (payload: { displayId: number }) => Promise<CaptureShotResult>;
+    saveData: (payload: CaptureSavePayload) => Promise<CaptureSaveResult>;
+    copyImage: (dataUrl: string) => Promise<{ ok: boolean; error?: string }>;
   };
   windowControls: ElectronWindowControls;
   overlay: {
@@ -233,4 +277,24 @@ export async function mirrorInput(
 export async function mirrorLaunch(serial: string): Promise<MirLaunchResult> {
   if (!isDesktop || !window.electron) return { ok: false, error: tGlobal('Perangkat tidak mendukung.') };
   return window.electron.mirror.launch(serial);
+}
+
+export async function captureListSources(): Promise<CaptureListResult> {
+  if (!isDesktop || !window.electron) return { ok: false, error: tGlobal('Perangkat tidak mendukung.') };
+  return window.electron.capture.listSources();
+}
+
+export async function captureScreenshot(payload: { displayId: number }): Promise<CaptureShotResult> {
+  if (!isDesktop || !window.electron) return { ok: false, error: tGlobal('Perangkat tidak mendukung.') };
+  return window.electron.capture.screenshot(payload);
+}
+
+export async function captureSaveData(payload: CaptureSavePayload): Promise<CaptureSaveResult> {
+  if (!isDesktop || !window.electron) return { ok: false, error: tGlobal('Perangkat tidak mendukung.') };
+  return window.electron.capture.saveData(payload);
+}
+
+export async function captureCopyImage(dataUrl: string): Promise<{ ok: boolean; error?: string }> {
+  if (!isDesktop || !window.electron) return { ok: false, error: tGlobal('Perangkat tidak mendukung.') };
+  return window.electron.capture.copyImage(dataUrl);
 }

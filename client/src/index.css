@@ -761,6 +761,22 @@ select.input option:disabled {
   animation: indeterminate 1.4s ease-in-out infinite;
 }
 
+/* ---------- Screen capture ---------- */
+.rec-pulse-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 9999px;
+  background: #f43f5e;
+  box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.6);
+  animation: rec-pulse 1.2s ease-out infinite;
+  flex: none;
+}
+@keyframes rec-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.55); }
+  70% { box-shadow: 0 0 0 7px rgba(244, 63, 94, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
+}
+
 /* ---------- Page animations ---------- */
 @keyframes fade-in {
   from { opacity: 0; }
@@ -1088,6 +1104,16 @@ body.overlay-mode::after {
   color: var(--accent-strong);
   background: var(--accent-soft);
   border-color: var(--accent-border);
+}
+.ov-icobtn-clear {
+  color: var(--danger-strong);
+  opacity: 0.85;
+}
+.ov-icobtn-clear:hover {
+  color: var(--danger-strong);
+  background: var(--danger-soft);
+  border-color: var(--danger-border);
+  opacity: 1;
 }
 .ov-row-name {
   flex: 1;

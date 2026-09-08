@@ -86,7 +86,14 @@ export type IconName =
   | 'folderSearch'
   | 'volume'
   | 'volumeOff'
-  | 'bot';
+  | 'bot'
+  | 'monitor'
+  | 'monitorPlay'
+  | 'camera'
+  | 'video'
+  | 'mic'
+  | 'image'
+  | 'stopCircle';
 
 const FILLED: IconName[] = ['trash'];
 
@@ -334,6 +341,51 @@ const P: Record<IconName, ReactNode> = {
     </>
   ),
   bot: <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />,
+  monitor: (
+    <>
+      <rect x="2" y="3" width="20" height="14" rx="2" />
+      <path d="M8 21h8M12 17v4" />
+    </>
+  ),
+  monitorPlay: (
+    <>
+      <rect x="2" y="3" width="20" height="14" rx="2" />
+      <path d="M10 8.5v4l3.5-2z" />
+      <path d="M8 21h8M12 17v4" />
+    </>
+  ),
+  camera: (
+    <>
+      <path d="M14.5 4h-5L7.7 6H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3.7z" />
+      <circle cx="12" cy="13" r="3.5" />
+    </>
+  ),
+  video: (
+    <>
+      <path d="m22 8-6 4 6 4V8Z" />
+      <rect x="2" y="6" width="14" height="12" rx="2" />
+    </>
+  ),
+  mic: (
+    <>
+      <rect x="9" y="2" width="6" height="12" rx="3" />
+      <path d="M5 10a7 7 0 0 0 14 0" />
+      <path d="M12 17v3" />
+    </>
+  ),
+  image: (
+    <>
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <circle cx="8.5" cy="8.5" r="1.5" />
+      <path d="m21 15-5-5L5 21" />
+    </>
+  ),
+  stopCircle: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <rect x="9" y="9" width="6" height="6" rx="1" fill="currentColor" stroke="none" />
+    </>
+  ),
 };
 
 export default function Icon({ name, className = 'w-4 h-4' }: { name: IconName; className?: string }) {

@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, shell, globalShortcut } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, shell, globalShortcut, desktopCapturer, clipboard, screen, nativeImage } = require('electron');
 const path = require('node:path');
 const fs = require('node:fs');
 const { pathToFileURL } = require('node:url');
@@ -559,6 +559,92 @@ function registerIpc() {
     });
     logLine('scrcpy launch', serial, child.pid);
     return { ok: true, pid: child.pid };
+  });
+
+  /* -------------------- Screen capture (screenshot + recording save) -------------------- */
+
+  ipcMain.handle('capture:listSources', async () => {
+    try {
+      const displays = screen.getAllDisplays();
+      const sources = await desktopCapturer.getSources({ types: ['screen'], thumbnailSize: { width: 160, height: 90 } });
+      const list = sources.map((s, i) => {
+        // On Windows `display_id` is often empty, so fall back to ordered/position matching.
+        const display = displays.find((d) => d.id === parseInt(s.display_id, 10)) ?? displays[i];
+        const bounds = display?.bounds || { width: 1920, height: 1080 };
+        return {
+          id: s.id,
+          name: display ? (display.label || s.name) : s.name,
+          displayId: display?.id ?? i,
+          width: bounds.width,
+          height: bounds.height,
+          x: bounds.x,
+          y: bounds.y,
+          thumb: s.thumbnail.isEmpty() ? '' : s.thumbnail.toDataURL(),
+        };
+      });
+      return { ok: true, sources: list };
+    } catch (e) {
+      return { ok: false, error: e?.message || 'Gagal memindai layar.' };
+    }
+  });
+
+  ipcMain.handle('capture:screenshot', async (_e, payload) => {
+    try {
+      const displayId = Number.isFinite(payload?.displayId) ? payload.displayId : 0;
+      const displays = screen.getAllDisplays();
+      const display = displays.find((d) => d.id === displayId) ?? displays[0];
+      const sources = await desktopCapturer.getSources({ types: ['screen'], thumbnailSize: { width: 4096, height: 4096 } });
+      const byId = sources.find((s) => s.display_id === String(displayId));
+      const idx = display ? displays.indexOf(display) : -1;
+      const src = byId || (idx >= 0 ? sources[idx] : undefined) || sources[0];
+      if (!src || src.thumbnail.isEmpty()) return { ok: false, error: 'Layar kosong.' };
+      // The returned thumbnail is cropped to the screen's native size, so this is full-res.
+      const size = src.thumbnail.getSize();
+      return { ok: true, dataUrl: src.thumbnail.toDataURL(), width: size.width, height: size.height };
+    } catch (e) {
+      return { ok: false, error: e?.message || 'Gagal mengambil layar.' };
+    }
+  });
+
+  ipcMain.handle('capture:saveData', async (_e, payload) => {
+    try {
+      if (!mainWindow) return { ok: false, error: 'Tidak ada jendela' };
+      const dataUrl = typeof payload?.dataUrl === 'string' ? payload.dataUrl : '';
+      const m = typeof dataUrl === 'string' ? dataUrl.match(/^data:([\w.+-]+\/[\w+-]+);base64,(.+)$/) : null;
+      if (!m) return { ok: false, error: 'Data file tidak valid' };
+      const extFromMime = { 'image/png': 'png', 'image/jpeg': 'jpg', 'video/webm': 'webm', 'video/mp4': 'mp4' }[m[1]];
+      const defaultName = typeof payload?.defaultName === 'string' && /^[\w\-. ()]+$/.test(payload.defaultName)
+        ? payload.defaultName
+        : `tangkapan-${Date.now()}.${extFromMime || 'png'}`;
+      const filters = (Array.isArray(payload?.filters) && payload.filters.length ? payload.filters : [
+        { name: 'File', extensions: [extFromMime || '*'] },
+        { name: 'Semua File', extensions: ['*'] },
+      ]);
+      const res = await dialog.showSaveDialog(mainWindow, {
+        title: 'Simpan Hasil Tangkapan',
+        defaultPath: defaultName,
+        filters,
+      });
+      if (res.canceled || !res.filePath) return { ok: false, canceled: true };
+      await fs.promises.writeFile(res.filePath, Buffer.from(m[2], 'base64'));
+      return { ok: true, path: res.filePath };
+    } catch (e) {
+      return { ok: false, error: e?.message || 'Gagal menyimpan file' };
+    }
+  });
+
+  ipcMain.handle('capture:copyImage', async (_e, dataUrl) => {
+    try {
+      if (typeof dataUrl !== 'string' || !/^data:image\/(png|jpeg);base64,/.test(dataUrl)) {
+        return { ok: false, error: 'Data gambar tidak valid' };
+      }
+      const img = nativeImage.createFromDataURL(dataUrl);
+      if (img.isEmpty()) return { ok: false, error: 'Gagal membaca gambar' };
+      clipboard.writeImage(img);
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, error: e?.message || 'Gagal menyalin gambar' };
+    }
   });
 }
 

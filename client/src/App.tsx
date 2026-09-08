@@ -22,6 +22,7 @@ const BrowserView = lazy(() => import('./pages/BrowserView'));
 const PaintView = lazy(() => import('./pages/PaintView'));
 const MirrorView = lazy(() => import('./pages/MirrorView'));
 const AppsCenterView = lazy(() => import('./pages/AppsCenterView'));
+const ScreenCaptureView = lazy(() => import('./pages/ScreenCaptureView'));
 const OverlayView = lazy(() => import('./overlay/OverlayView'));
 
 type Tool = 'home' | ToolId;
@@ -75,6 +76,7 @@ export default function App() {
                   {tool === 'paint' && <PaintView onBack={() => setTool('home')} />}
                   {tool === 'mirror' && <MirrorView onBack={() => setTool('home')} />}
                   {tool === 'apps' && <AppsCenterView onBack={() => setTool('home')} />}
+                  {tool === 'capture' && <ScreenCaptureView onBack={() => setTool('home')} />}
                 </Suspense>
               )}
             </div>

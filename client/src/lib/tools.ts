@@ -14,7 +14,8 @@ export type ToolId =
   | 'browser'
   | 'paint'
   | 'mirror'
-  | 'apps';
+  | 'apps'
+  | 'capture';
 
 export interface ActiveTool {
   icon: IconName;
@@ -166,6 +167,16 @@ export const ACTIVE_TOOLS: ActiveTool[] = [
     tool: 'apps',
     accent: 'from-sky-500 to-violet-600',
     glow: 'shadow-sky-500/20',
+    chip: 'bg-[var(--ok-soft)] text-[var(--ok-strong)] border-[var(--ok-border)]',
+  },
+  {
+    icon: 'monitorPlay',
+    title: 'Rekam & Jepret Layar',
+    short: 'Rekam Layar',
+    desc: 'Jepret tangkapan layar atau rekam layar dengan pilihan kualitas, bitrate, dan FPS. Semua diproses 100% lokal.',
+    tool: 'capture',
+    accent: 'from-slate-500 to-slate-700',
+    glow: 'shadow-slate-500/20',
     chip: 'bg-[var(--ok-soft)] text-[var(--ok-strong)] border-[var(--ok-border)]',
   },
 ];

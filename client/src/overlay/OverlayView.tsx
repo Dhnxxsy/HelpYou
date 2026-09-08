@@ -3,6 +3,15 @@ import Icon from '../components/Icon';
 import { api } from '../lib/api';
 import { useI18n } from '../lib/i18n';
 import { isDesktop } from '../lib/platform';
+import {
+  useChatStore,
+  setChatModel,
+  appendUserMessage,
+  appendAiMessage,
+  updateLastAiMessage,
+  clearChat,
+  type ChatMsg,
+} from '../lib/chat-store';
 
 interface SessionRow {
   pid: number;
@@ -324,17 +333,11 @@ function initialOf(name: string): string {
 
 /* --------------------------------- Chat --------------------------------- */
 
-interface ChatMsg {
-  role: 'user' | 'ai';
-  content: string;
-}
-
 function ChatTab() {
   const { t } = useI18n();
+  const { model, messages } = useChatStore();
   const [online, setOnline] = useState<boolean | null>(null);
   const [models, setModels] = useState<string[]>([]);
-  const [model, setModel] = useState('');
-  const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [input, setInput] = useState('');
   const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState('');
@@ -349,7 +352,7 @@ function ChatTab() {
         if (!alive) return;
         setOnline(s.up);
         setModels(s.models);
-        setModel((m) => m || s.models[0] || '');
+        if (!model) setChatModel(s.models[0] || '');
         if (!s.up) setError(s.error || t('Ollama tidak terhubung.'));
       })
       .catch(() => {
@@ -360,6 +363,8 @@ function ChatTab() {
     return () => {
       alive = false;
     };
+    // model intentionally excluded: only seed the model, never re-pick mid-session.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [t]);
 
   useEffect(() => {
@@ -371,13 +376,13 @@ function ChatTab() {
     const text = input.trim();
     if (!text || streaming || !model) return;
     const next: ChatMsg[] = [...messages, { role: 'user', content: text }];
-    setMessages(next);
+    appendUserMessage(text);
     setInput('');
     setStreaming(true);
     setError('');
     const abort = new AbortController();
     abortRef.current = abort;
-    setMessages([...next, { role: 'ai', content: '' }]);
+    appendAiMessage('');
     try {
       const res = await fetch('/api/ollama/chat', {
         method: 'POST',
@@ -416,20 +421,12 @@ function ChatTab() {
             /* skip malformed line */
           }
         }
-        setMessages((m) => {
-          const c = [...m];
-          c[c.length - 1] = { role: 'ai', content: acc };
-          return c;
-        });
+        updateLastAiMessage(acc);
       }
-      setMessages((m) => {
-        const c = [...m];
-        c[c.length - 1] = { role: 'ai', content: acc };
-        return c;
-      });
+      updateLastAiMessage(acc);
     } catch (e: any) {
       if ((e?.name || '') !== 'AbortError') {
-        setMessages((m) => [...m, { role: 'ai', content: `⚠ ${e?.message || 'Error'}` }]);
+        appendAiMessage(`⚠ ${e?.message || 'Error'}`);
       }
     } finally {
       setStreaming(false);
@@ -451,16 +448,29 @@ function ChatTab() {
   return (
     <div className="h-full flex flex-col">
       <div className="ov-chat-toolbar">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 min-w-0">
           <span className={`ov-dot ${online ? 'ov-dot-on' : ''}`} />
-          <span className="text-[11px] text-[var(--text-2)]">
+          <span className="text-[11px] text-[var(--text-2)] shrink-0">
             {online === true ? t('Terhubung') : online === false ? t('Offline') : t('Memeriksa…')}
           </span>
+          {messages.length > 0 && !streaming && (
+            <button
+              type="button"
+              className="ov-icobtn ov-icobtn-clear"
+              onClick={() => {
+                clearChat();
+                setError('');
+              }}
+              title={t('Bersihkan percakapan')}
+            >
+              <Icon name="trash" className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
         <select
           className="ov-select"
           value={model}
-          onChange={(e) => setModel(e.target.value)}
+          onChange={(e) => setChatModel(e.target.value)}
           disabled={!online}
           title={t('Model')}
         >
