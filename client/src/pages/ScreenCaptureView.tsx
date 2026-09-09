@@ -172,6 +172,23 @@ export default function ScreenCaptureView({ onBack, compact }: ScreenCaptureView
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // The live <video> is only mounted once `recording` flips true, so attach the
+  // captured stream here (after mount) instead of in startRecord (where the ref
+  // is still null). Detach it again once recording ends.
+  useEffect(() => {
+    const v = liveVideoRef.current;
+    if (recording && streamRef.current && v) {
+      v.srcObject = streamRef.current;
+      v.play().catch(() => {});
+    } else if (v) {
+      v.pause();
+      if (v.srcObject) {
+        v.removeAttribute('src');
+        v.srcObject = null;
+      }
+    }
+  }, [mode, recording]);
+
   function stopAllTracks() {
     streamRef.current?.getTracks().forEach((tr) => tr.stop());
     streamRef.current = null;
@@ -273,11 +290,6 @@ export default function ScreenCaptureView({ onBack, compact }: ScreenCaptureView
       if (!mime) {
         stopAllTracks();
         throw new Error(t('Format video tidak didukung. Coba WebM.'));
-      }
-
-      if (liveVideoRef.current) {
-        liveVideoRef.current.srcObject = stream;
-        liveVideoRef.current.play().catch(() => {});
       }
 
       const chunks: Blob[] = [];
@@ -402,7 +414,8 @@ export default function ScreenCaptureView({ onBack, compact }: ScreenCaptureView
               <button
                 type="button"
                 onClick={() => setMode('shot')}
-                className={`flex-1 grid place-items-center gap-1 py-2 rounded-lg text-xs font-medium transition-all ${
+                disabled={recording}
+                className={`flex-1 grid place-items-center gap-1 py-2 rounded-lg text-xs font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
                   mode === 'shot' ? 'bg-white/[0.06] shadow-sm text-[var(--text)]' : 'text-[var(--text-3)] hover:text-[var(--text-2)]'
                 }`}
               >
@@ -412,7 +425,8 @@ export default function ScreenCaptureView({ onBack, compact }: ScreenCaptureView
               <button
                 type="button"
                 onClick={() => setMode('rec')}
-                className={`flex-1 grid place-items-center gap-1 py-2 rounded-lg text-xs font-medium transition-all ${
+                disabled={recording}
+                className={`flex-1 grid place-items-center gap-1 py-2 rounded-lg text-xs font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
                   mode === 'rec' ? 'bg-white/[0.06] shadow-sm text-[var(--text)]' : 'text-[var(--text-3)] hover:text-[var(--text-2)]'
                 }`}
               >

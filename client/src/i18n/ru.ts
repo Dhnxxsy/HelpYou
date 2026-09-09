@@ -733,6 +733,7 @@ const d: Record<string, string> = {
   'Tidak ada item startup yang terdeteksi.': 'Элементы автозагрузки не обнаружены.',
   'Tidak ada item yang cocok.': 'Нет подходящих элементов.',
   'Tidak ada layar terdeteksi.': 'Экраны не обнаружены.',
+  'Tidak ada model terpasang. Jalankan ollama pull <nama-model> lalu buka ulang tab ini.': 'Модели не установлены. Выполните ollama pull <имя-модели> и снова откройте эту вкладку.',
   'Tidak ada program yang cocok.': 'Нет подходящих программ.',
   'Tidak ada proses yang cocok.': 'Нет подходящих процессов.',
   'Tidak ada.': 'Нет.',

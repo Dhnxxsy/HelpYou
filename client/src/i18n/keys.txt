@@ -820,6 +820,7 @@ Tidak ada item startup yang terdeteksi.
 Tidak ada item untuk disembunyikan.
 Tidak ada item yang cocok.
 Tidak ada layar terdeteksi.
+Tidak ada model terpasang. Jalankan ollama pull <nama-model> lalu buka ulang tab ini.
 Tidak ada perangkat terdeteksi.
 Tidak ada program yang cocok.
 Tidak ada proses yang cocok.

@@ -733,6 +733,7 @@ const d: Record<string, string> = {
   'Tidak ada item startup yang terdeteksi.': '未检测到启动项。',
   'Tidak ada item yang cocok.': '没有匹配的项目。',
   'Tidak ada layar terdeteksi.': '未检测到屏幕。',
+  'Tidak ada model terpasang. Jalankan ollama pull <nama-model> lalu buka ulang tab ini.': '未安装任何模型。运行 ollama pull <模型名称> 然后重新打开此标签页。',
   'Tidak ada program yang cocok.': '没有匹配的程序。',
   'Tidak ada proses yang cocok.': '没有匹配的进程。',
   'Tidak ada.': '无。',

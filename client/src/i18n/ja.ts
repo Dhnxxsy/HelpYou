@@ -733,6 +733,7 @@ const d: Record<string, string> = {
   'Tidak ada item startup yang terdeteksi.': 'スタートアップアイテムが検出されませんでした。',
   'Tidak ada item yang cocok.': '一致する項目がありません。',
   'Tidak ada layar terdeteksi.': '画面が検出されませんでした。',
+  'Tidak ada model terpasang. Jalankan ollama pull <nama-model> lalu buka ulang tab ini.': 'モデルがインストールされていません。ollama pull <モデル名> を実行してからこのタブを開き直してください。',
   'Tidak ada program yang cocok.': '一致するプログラムはありません。',
   'Tidak ada proses yang cocok.': '一致するプロセスはありません。',
   'Tidak ada.': 'なし。',

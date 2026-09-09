@@ -733,6 +733,7 @@ const d: Record<string, string> = {
   'Tidak ada item startup yang terdeteksi.': '감지된 시작 항목이 없습니다.',
   'Tidak ada item yang cocok.': '일치하는 항목이 없습니다.',
   'Tidak ada layar terdeteksi.': '화면이 감지되지 않았습니다.',
+  'Tidak ada model terpasang. Jalankan ollama pull <nama-model> lalu buka ulang tab ini.': '설치된 모델이 없습니다. ollama pull <모델-이름>을 실행한 후 이 탭을 다시 여세요.',
   'Tidak ada program yang cocok.': '일치하는 프로그램이 없습니다.',
   'Tidak ada proses yang cocok.': '일치하는 프로세스가 없습니다.',
   'Tidak ada.': '없습니다.',

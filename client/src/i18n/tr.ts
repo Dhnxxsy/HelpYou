@@ -733,6 +733,7 @@ const d: Record<string, string> = {
   'Tidak ada item startup yang terdeteksi.': 'Başlangıç öğesi algılanmadı.',
   'Tidak ada item yang cocok.': 'Eşleşen öğe yok.',
   'Tidak ada layar terdeteksi.': 'Ekran algılanmadı.',
+  'Tidak ada model terpasang. Jalankan ollama pull <nama-model> lalu buka ulang tab ini.': 'Yüklü model yok. ollama pull <model-adı> komutunu çalıştırın ve bu sekmeyi yeniden açın.',
   'Tidak ada program yang cocok.': 'Eşleşen program yok.',
   'Tidak ada proses yang cocok.': 'Eşleşen işlem yok.',
   'Tidak ada.': 'Yok.',

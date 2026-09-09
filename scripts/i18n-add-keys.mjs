@@ -726,6 +726,21 @@ const KEYS = {
     ja: '会話をクリア',
     ko: '대화 지우기',
   },
+  'Tidak ada model terpasang. Jalankan ollama pull <nama-model> lalu buka ulang tab ini.': {
+    en: 'No models installed. Run ollama pull <model-name> then reopen this tab.',
+    es: 'No hay modelos instalados. Ejecuta ollama pull <modelo> y vuelve a abrir esta pestaña.',
+    fr: 'Aucun modèle installé. Exécutez ollama pull <nom-du-modèle> puis rouvrez cet onglet.',
+    de: 'Keine Modelle installiert. Führe ollama pull <Modellname> aus und öffne diesen Tab erneut.',
+    pt: 'Nenhum modelo instalado. Execute ollama pull <nome-do-modelo> e reabra esta aba.',
+    it: 'Nessun modello installato. Esegui ollama pull <nome-modello> e riapri questa scheda.',
+    nl: 'Geen modellen geïnstalleerd. Voer ollama pull <modelnaam> uit en open dit tabblad opnieuw.',
+    ru: 'Модели не установлены. Выполните ollama pull <имя-модели> и снова откройте эту вкладку.',
+    ar: 'لا توجد نماذج مثبتة. نفّذ ollama pull <اسم-الموديل> ثم أعد فتح هذا التبويب.',
+    tr: 'Yüklü model yok. ollama pull <model-adı> komutunu çalıştırın ve bu sekmeyi yeniden açın.',
+    zh: '未安装任何模型。运行 ollama pull <模型名称> 然后重新打开此标签页。',
+    ja: 'モデルがインストールされていません。ollama pull <モデル名> を実行してからこのタブを開き直してください。',
+    ko: '설치된 모델이 없습니다. ollama pull <모델-이름>을 실행한 후 이 탭을 다시 여세요.',
+  },
 };
 
 const DRY = process.argv.includes('--dry-run');

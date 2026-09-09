@@ -733,6 +733,7 @@ const d: Record<string, string> = {
   'Tidak ada item startup yang terdeteksi.': 'No se detectaron elementos de inicio.',
   'Tidak ada item yang cocok.': 'No hay elementos coincidentes.',
   'Tidak ada layar terdeteksi.': 'No se detectaron pantallas.',
+  'Tidak ada model terpasang. Jalankan ollama pull <nama-model> lalu buka ulang tab ini.': 'No hay modelos instalados. Ejecuta ollama pull <modelo> y vuelve a abrir esta pestaña.',
   'Tidak ada program yang cocok.': 'No hay programas que coincidan.',
   'Tidak ada proses yang cocok.': 'No hay procesos que coincidan.',
   'Tidak ada.': 'Ninguno.',

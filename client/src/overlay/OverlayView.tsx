@@ -31,6 +31,28 @@ interface MixerSnapshotData {
 type Tab = 'suara' | 'chat' | 'jelajah' | 'rekam';
 
 const LS_OVERLAY_URL = 'helpyou-overlay-url';
+const LS_OVERLAY_MODELS = 'helpyou-overlay-models';
+
+function cachedModels(): string[] {
+  try {
+    const raw = localStorage.getItem(LS_OVERLAY_MODELS);
+    if (raw) {
+      const arr = JSON.parse(raw);
+      if (Array.isArray(arr)) return arr.filter((m): m is string => typeof m === 'string');
+    }
+  } catch {
+    /* ignore */
+  }
+  return [];
+}
+
+function storeCachedModels(list: string[]) {
+  try {
+    localStorage.setItem(LS_OVERLAY_MODELS, JSON.stringify(list));
+  } catch {
+    /* ignore */
+  }
+}
 
 const BROWSER_UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36';
@@ -353,14 +375,25 @@ function ChatTab() {
     api<{ up: boolean; models: string[]; error?: string }>('/api/ollama/status')
       .then((s) => {
         if (!alive) return;
+        const fresh = Array.isArray(s.models) ? s.models : [];
+        if (fresh.length > 0) storeCachedModels(fresh);
+        const effective = fresh.length > 0 ? fresh : cachedModels();
         setOnline(s.up);
-        setModels(s.models);
-        if (!model) setChatModel(s.models[0] || '');
-        if (!s.up) setError(s.error || t('Ollama tidak terhubung.'));
+        setModels(effective);
+        if (effective.length > 0) setChatModel(effective.includes(model) ? model : effective[0]);
+        else if (model) setChatModel('');
+        if (!s.up) {
+          setError(s.error || t('Ollama tidak terhubung.'));
+        } else if (effective.length === 0) {
+          setError(t('Tidak ada model terpasang. Jalankan ollama pull <nama-model> lalu buka ulang tab ini.'));
+        }
       })
       .catch(() => {
         if (!alive) return;
+        const cache = cachedModels();
         setOnline(false);
+        setModels(cache);
+        if (cache.length > 0) setChatModel(cache.includes(model) ? model : cache[0]);
         setError(t('Ollama tidak terhubung.'));
       });
     return () => {
@@ -474,7 +507,7 @@ function ChatTab() {
           className="ov-select"
           value={model}
           onChange={(e) => setChatModel(e.target.value)}
-          disabled={!online}
+          disabled={!online || models.length === 0}
           title={t('Model')}
         >
           {!model && <option value="">{t('Model')}…</option>}
