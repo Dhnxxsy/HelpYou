@@ -1,6 +1,6 @@
 {
   "name": "file-organizer",
-  "version": "1.0.50",
+  "version": "1.0.51",
   "description": "HelpYou ??? suite tools lokal: pengorganisir file, uninstaller program, dan banyak lagi.",
   "author": {
     "name": "HelpYou"
@@ -61,6 +61,12 @@
       "dist-server/**",
       "electron/**",
       "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "tools/ffmpeg.exe",
+        "to": "ffmpeg/ffmpeg.exe"
+      }
     ],
     "directories": {
       "output": "release",

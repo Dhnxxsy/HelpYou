@@ -1,6 +1,8 @@
 const { app, BrowserWindow, ipcMain, dialog, shell, globalShortcut, desktopCapturer, clipboard, screen, nativeImage, session, powerSaveBlocker } = require('electron');
 const path = require('node:path');
 const fs = require('node:fs');
+const os = require('node:os');
+const https = require('node:https');
 const { pathToFileURL } = require('node:url');
 const { execFile, spawn } = require('node:child_process');
 const { promisify } = require('node:util');
@@ -8,11 +10,129 @@ const { autoUpdater } = require('electron-updater');
 
 const execFileP = promisify(execFile);
 
+/* ----------------------- ffmpeg (smoothing) support ----------------------- */
+
+let ffmpegPathCache = null;
+let ffmpegDownloadP = null;
+
+function bundledFfmpegPath() {
+  if (!process.resourcesPath) return '';
+  return path.join(process.resourcesPath, 'ffmpeg', process.platform === 'win32' ? 'ffmpeg.exe' : 'ffmpeg');
+}
+
+async function resolveFfmpeg(kickDownload = false) {
+  if (ffmpegPathCache) return ffmpegPathCache;
+  const bundled = bundledFfmpegPath();
+  if (bundled && fs.existsSync(bundled)) {
+    ffmpegPathCache = bundled;
+    return bundled;
+  }
+  try {
+    const { stdout } = await execFileP(process.platform === 'win32' ? 'where' : 'which', ['ffmpeg']);
+    const p = String(stdout).trim().split(/\r?\n/)[0];
+    if (p && fs.existsSync(p)) {
+      ffmpegPathCache = p;
+      return p;
+    }
+  } catch {
+    /* not on PATH */
+  }
+  const cached = path.join(app.getPath('userData'), 'ffmpeg', process.platform === 'win32' ? 'ffmpeg.exe' : 'ffmpeg');
+  if (fs.existsSync(cached)) {
+    ffmpegPathCache = cached;
+    return cached;
+  }
+  if (kickDownload) {
+    void downloadFfmpeg();
+  }
+  return null;
+}
+
+function downloadFfmpeg() {
+  if (ffmpegDownloadP) return ffmpegDownloadP;
+  ffmpegDownloadP = (async () => {
+    const dir = path.join(app.getPath('userData'), 'ffmpeg');
+    await fs.promises.mkdir(dir, { recursive: true });
+    const isWin = process.platform === 'win32';
+    const url = isWin
+      ? 'https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip'
+      : 'https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz';
+    const tmp = path.join(os.tmpdir(), `helpyou-ffmpeg-${Date.now()}.${isWin ? 'zip' : 'tar.xz'}`);
+    await new Promise((resolve, reject) => {
+      const req = https.get(url, (res) => {
+        if (res.statusCode >= 400) {
+          reject(new Error(`HTTP ${res.statusCode}`));
+          return;
+        }
+        const out = fs.createWriteStream(tmp);
+        res.pipe(out);
+        out.on('finish', () => {
+          out.close();
+          resolve();
+        });
+        out.on('error', reject);
+      });
+      req.setTimeout(120000, () => req.destroy(new Error('timeout')));
+      req.on('error', reject);
+    });
+    if (isWin) {
+      await execFileP('tar', ['-xf', tmp, '-C', dir]);
+    } else {
+      await execFileP('tar', ['-xJf', tmp, '-C', dir]);
+    }
+    fs.rmSync(tmp, { force: true });
+    const found = findFile(dir, isWin ? 'ffmpeg.exe' : 'ffmpeg');
+    if (found) ffmpegPathCache = found;
+    logLine('ffmpeg downloaded', found || 'NOT FOUND');
+  })().catch((e) => {
+    ffmpegDownloadP = null;
+    logLine('ffmpeg download failed', e?.message || String(e));
+  });
+  return ffmpegDownloadP;
+}
+
+function findFile(dir, name) {
+  const stack = [dir];
+  while (stack.length) {
+    const cur = stack.pop();
+    for (const entry of fs.readdirSync(cur, { withFileTypes: true })) {
+      const full = path.join(cur, entry.name);
+      if (entry.isDirectory()) stack.push(full);
+      else if (entry.name === name) return full;
+    }
+  }
+  return null;
+}
+
+function runFfmpeg(exe, args, timeoutMs) {
+  return new Promise((resolve) => {
+    const child = spawn(exe, args, { windowsHide: true });
+    let stderr = '';
+    child.stderr.on('data', (d) => {
+      stderr += d.toString();
+      if (stderr.length > 8000) stderr = stderr.slice(-8000);
+    });
+    const to = setTimeout(() => {
+      child.kill('SIGKILL');
+      resolve({ code: -9, stderr });
+    }, timeoutMs);
+    child.on('error', (e) => {
+      clearTimeout(to);
+      resolve({ code: -1, stderr: String(e) });
+    });
+    child.on('close', (code) => {
+      clearTimeout(to);
+      resolve({ code, stderr });
+    });
+  });
+}
+
 // Keep recording smooth & steady: never let the OS/Chromium throttle the
 // capture pipeline when the window is occluded, minimized, or in the background.
 app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
 app.commandLine.appendSwitch('disable-renderer-backgrounding');
 app.commandLine.appendSwitch('disable-background-timer-throttling');
+app.commandLine.appendSwitch('disable-features', 'CalculateNativeWinOcclusion');
 
 let mainWindow = null;
 let server = null;
@@ -698,6 +818,68 @@ function registerIpc() {
       return { ok: true };
     } catch (e) {
       return { ok: false, error: e?.message || 'Gagal menyalin gambar' };
+    }
+  });
+
+  // Motion-compensated frame interpolation: lifts low-fps captures (which the OS may
+  // deliver at ~15-25fps even on 60Hz screens) up to a silky 60fps. Only runs when the
+  // delivered fps is below a threshold, so already-smooth clips pass through untouched
+  // (keeps the file size exactly as promised by the quality preset).
+  ipcMain.handle('capture:smooth', async (_e, payload) => {
+    try {
+      const dataUrl = typeof payload?.dataUrl === 'string' ? payload.dataUrl : '';
+      const m = dataUrl.match(/^data:([\w.+-]+\/[\w.+-]+);base64,(.+)$/);
+      if (!m) return { ok: false, error: 'Data video tidak valid' };
+      const mime = m[1];
+      const isWebm = mime.includes('webm');
+      const ext = isWebm ? 'webm' : 'mp4';
+const fps = Number(payload?.fps) || 0;
+      if (fps >= 45) return { ok: true, processed: false, fps };
+      const ffmpeg = await resolveFfmpeg(true);
+      if (!ffmpeg) {
+        return { ok: false, code: 'no-ffmpeg', error: 'Konverter video (ffmpeg) belum tersedia.' };
+      }
+      // Frame interpolation pays off only when capture is genuinely choppy; a
+      // 30-44 fps clip already plays acceptably on a 60 Hz timeline.
+      if (fps >= 30) return { ok: true, processed: false, fps };
+      const mbps = Math.max(0.5, Math.min(50, Number(payload?.mbps) || 8));
+      const durationSec = Math.max(1, Number(payload?.duration) || 1);
+      // Motion estimation is the costly step: run it at <=1024px wide, then
+      // upscale back to the original resolution (~4x faster than full-res ME).
+      const srcW = Math.round(Number(payload?.width) || 0);
+      const srcH = Math.round(Number(payload?.height) || 0);
+      const srcW2 = srcW > 1 ? srcW : 1920;
+      const srcH2 = srcH > 1 ? srcH : 1080;
+      const meW = Math.min(srcW2, 1024);
+      const meH = Math.max(2, Math.round((meW * srcH2) / srcW2 / 2) * 2);
+      const estSec = durationSec * 7.5 * ((meW * meH) / (1024 * 640));
+      // A long grind for a smoother clip is the UX ceiling; respect it.
+      if (estSec > 240) return { ok: true, processed: false, fps, skipped: 'long' };
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'helpyou-smooth-'));
+      const input = path.join(tmpDir, `in.${ext}`);
+      const output = path.join(tmpDir, `out.${ext}`);
+      await fs.promises.writeFile(input, Buffer.from(m[2], 'base64'));
+      const vf = `scale=${meW}:${meH},minterpolate=fps=60,scale=${srcW2}:${srcH2}`;
+      const args = [
+        '-y', '-i', input, '-vf', vf, '-threads', '0',
+        isWebm
+          ? ['-c:v', 'libvpx-vp9', '-b:v', `${Math.round(mbps)}M`, '-row-mt', '1', '-cpu-used', '4', '-deadline', 'good', '-pix_fmt', 'yuv420p', '-g', '240', '-c:a', 'libopus', '-b:a', '128k']
+          : ['-c:v', 'libx264', '-preset', 'veryfast', '-b:v', `${Math.round(mbps)}M`, '-maxrate', `${Math.round(mbps * 1.2)}M`, '-bufsize', `${Math.round(mbps * 2.4)}M`, '-movflags', '+faststart', '-pix_fmt', 'yuv420p', '-profile:v', 'high', '-level', '4.2', '-g', '240', '-c:a', 'aac', '-b:a', '128k'],
+        '-y', output,
+      ].flat();
+      const timeoutMs = Math.min(30 * 60 * 1000, estSec * 1000 + 60000);
+      const { code, stderr } = await runFfmpeg(ffmpeg, args, timeoutMs);
+      if (code !== 0) {
+        return { ok: false, error: (stderr.trim().split(/\r?\n/).slice(-2).join(' ').slice(0, 300)) || 'Gagal memroses video' };
+      }
+      const buf = await fs.promises.readFile(output);
+      const durMatch = stderr.match(/Duration:\s*(\d+):(\d+):([\d.]+)/);
+      const duration = durMatch ? +durMatch[1] * 3600 + +durMatch[2] * 60 + +durMatch[3] : 0;
+      const outDataUrl = `data:${isWebm ? 'video/webm' : 'video/mp4'};base64,${buf.toString('base64')}`;
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+      return { ok: true, processed: true, fps: 60, dataUrl: outDataUrl, size: buf.length, duration };
+    } catch (e) {
+      return { ok: false, error: e?.message || 'Gagal memroses video' };
     }
   });
 }

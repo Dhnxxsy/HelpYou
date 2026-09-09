@@ -3,6 +3,7 @@ dist/
 dist-server/
 release/
 build/
+tools/
 .file-organizer/
 *.log
 .env

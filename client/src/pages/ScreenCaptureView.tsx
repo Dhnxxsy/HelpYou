@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PageHeader from '../components/PageHeader';
 import Icon from '../components/Icon';
-import { isDesktop, captureListSources, captureSetRecordSource, captureScreenshot, captureSaveData, captureCopyImage, type CaptureSource } from '../lib/platform';
+import { isDesktop, captureListSources, captureSetRecordSource, captureScreenshot, captureSaveData, captureCopyImage, captureSmooth, type CaptureSource } from '../lib/platform';
 import { useI18n } from '../lib/i18n';
 
 interface ScreenCaptureViewProps {
@@ -64,6 +64,10 @@ function blobToDataUrl(blob: Blob): Promise<string> {
     r.onerror = () => reject(r.error || new Error('Gagal membaca data'));
     r.readAsDataURL(blob);
   });
+}
+
+function dataUrlToBlob(dataUrl: string): Promise<Blob> {
+  return fetch(dataUrl).then((r) => r.blob());
 }
 
 function pngToJpeg(dataUrl: string, quality: number): Promise<ShotResult> {
@@ -146,6 +150,8 @@ export default function ScreenCaptureView({ onBack, compact }: ScreenCaptureView
   const [recDoneUrl, setRecDoneUrl] = useState<string | null>(null);
   const [recErr, setRecErr] = useState('');
   const [elapsed, setElapsed] = useState(0);
+  const [smoothing, setSmoothing] = useState(false);
+  const [smoothedAt, setSmoothedAt] = useState(false);
 
   const [busy, setBusy] = useState('');
   const [notice, setNotice] = useState('');
@@ -157,6 +163,29 @@ export default function ScreenCaptureView({ onBack, compact }: ScreenCaptureView
   const blobRef = useRef<Blob | null>(null);
   const prevUrlRef = useRef<string | null>(null);
   const liveVideoRef = useRef<HTMLVideoElement>(null);
+  const framesRef = useRef(0);
+  const elapsedRef = useRef(0);
+  const mbpsRef = useRef(4);
+  const captureSettingsRef = useRef<{ width: number; height: number } | null>(null);
+
+  // Tally frames actually delivered by the capture track (via the live preview).
+  // If that real fps is noticeably below the requested one, the OS is throttling
+  // capture and we can post-smooth the recording (minterpolate) to 60 fps.
+  useEffect(() => {
+    if (!recording) return;
+    const live = liveVideoRef.current;
+    if (!live) return;
+    let on = true;
+    const tick = () => {
+      if (!on) return;
+      framesRef.current += 1;
+      live.requestVideoFrameCallback(tick);
+    };
+    live.requestVideoFrameCallback(tick);
+    return () => {
+      on = false;
+    };
+  }, [recording]);
 
   const selected = useMemo(() => sources.find((s) => s.id === sourceId) || null, [sources, sourceId]);
 
@@ -311,6 +340,10 @@ const estMega = sizePerMinuteMega(estMbps);
         }
       }
       streamRef.current = stream;
+      const gate = stream.getVideoTracks()[0]?.getSettings();
+      if (gate?.width && gate?.height) {
+        captureSettingsRef.current = { width: gate.width, height: gate.height };
+      }
 
       const mime = mimeForFormat(recFormat);
       if (!mime) {
@@ -356,11 +389,21 @@ const estMega = sizePerMinuteMega(estMbps);
         const url = URL.createObjectURL(blob);
         prevUrlRef.current = url;
         setRecDoneUrl(url);
+        void finalizeSmooth(blob, mbpsRef.current, elapsedRef.current, framesRef.current);
       };
       recorder.start(1000);
+      framesRef.current = 0;
+      elapsedRef.current = 0;
+      mbpsRef.current = mbps;
       setRecording(true);
       setElapsed(0);
-      timerRef.current = window.setInterval(() => setElapsed((v) => v + 1), 1000);
+      timerRef.current = window.setInterval(() => {
+        setElapsed((v) => {
+          const nv = v + 1;
+          elapsedRef.current = nv;
+          return nv;
+        });
+      }, 1000);
     } catch (e: any) {
       stopAllTracks();
       setRecErr(t('Gagal merekam: {msg}', { msg: e?.message || String(e) }));
@@ -379,9 +422,40 @@ const estMega = sizePerMinuteMega(estMbps);
     }
   };
 
+  // Where the OS throttles capture below ~45fps, run motion-compensated frame
+  // interpolation (ffmpeg minterpolate in main) to lift the clip to 60 fps.
+  const finalizeSmooth = async (blob: Blob, mbps: number, secs: number, frameCount: number) => {
+    const fps = secs >= 2 && frameCount > 0 ? frameCount / secs : 0;
+    if (!fps || fps >= 45) return;
+    setSmoothedAt(false);
+    setSmoothing(true);
+    try {
+      const dataUrl = await blobToDataUrl(blob);
+      const cs = captureSettingsRef.current ?? { width: undefined, height: undefined };
+      const res = await captureSmooth({ dataUrl, fps, mbps, duration: secs, width: cs.width, height: cs.height });
+      if (res.ok && res.processed && res.dataUrl) {
+        const out = await dataUrlToBlob(res.dataUrl);
+        blobRef.current = out;
+        const url = URL.createObjectURL(out);
+        if (prevUrlRef.current) URL.revokeObjectURL(prevUrlRef.current);
+        prevUrlRef.current = url;
+        setRecDoneUrl(url);
+        setSmoothedAt(true);
+      } else if (res.code === 'no-ffmpeg') {
+        flashNotice(t('Pemulusan otomatis tidak tersedia (ffmpeg belum terpasang).'));
+      } else if (res.skipped === 'long') {
+        flashNotice(t('Pemulusan otomatis dilewati untuk rekaman yang lebih panjang.'));
+      }
+    } catch {
+      flashNotice(t('Pemulusan otomatis gagal untuk rekaman ini.'));
+    } finally {
+      setSmoothing(false);
+    }
+  };
+
   const saveRecord = async () => {
     const blob = blobRef.current;
-    if (!blob) return;
+    if (!blob || smoothing) return;
     setBusy(t('Menyimpan…'));
     try {
       const dataUrl = await blobToDataUrl(blob);
@@ -845,17 +919,23 @@ const estMega = sizePerMinuteMega(estMbps);
               <div className="rounded-xl overflow-hidden border border-[var(--border-2)] bg-black">
                 <video src={recDoneUrl} controls playsInline className="w-full max-h-[420px] object-contain" />
               </div>
+              {(smoothing || smoothedAt) && (
+                <p className={`text-[11px] flex items-center gap-1.5 ${smoothing ? 'text-[var(--text-2)]' : 'text-[var(--accent-strong)]'}`}>
+                  {smoothing && <span className="inline-block w-3 h-3 rounded-full border-2 border-current border-t-transparent animate-spin" />}
+                  {smoothing ? t('Memproses pemulusan video…') : t('Pemulusan otomatis · video dihaluskan ke 60 fps')}
+                </p>
+              )}
               {(busy === t('Menyimpan…')) && (
                 <div className="h-6 relative overflow-hidden rounded-lg bg-[var(--overlay-2)]">
                   <div className="h-full w-1/3 bg-gradient-to-r from-transparent via-[var(--accent-strong)] to-transparent animate-[shimmer_1.4s_infinite]" />
                 </div>
               )}
               <div className="flex flex-wrap gap-2">
-                <button type="button" className="btn-primary !h-10" onClick={saveRecord} disabled={busy === t('Menyimpan…')}>
+                <button type="button" className="btn-primary !h-10" onClick={saveRecord} disabled={busy === t('Menyimpan…') || smoothing}>
                   <Icon name="download" className="w-4 h-4" />
                   {t('Simpan')}
                 </button>
-                <button type="button" className="btn-ghost !h-10" onClick={resetRecording}>
+                <button type="button" className="btn-ghost !h-10" onClick={resetRecording} disabled={smoothing}>
                   <Icon name="replay" className="w-4 h-4" />
                   {t('Rekam Lagi')}
                 </button>

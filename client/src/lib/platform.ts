@@ -166,6 +166,7 @@ export interface ElectronAPI {
     screenshot: (payload: { displayId: number }) => Promise<CaptureShotResult>;
     saveData: (payload: CaptureSavePayload) => Promise<CaptureSaveResult>;
     copyImage: (dataUrl: string) => Promise<{ ok: boolean; error?: string }>;
+    smooth: (payload: CaptureSmoothPayload) => Promise<CaptureSmoothResult>;
   };
   windowControls: ElectronWindowControls;
   overlay: {
@@ -307,4 +308,30 @@ export async function captureSaveData(payload: CaptureSavePayload): Promise<Capt
 export async function captureCopyImage(dataUrl: string): Promise<{ ok: boolean; error?: string }> {
   if (!isDesktop || !window.electron) return { ok: false, error: tGlobal('Perangkat tidak mendukung.') };
   return window.electron.capture.copyImage(dataUrl);
+}
+
+export interface CaptureSmoothPayload {
+  dataUrl: string;
+  fps: number;
+  mbps: number;
+  duration: number;
+  width?: number;
+  height?: number;
+}
+
+export interface CaptureSmoothResult {
+  ok: boolean;
+  processed?: boolean;
+  fps?: number;
+  dataUrl?: string;
+  size?: number;
+  duration?: number;
+  code?: string;
+  skipped?: string;
+  error?: string;
+}
+
+export async function captureSmooth(payload: CaptureSmoothPayload): Promise<CaptureSmoothResult> {
+  if (!isDesktop || !window.electron) return { ok: false, code: 'no-ffmpeg' };
+  return window.electron.capture.smooth(payload);
 }

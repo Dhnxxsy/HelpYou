@@ -45,6 +45,7 @@ contextBridge.exposeInMainWorld('electron', {
     screenshot: (payload) => ipcRenderer.invoke('capture:screenshot', payload),
     saveData: (payload) => ipcRenderer.invoke('capture:saveData', payload),
     copyImage: (dataUrl) => ipcRenderer.invoke('capture:copyImage', dataUrl),
+    smooth: (payload) => ipcRenderer.invoke('capture:smooth', payload),
   },
   overlay: {
     toggle: () => ipcRenderer.invoke('overlay:toggle'),
