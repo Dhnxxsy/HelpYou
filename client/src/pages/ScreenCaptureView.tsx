@@ -25,11 +25,25 @@ const FPS_OPTIONS = [15, 24, 30, 60];
 const BITRATE_MIN = 1;
 const BITRATE_MAX = 50;
 
-const QUALITY_PRESETS: { id: RecQuality; fps: number; bitrate: number }[] = [
-  { id: 'rendah', fps: 15, bitrate: 2 },
-  { id: 'sedang', fps: 30, bitrate: 4 },
-  { id: 'tinggi', fps: 30, bitrate: 8 },
+// Quality tiers pick a bits-per-pixel target; the final Mbps is derived from the
+// actual screen resolution & FPS so big screens stay sharp and small ones stay lean.
+const QUALITY_PRESETS: { id: RecQuality; fps: number; bpp: number }[] = [
+  { id: 'rendah', fps: 24, bpp: 0.06 },
+  { id: 'sedang', fps: 30, bpp: 0.09 },
+  { id: 'tinggi', fps: 30, bpp: 0.13 },
 ];
+
+// Relative bitrate efficiency of each container/codec (lower = same quality, less size).
+const FORMAT_FACTOR: Record<RecFormat, number> = { mp4: 1, webm9: 0.6, webm8: 0.75 };
+
+function estimateMbps(w: number, h: number, fps: number, bpp: number, format: RecFormat): number {
+  const raw = (w * h * fps * bpp * FORMAT_FACTOR[format]) / 1e6;
+  return Math.min(BITRATE_MAX, Math.max(BITRATE_MIN, Math.round(raw)));
+}
+
+function sizePerMinuteMega(mbps: number): number {
+  return Math.max(1, Math.round((mbps / 8) * 60));
+}
 
 function mimeForFormat(f: RecFormat): string | null {
   const candidates: string[] =
@@ -144,6 +158,14 @@ export default function ScreenCaptureView({ onBack, compact }: ScreenCaptureView
 
   const selected = useMemo(() => sources.find((s) => s.id === sourceId) || null, [sources, sourceId]);
 
+  const activeBpp = QUALITY_PRESETS.find((q) => q.id === recQuality)?.bpp;
+  const estMbps = useMemo(() => {
+    if (!selected) return 0;
+    if (recQuality === 'kustom' || !activeBpp) return recBitrate;
+    return estimateMbps(selected.width, selected.height, recFps, activeBpp, recFormat);
+  }, [selected, recQuality, activeBpp, recBitrate, recFps, recFormat]);
+  const estMega = sizePerMinuteMega(estMbps);
+
   const loadSources = useCallback(async () => {
     setSourcesLoading(true);
     setSources([]);
@@ -253,12 +275,8 @@ export default function ScreenCaptureView({ onBack, compact }: ScreenCaptureView
 
   const pickPreset = (p: RecQuality) => {
     setRecQuality(p);
-    if (p === 'kustom') return;
     const preset = QUALITY_PRESETS.find((q) => q.id === p);
-    if (preset) {
-      setRecFps(preset.fps);
-      setRecBitrate(preset.bitrate);
-    }
+    if (preset) setRecFps(preset.fps);
   };
 
   const startRecord = async () => {
@@ -292,9 +310,27 @@ export default function ScreenCaptureView({ onBack, compact }: ScreenCaptureView
         throw new Error(t('Format video tidak didukung. Coba WebM.'));
       }
 
+      // Derive the target bitrate from the CAPTURED track's real resolution + fps,
+      // so quality scales with the screen instead of a fixed Mbps.
+      const vs = stream.getVideoTracks()[0]?.getSettings?.() || {};
+      const cw = typeof vs.width === 'number' && vs.width > 0 ? vs.width : selected.width;
+      const ch = typeof vs.height === 'number' && vs.height > 0 ? vs.height : selected.height;
+      const cfps = typeof vs.frameRate === 'number' && vs.frameRate > 0 ? Math.round(vs.frameRate) : recFps;
+      const presetBpp = QUALITY_PRESETS.find((q) => q.id === recQuality)?.bpp;
+      const mbps =
+        recQuality === 'kustom' || !presetBpp ? recBitrate : estimateMbps(cw, ch, cfps, presetBpp, recFormat);
+
       const chunks: Blob[] = [];
       chunksRef.current = chunks;
-      const recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: recBitrate * 1_000_000 });
+      const recorder = new MediaRecorder(
+        stream,
+        {
+          mimeType: mime,
+          videoBitsPerSecond: mbps * 1_000_000,
+          audioBitsPerSecond: recAudio === 'none' ? undefined : 128_000,
+          videoKeyFrameInterval: 4,
+        } as MediaRecorderOptions
+      );
       recorderRef.current = recorder;
       recorder.ondataavailable = (e) => {
         if (e.data && e.data.size > 0) chunks.push(e.data);
@@ -624,25 +660,41 @@ export default function ScreenCaptureView({ onBack, compact }: ScreenCaptureView
                 <div>
                   <div className="flex items-center justify-between">
                     <label className="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-3)]">{t('Bitrate')}</label>
-                    <span className="text-xs text-[var(--text-2)] tabular-nums">{recBitrate} Mbps</span>
+                    {recQuality === 'kustom' ? (
+                      <span className="text-xs text-[var(--text-2)] tabular-nums">
+                        {recBitrate} Mbps · {t('±{mega} MB/menit', { mega: estMega })}
+                      </span>
+                    ) : (
+                      <span className="text-[11px] text-[var(--accent-strong)] tabular-nums font-medium">
+                        {t('Auto {mbps} Mbps · ±{mega} MB/menit', { mbps: estMbps, mega: estMega })}
+                      </span>
+                    )}
                   </div>
-                  <input
-                    type="range"
-                    min={BITRATE_MIN}
-                    max={BITRATE_MAX}
-                    step={1}
-                    value={recBitrate}
-                    onChange={(e) => {
-                      setRecBitrate(Number(e.target.value));
-                      setRecQuality('kustom');
-                    }}
-                    disabled={recording}
-                    className="w-full accent-[var(--accent-strong)]"
-                  />
-                  <div className="flex justify-between text-[10px] text-[var(--text-3)] tabular-nums mt-0.5">
-                    <span>{BITRATE_MIN} Mbps</span>
-                    <span>{BITRATE_MAX} Mbps</span>
-                  </div>
+                  {recQuality === 'kustom' ? (
+                    <>
+                      <input
+                        type="range"
+                        min={BITRATE_MIN}
+                        max={BITRATE_MAX}
+                        step={1}
+                        value={recBitrate}
+                        onChange={(e) => {
+                          setRecBitrate(Number(e.target.value));
+                          setRecQuality('kustom');
+                        }}
+                        disabled={recording}
+                        className="w-full accent-[var(--accent-strong)]"
+                      />
+                      <div className="flex justify-between text-[10px] text-[var(--text-3)] tabular-nums mt-0.5">
+                        <span>{BITRATE_MIN} Mbps</span>
+                        <span>{BITRATE_MAX} Mbps</span>
+                      </div>
+                    </>
+                  ) : (
+                    <p className="text-[11px] leading-snug text-[var(--text-3)]">
+                      {t('Bitrate disesuaikan otomatis dengan resolusi & FPS layar.')}
+                    </p>
+                  )}
                 </div>
 
                 <div>

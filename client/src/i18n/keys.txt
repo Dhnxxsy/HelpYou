@@ -59,6 +59,7 @@ Atur Sandi untuk Menyembunyikan
 Aturan Sortir Kustom
 Audio
 Audio Sistem
+Auto {mbps} Mbps · ±{mega} MB/menit
 Auto-simpan
 Awalan
 Awalan untuk semua nama:
@@ -104,6 +105,7 @@ Bersihkan {n} Lokasi
 Bisa berupa drive (C:) atau subfolder seperti
 Bisukan
 Bitrate
+Bitrate disesuaikan otomatis dengan resolusi & FPS layar.
 Brankas
 Brankas Rahasia
 Brankas terenkripsi · data tidak keluar perangkat
@@ -994,6 +996,7 @@ untuk menghapusnya dengan aman.
 {title} (salinan)
 {v} dipakai
 {v} terpakai
+±{mega} MB/menit
 × {n} file
 → _TerSortir/
 ∞ (semua)
