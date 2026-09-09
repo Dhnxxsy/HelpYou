@@ -21,7 +21,9 @@ interface ShotResult {
   height: number;
 }
 
-const FPS_OPTIONS = [15, 24, 30, 60];
+// 0 = "Auto": match the display refresh rate (source.refreshRate) for a 1:1
+// cadence that eliminates judder on 60/120/144 Hz screens.
+const FPS_OPTIONS = [15, 24, 30, 60, 0];
 const BITRATE_MIN = 1;
 const BITRATE_MAX = 50;
 
@@ -30,7 +32,7 @@ const BITRATE_MAX = 50;
 const QUALITY_PRESETS: { id: RecQuality; fps: number; bpp: number }[] = [
   { id: 'rendah', fps: 24, bpp: 0.06 },
   { id: 'sedang', fps: 30, bpp: 0.09 },
-  { id: 'tinggi', fps: 30, bpp: 0.13 },
+  { id: 'tinggi', fps: 60, bpp: 0.11 },
 ];
 
 // Relative bitrate efficiency of each container/codec (lower = same quality, less size).
@@ -158,13 +160,18 @@ export default function ScreenCaptureView({ onBack, compact }: ScreenCaptureView
 
   const selected = useMemo(() => sources.find((s) => s.id === sourceId) || null, [sources, sourceId]);
 
-  const activeBpp = QUALITY_PRESETS.find((q) => q.id === recQuality)?.bpp;
-  const estMbps = useMemo(() => {
-    if (!selected) return 0;
-    if (recQuality === 'kustom' || !activeBpp) return recBitrate;
-    return estimateMbps(selected.width, selected.height, recFps, activeBpp, recFormat);
-  }, [selected, recQuality, activeBpp, recBitrate, recFps, recFormat]);
-  const estMega = sizePerMinuteMega(estMbps);
+// Effective FPS for estimates & capture: Auto (0) follows the display's refresh rate.
+// WebM uses a software encoder, so cap Auto at 60 fps there to keep recordings stable.
+const rawFps = recFps === 0 ? (selected?.refreshRate || 60) : recFps;
+const targetFps = recFps === 0 && recFormat !== 'mp4' ? Math.min(rawFps, 60) : rawFps;
+
+const activeBpp = QUALITY_PRESETS.find((q) => q.id === recQuality)?.bpp;
+const estMbps = useMemo(() => {
+  if (!selected) return 0;
+  if (recQuality === 'kustom' || !activeBpp) return recBitrate;
+  return estimateMbps(selected.width, selected.height, targetFps, activeBpp, recFormat);
+}, [selected, recQuality, activeBpp, recBitrate, targetFps, recFormat]);
+const estMega = sizePerMinuteMega(estMbps);
 
   const loadSources = useCallback(async () => {
     setSourcesLoading(true);
@@ -288,8 +295,9 @@ export default function ScreenCaptureView({ onBack, compact }: ScreenCaptureView
       // Tell main which screen (and audio mode) to hand back to getDisplayMedia().
       await captureSetRecordSource(selected.id, recAudio);
       const wantsSystemAudio = recAudio === 'system';
+      // Auto FPS = capture at the display's refresh cadence (1:1) for the smoothest motion.
       const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: { frameRate: { ideal: recFps, max: recFps } },
+        video: { frameRate: { ideal: targetFps, max: targetFps } },
         audio: wantsSystemAudio,
       });
       if (recAudio === 'mic') {
@@ -315,7 +323,7 @@ export default function ScreenCaptureView({ onBack, compact }: ScreenCaptureView
       const vs = stream.getVideoTracks()[0]?.getSettings?.() || {};
       const cw = typeof vs.width === 'number' && vs.width > 0 ? vs.width : selected.width;
       const ch = typeof vs.height === 'number' && vs.height > 0 ? vs.height : selected.height;
-      const cfps = typeof vs.frameRate === 'number' && vs.frameRate > 0 ? Math.round(vs.frameRate) : recFps;
+      const cfps = typeof vs.frameRate === 'number' && vs.frameRate > 0 ? Math.round(vs.frameRate) : targetFps;
       const presetBpp = QUALITY_PRESETS.find((q) => q.id === recQuality)?.bpp;
       const mbps =
         recQuality === 'kustom' || !presetBpp ? recBitrate : estimateMbps(cw, ch, cfps, presetBpp, recFormat);
@@ -630,14 +638,17 @@ export default function ScreenCaptureView({ onBack, compact }: ScreenCaptureView
                       className="input mt-1"
                       value={recFps}
                       onChange={(e) => {
-                        setRecFps(Number(e.target.value));
-                        setRecQuality('kustom');
+                        const v = Number(e.target.value);
+                        setRecFps(v);
+                        const presetMatch = QUALITY_PRESETS.find((q) => q.fps === v);
+                        if (presetMatch) setRecQuality(presetMatch.id);
+                        else if (v !== 0) setRecQuality('kustom');
                       }}
                       disabled={recording}
                     >
                       {FPS_OPTIONS.map((f) => (
                         <option key={f} value={f}>
-                          {f} fps
+                          {f === 0 ? `${t('Otomatis')} · ${selected?.refreshRate || 60} Hz` : `${f} fps`}
                         </option>
                       ))}
                     </select>

@@ -102,6 +102,7 @@ export interface CaptureSource {
   height: number;
   x: number;
   y: number;
+  refreshRate: number;
   thumb: string;
 }
 

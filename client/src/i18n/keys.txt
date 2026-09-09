@@ -561,6 +561,7 @@ Optimasi selesai.
 Optimasi terakhir {v}
 Organizer
 Organizer Folder Lokal
+Otomatis
 Overlay
 PC / Laptop
 PC: {pc}

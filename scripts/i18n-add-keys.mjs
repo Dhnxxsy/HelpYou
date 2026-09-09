@@ -786,6 +786,21 @@ const KEYS = {
     ja: 'ビットレートは画面解像度とFPSに合わせて自動調整されます。',
     ko: '비트레이트는 화면 해상도와 FPS에 따라 자동으로 조정됩니다.',
   },
+  Otomatis: {
+    en: 'Auto',
+    es: 'Auto',
+    fr: 'Auto',
+    de: 'Auto',
+    pt: 'Auto',
+    it: 'Auto',
+    nl: 'Auto',
+    ru: 'Авто',
+    ar: 'تلقائي',
+    tr: 'Otomatik',
+    zh: '自动',
+    ja: '自動',
+    ko: '자동',
+  },
 };
 
 const DRY = process.argv.includes('--dry-run');

@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, shell, globalShortcut, desktopCapturer, clipboard, screen, nativeImage, session } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, shell, globalShortcut, desktopCapturer, clipboard, screen, nativeImage, session, powerSaveBlocker } = require('electron');
 const path = require('node:path');
 const fs = require('node:fs');
 const { pathToFileURL } = require('node:url');
@@ -7,6 +7,12 @@ const { promisify } = require('node:util');
 const { autoUpdater } = require('electron-updater');
 
 const execFileP = promisify(execFile);
+
+// Keep recording smooth & steady: never let the OS/Chromium throttle the
+// capture pipeline when the window is occluded, minimized, or in the background.
+app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
+app.commandLine.appendSwitch('disable-renderer-backgrounding');
+app.commandLine.appendSwitch('disable-background-timer-throttling');
 
 let mainWindow = null;
 let server = null;
@@ -197,8 +203,12 @@ function createWindow(url) {
       nodeIntegration: false,
       sandbox: true,
       webviewTag: true,
+      backgroundThrottling: false,
     },
   });
+
+  // Never suspend the app during a recording (prevents dropped frames).
+  powerSaveBlocker.start('prevent-app-suspension');
 
   mainWindow.once('ready-to-show', () => mainWindow.show());
   mainWindow.webContents.on('did-finish-load', () => logLine('window did-finish-load'));
@@ -575,23 +585,30 @@ function registerIpc() {
   // Route getDisplayMedia() to the screen the renderer selected via capture:setRecordSource.
   // The legacy getUserMedia({chromeMediaSource:'desktop'}) path hangs in Electron 33, so we
   // use the supported display-media request handler instead.
-  session.defaultSession.setDisplayMediaRequestHandler(async (_request, callback) => {
-    try {
-      const sources = await desktopCapturer.getSources({ types: ['screen'] });
-      const src = sources.find((s) => s.id === activeRecordSourceId) || sources[0];
-      if (!src) {
-        callback({ video: undefined });
-        return;
-      }
-      if (activeRecordAudio === 'system') callback({ video: src, audio: 'loopback' });
-      else callback({ video: src });
-    } catch (e) {
-      logLine('displayMedia handler error', e?.stack || e);
+  // useSystemPicker:true lets Windows 10+/macOS use the NATIVE capture pipeline (WGC /
+  // ScreenCaptureKit) which delivers the display's true frame rate; without it the custom
+  // desktopCapturer path is throttled (~15-30fps) and recordings look choppy. On platforms
+  // without a system picker, Electron automatically falls back to the handler below.
+  session.defaultSession.setDisplayMediaRequestHandler(
+    async (_request, callback) => {
       try {
-        callback({ video: undefined });
-      } catch {}
-    }
-  });
+        const sources = await desktopCapturer.getSources({ types: ['screen'] });
+        const src = sources.find((s) => s.id === activeRecordSourceId) || sources[0];
+        if (!src) {
+          callback({ video: undefined });
+          return;
+        }
+        if (activeRecordAudio === 'system') callback({ video: src, audio: 'loopback' });
+        else callback({ video: src });
+      } catch (e) {
+        logLine('displayMedia handler error', e?.stack || e);
+        try {
+          callback({ video: undefined });
+        } catch {}
+      }
+    },
+    { useSystemPicker: process.env.HELPYOU_DIRECT_CAPTURE !== '1' }
+  );
 
   ipcMain.handle('capture:setRecordSource', (_e, id, audio) => {
     activeRecordSourceId = typeof id === 'string' ? id : '';
@@ -615,6 +632,7 @@ function registerIpc() {
           height: bounds.height,
           x: bounds.x,
           y: bounds.y,
+          refreshRate: Math.round(display?.displayFrequency || 60),
           thumb: s.thumbnail.isEmpty() ? '' : s.thumbnail.toDataURL(),
         };
       });

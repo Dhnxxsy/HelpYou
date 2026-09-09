@@ -524,6 +524,7 @@ const d: Record<string, string> = {
   'Organizer': 'Organizador',
   'Organizer Folder Lokal': 'Organizador Local de Pastas',
   'OS: {caption} (build {build}, {arch})': 'SO: {caption} (build {build}, {arch})',
+  'Otomatis': 'Auto',
   'Overlay': 'Overlay',
   'PC / Laptop': 'PC / Notebook',
   'PC: {pc}': 'PC: {pc}',
