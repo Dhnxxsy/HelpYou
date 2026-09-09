@@ -66,8 +66,15 @@ function blobToDataUrl(blob: Blob): Promise<string> {
   });
 }
 
-function dataUrlToBlob(dataUrl: string): Promise<Blob> {
-  return fetch(dataUrl).then((r) => r.blob());
+function dataUrlToBlob(dataUrl: string): Blob {
+  const i = dataUrl.indexOf(',');
+  const meta = dataUrl.slice(0, i);
+  const b64 = dataUrl.slice(i + 1);
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let k = 0; k < bin.length; k++) bytes[k] = bin.charCodeAt(k);
+  const mime = (meta.match(/^data:([^;]+)/) || [])[1] || 'application/octet-stream';
+  return new Blob([bytes], { type: mime });
 }
 
 function pngToJpeg(dataUrl: string, quality: number): Promise<ShotResult> {
